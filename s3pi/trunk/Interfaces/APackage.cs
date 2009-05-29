@@ -1,0 +1,224 @@
+﻿/***************************************************************************
+ *  Copyright (C) 2009 by Peter L Jones                                    *
+ *  peter@users.sf.net                                                     *
+ *                                                                         *
+ *  This file is part of the Sims 3 Package Interface (s3pi)               *
+ *                                                                         *
+ *  s3pi is free software: you can redistribute it and/or modify           *
+ *  it under the terms of the GNU General Public License as published by   *
+ *  the Free Software Foundation, either version 3 of the License, or      *
+ *  (at your option) any later version.                                    *
+ *                                                                         *
+ *  s3pi is distributed in the hope that it will be useful,                *
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of         *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the          *
+ *  GNU General Public License for more details.                           *
+ *                                                                         *
+ *  You should have received a copy of the GNU General Public License      *
+ *  along with s3pi.  If not, see <http://www.gnu.org/licenses/>.          *
+ ***************************************************************************/
+using System;
+using System.Collections.Generic;
+using System.IO;
+
+namespace s3pi.Interfaces
+{
+    public abstract class APackage : AApiVersionedFields, IPackage
+    {
+        #region AApiVersionedFields
+        /// <summary>
+        /// The list of available field names on this API object
+        /// </summary>
+        public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
+        #endregion
+
+        #region IPackage Members
+
+        #region Whole package
+        /// <summary>
+        /// Tell the package to save itself to wherever it believes it came from
+        /// </summary>
+        public abstract void SavePackage();
+        /// <summary>
+        /// Tell the package to save itself to the stream <paramref name="s"/>
+        /// </summary>
+        /// <param name="s">A stream to which the package should be saved</param>
+        public abstract void SaveAs(Stream s);
+        /// <summary>
+        /// Tell the package to save itself to a file with the name in <paramref name="path"/>
+        /// </summary>
+        /// <param name="path">A fully-qualified file name</param>
+        public abstract void SaveAs(string path);
+        #endregion
+
+        #region Package header
+        /// <summary>
+        /// Package header: "DBPF" bytes
+        /// </summary>
+        public abstract byte[] Magic { get; }
+        /// <summary>
+        /// Package header: 0x00000002
+        /// </summary>
+        public abstract int Major { get; }
+        /// <summary>
+        /// Package header: 0x00000000
+        /// </summary>
+        public abstract int Minor { get; }
+        /// <summary>
+        /// Package header: unused
+        /// </summary>
+        public abstract byte[] Unknown1 { get; }
+        /// <summary>
+        /// Package header: number of entries in the package index
+        /// </summary>
+        public abstract int Indexcount { get; }
+        /// <summary>
+        /// Package header: unused
+        /// </summary>
+        public abstract byte[] Unknown2 { get; }
+        /// <summary>
+        /// Package header: index size on disk in bytes
+        /// </summary>
+        public abstract int Indexsize { get; }
+        /// <summary>
+        /// Package header: unused
+        /// </summary>
+        public abstract byte[] Unknown3 { get; }
+        /// <summary>
+        /// Package header: always 3?
+        /// </summary>
+        public abstract int Always3 { get; }
+        /// <summary>
+        /// Package header: index position in file
+        /// </summary>
+        public abstract int Indexposition { get; }
+        /// <summary>
+        /// Package header: unused
+        /// </summary>
+        public abstract byte[] Unknown4 { get; }
+
+        /// <summary>
+        /// A MemoryStream covering the package header bytes
+        /// </summary>
+        public abstract Stream HeaderStream { get; }
+        #endregion
+
+        #region Package index
+        /// <summary>
+        /// Package index: the index format in use
+        /// </summary>
+        public abstract uint Indextype { get; }
+
+        /// <summary>
+        /// Package index: the index
+        /// </summary>
+        public abstract IList<IResourceIndexEntry> GetResourceList { get; }
+
+        /// <summary>
+        /// Package index: raised when the result of a previous call to GetResourceList becomes invalid 
+        /// </summary>
+        public event EventHandler ResourceIndexInvalidated;
+
+        /// <summary>
+        /// Searches for an element that matches the conditions defined by <paramref name="flags"/> and <paramref name="values"/>,
+        /// and returns the first occurrence within the entire <typeparamref name="IList%lt;IResourceIndexEntry&gt;"/>.
+        /// </summary>
+        /// <param name="flags">True bits enable matching against numerically equivalent <paramref name="values"/> entry</param>
+        /// <param name="values">Fields to compare against</param>
+        /// <returns>The first match, if any; otherwise null.</returns>
+        public abstract IResourceIndexEntry Find(uint flags, IResourceIndexEntry values);
+
+        /// <summary>
+        /// Searches for an element that matches the conditions defined by <paramref name="names"/> and <paramref name="values"/>,
+        /// and returns the first occurrence within the entire <typeparamref name="IList%lt;IResourceIndexEntry&gt;"/>.
+        /// </summary>
+        /// <param name="names">Names of fields to compare</param>
+        /// <param name="values">Fields to compare against</param>
+        /// <returns>The first match, if any; otherwise null.</returns>
+        public abstract IResourceIndexEntry Find(string[] names, TypedValue[] values);
+
+        /// <summary>
+        /// Searches for all element that matches the conditions defined by <paramref name="flags"/> and <paramref name="values"/>,
+        /// within the entire <typeparamref name="IList%lt;IResourceIndexEntry&gt;"/>.
+        /// </summary>
+        /// <param name="flags">True bits enable matching against numerically equivalent <paramref name="values"/> entry</param>
+        /// <param name="values">Fields to compare against</param>
+        /// <returns><typeparamref name="IList"/> of zero or more matches.</returns>
+        public abstract IList<IResourceIndexEntry> FindAll(uint flags, IResourceIndexEntry values);
+
+        /// <summary>
+        /// Searches for all element that matches the conditions defined by <paramref name="names"/> and <paramref name="values"/>,
+        /// within the entire <typeparamref name="IList%lt;IResourceIndexEntry&gt;"/>.
+        /// </summary>
+        /// <param name="names">Names of fields to compare</param>
+        /// <param name="values">Fields to compare against</param>
+        /// <returns><typeparamref name="IList"/> of zero or more matches.</returns>
+        public abstract IList<IResourceIndexEntry> FindAll(string[] names, TypedValue[] values);
+        #endregion
+
+        #region Package content
+        /// <summary>
+        /// Add a resource to the package
+        /// </summary>
+        /// <param name="type">ResourceType for the resource</param>
+        /// <param name="group">ResourceGroup for the resource</param>
+        /// <param name="instance">Instance for the resource</param>
+        /// <param name="stream">The stream that contains the resource data</param>
+        /// <param name="rejectDups">If true, fail if the type/group/instance already exists</param>
+        /// <returns>Null if rejectDups and the t/g/i exists; or the new IResourceIndexEntry</returns>
+        public abstract IResourceIndexEntry AddResource(uint type, uint group, ulong instance, Stream stream, bool rejectDups);
+        /// <summary>
+        /// Tell the package to replace the data for the resource indexed by <paramref name="rc"/>
+        /// with the data from the resource <paramref name="res"/>
+        /// </summary>
+        /// <param name="rc">Target resource index</param>
+        /// <param name="res">Source resource</param>
+        public abstract void ReplaceResource(IResourceIndexEntry rc, IResource res);
+        /// <summary>
+        /// Tell the package to delete the resource indexed by <paramref name="rc"/>
+        /// </summary>
+        /// <param name="rc">Target resource index</param>
+        public abstract void DeleteResource(IResourceIndexEntry rc);
+        #endregion
+
+        #endregion
+
+        // Static so cannot be defined on the interface
+
+        /// <summary>
+        /// Initialise a new, empty package and return the IPackage reference
+        /// </summary>
+        /// <param name="APIversion">(unused)</param>
+        /// <returns>IPackage reference to an empty package</returns>
+        public static IPackage NewPackage(int APIversion) { throw new NotImplementedException(); }
+        /// <summary>
+        /// Open an existing package by filename
+        /// </summary>
+        /// <param name="APIversion">(unused)</param>
+        /// <param name="packagePath">Fully qualified filename of the package</param>
+        /// <returns>IPackage reference to an existing package on disk</returns>
+        public static IPackage OpenPackage(int APIversion, string packagePath) { throw new NotImplementedException(); }
+        /// <summary>
+        /// Releases any internal references associated with the given package
+        /// </summary>
+        /// <param name="APIversion">(unused)</param>
+        /// <param name="pkg">IPackage reference to close</param>
+        public static void ClosePackage(int APIversion, IPackage pkg) { throw new NotImplementedException(); }
+
+        // Required by API, not user tools
+
+        /// <summary>
+        /// Used by WrapperDealer to get the data for a resource
+        /// </summary>
+        /// <param name="rie">IResourceIndexEntry of resource</param>
+        /// <returns>The resource data (uncompressed, if necessary)</returns>
+        public abstract Stream GetResource(IResourceIndexEntry rie);
+
+        /// <summary>
+        /// Used to indicate a resource index returned by GetResourceList is no longer valid (as a whole)
+        /// </summary>
+        /// <param name="sender">Object causing the list to become invalid</param>
+        /// <param name="e">(not used)</param>
+        protected virtual void OnResourceIndexInvalidated(object sender, EventArgs e) { if (ResourceIndexInvalidated != null) ResourceIndexInvalidated(sender, e); }
+    }
+}
