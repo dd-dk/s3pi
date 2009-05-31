@@ -202,6 +202,8 @@ Function InstallTemplateConfig
   Goto okay
 broken:
   SetDetailsView show
+  Pop $0
+  DetailPrint "Something went wrong getting assembly info: $0"
   MessageBox MB_OK|MB_ICONEXCLAMATION "Something went wrong getting assembly info: $0"
 okay:
   Delete s3pi.Template.Config
