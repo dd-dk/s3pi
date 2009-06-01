@@ -32,15 +32,15 @@ namespace s3pi.DemoPlugins
     public class DemoPlugins
     {
         static List<string> reserved = new List<string>(new string[] {
-                "Editor", "Export", "Wrapper", "PropertyExists"
+                "command", "arguments", "export", "wrapper", // must be lower case
             });
         static List<string> keywords = new List<string>();
         static Dictionary<string, Dictionary<string, string>> demoPlugins = new Dictionary<string, Dictionary<string, string>>();
 
         static DemoPlugins()
         {
-            foreach (string s in reserved) { keywords.Add(s.ToLower()); }
-            foreach (string s in AApiVersionedFields.GetContentFields(0, typeof(IResourceIndexEntry))) { keywords.Add(s.ToLower()); }
+            keywords.AddRange(reserved.ToArray());
+            keywords.AddRange(AApiVersionedFields.GetContentFields(0, typeof(IResourceIndexEntry)).ToArray()); // must be correct case
 
             StreamReader sr = new StreamReader(new FileStream(Path.Combine(Path.GetDirectoryName(typeof(DemoPlugins).Assembly.Location), "DemoPlugins.txt"), FileMode.Open, FileAccess.Read));
             for (string s = sr.ReadLine(); s != null; s = sr.ReadLine())
@@ -56,13 +56,17 @@ namespace s3pi.DemoPlugins
 
                 headtail = headtail[1].Trim().Split(new char[] { ':', '=' }, 2);
                 if (headtail.Length != 2) continue;
-                if (!keywords.Contains(headtail[0].Trim().ToLower())) continue;
-                if (target.ContainsKey(headtail[0].Trim().ToLower())) continue;
-                target.Add(headtail[0].Trim().ToLower(), headtail[1].Trim());
+                string keyword = headtail[0].Trim();
+                if (reserved.Contains(keyword.ToLower())) keyword = keyword.ToLower();
+                if (!keywords.Contains(keyword)) continue;
+                if (target.ContainsKey(keyword)) continue;
+                target.Add(keyword, headtail[1].Trim());
             }
 
             List<string> toDelete = new List<string>();
-            foreach (string group in demoPlugins.Keys) if (!demoPlugins[group].ContainsKey("editor")) toDelete.Add(group);
+            foreach (string group in demoPlugins.Keys)
+                if (!(demoPlugins[group].ContainsKey("command") && demoPlugins[group].ContainsKey("arguments")))
+                    toDelete.Add(group);
             foreach (string group in toDelete) demoPlugins.Remove(group);
         }
 
@@ -81,15 +85,11 @@ namespace s3pi.DemoPlugins
         /// <param name="pkg">The package containing the resource</param>
         /// <param name="key">The resource index entry</param>
         /// <returns></returns>
-        public DemoPlugins(IPackage pkg, IResourceIndexEntry key)
+        public DemoPlugins(IResourceIndexEntry key, IResource res)
         {
-            if (pkg == null || key == null) return;
-
-            IResource res = WrapperDealer.WrapperDealer.GetResource(0, pkg, key);
-            if (res == null) return;
+            if (res == null || key == null) return;
 
             string wrapper = res.GetType().Name.ToLower();
-            List<string> properties = new List<string>(); foreach (string s in res.ContentFields) properties.Add(s.ToLower());
 
             bool match = false;
 
@@ -98,20 +98,17 @@ namespace s3pi.DemoPlugins
                 foreach (string kwd in demoPlugins[g].Keys)
                 {
                     if (kwd.Equals("wrapper"))
-                        foreach (string wrp in demoPlugins[g]["wrapper"].ToLower().Split(' '))
-                            if (wrapper.Equals(wrp)) { cmd.group = g; match = true; goto matched; }
-
-                    if (kwd.Equals("propertyexists"))
-                        foreach (string property in demoPlugins[g]["propertyexists"].ToLower().Split(' '))
-                            if (properties.Contains(property)) { cmd.group = g; match = true; goto matched; }
+                    {
+                        if ((new List<string>(demoPlugins[g]["wrapper"].Split(' '))).Contains(wrapper)) { cmd.group = g; match = true; goto matched; }
+                        continue;
+                    }
 
                     if (reserved.Contains(kwd)) continue;
 
-                    if (properties.Contains(kwd))
+                    if (keywords.Contains(kwd))
                     {
-                        TypedValue tv = res[kwd];
-                        foreach (string value in demoPlugins[g][kwd].ToLower().Split(' '))
-                            if (value == ("" + tv).Trim().ToLower()) { cmd.group = g; match = true; goto matched; }
+                        if ((new List<string>(demoPlugins[g][kwd].Split(' '))).Contains("" + key[kwd])) { cmd.group = g; match = true; goto matched; }
+                        continue;
                     }
                 }
             }
@@ -119,7 +116,7 @@ namespace s3pi.DemoPlugins
             if (!match) return;
 
             if (demoPlugins[cmd.group].ContainsKey("export"))
-                cmd.filename = Path.Combine(Path.GetTempPath(), getFilename(pkg, key));
+                cmd.filename = Path.Combine(Path.GetTempPath(), (s3pi.Extensions.TGIN)(key as AResourceIndexEntry));
 
             cmd.isValid = true;
         }
@@ -132,11 +129,11 @@ namespace s3pi.DemoPlugins
             if (demoPlugins[cmd.group].ContainsKey("export") && Clipboard.ContainsData(DataFormats.Serializable))
                 lastWriteTime = pasteTo(cmd.filename);
 
-            string editor = demoPlugins[cmd.group]["editor"].Replace("{}", cmd.filename);
+            string arguments = demoPlugins[cmd.group]["arguments"].Replace("{}", cmd.filename);
             foreach (string prop in res.ContentFields)
-                if (editor.IndexOf("{" + prop.ToLower() + "}") >= 0) editor = editor.Replace("{" + prop.ToLower() + "}", "" + res[prop]);
+                if (arguments.IndexOf("{" + prop.ToLower() + "}") >= 0) arguments = arguments.Replace("{" + prop.ToLower() + "}", "" + res[prop]);
 
-            bool result = runProcess(editor);
+            bool result = runProcess(demoPlugins[cmd.group]["command"], arguments);
 
             if (result)
             {
@@ -147,19 +144,6 @@ namespace s3pi.DemoPlugins
                 File.Delete(cmd.filename);
 
             return result;
-        }
-
-        string getFilename(IPackage pkg, IResourceIndexEntry key)
-        {
-            s3pi.Extensions.TGIN tgin = key as AResourceIndexEntry;
-            IResourceIndexEntry nmap = pkg.Find(new string[] { "ResourceType" }, new TypedValue[] { new TypedValue(typeof(uint), (uint)0x0166038C) });
-            if (nmap != null)
-            {
-                Dictionary<string, string> map = s3pi.WrapperDealer.WrapperDealer.GetResource(0, pkg, nmap) as Dictionary<string, string>;
-                if (map != null)
-                    map.TryGetValue(key["ResourceType"], out tgin.ResName);
-            }
-            return tgin;
         }
 
         DateTime pasteTo(string filename)
@@ -189,19 +173,25 @@ namespace s3pi.DemoPlugins
             return false;
         }
 
-        bool runProcess(string editor)
+        bool runProcess(string command, string arguments)
         {
             System.Diagnostics.Process p = new System.Diagnostics.Process();
 
-            string[] args = editor.Split(new char[] { ' ' }, 2);
-            p.StartInfo.FileName = args[0];
-            if (args.Length > 1) p.StartInfo.Arguments = args[1];
+            p.StartInfo.FileName = command;
+            p.StartInfo.Arguments = arguments;
+            p.StartInfo.UseShellExecute = false;
 
-            p.StartInfo.UseShellExecute = true;
-            p.StartInfo.RedirectStandardOutput = false;
+            try { p.Start(); }
+            catch
+            {
+                MessageBox.Show(String.Format("Application failed to start:\n{0}\n{1}", command, arguments), "Launch failed",
+                    MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                return false;
+            }
 
-            p.Start();
-            p.WaitForExit();
+            Application.DoEvents();
+            while (!p.WaitForExit(500))
+                Application.DoEvents();
 
             return p.ExitCode == 0;
         }

@@ -1,11 +1,21 @@
 001.Wrapper: TextResource
-001.Editor: start /wait {}
+001.Command: start
+001.Arguments: /wait notepad {}
 001.Export: true
 
 002.Wrapper: ImageResource
-002.Editor: mspaint.exe {}
+002.Command: C:\Program Files\GIMP-2.0\bin\gimp-2.6.exe
+002.Arguments: {}
 002.Export: true
 
-003.ResourceType: 0x00000001
-003.Editor: binaryEditor /dde
-003.Clipboard: dde
+;; dds dds jpg
+004.ResourceType: 0x00B2D882 0x8FFB80F6 0x2F7D0002
+004.Command: C:\Program Files\GIMP-2.0\bin\gimp-2.6.exe
+004.Arguments: {}
+004.Export: true
+
+;; Might as well try just running it
+999.Wrapper: DefaultResource
+999.Command: start
+999.Arguments: /wait {}
+999.Export: true
