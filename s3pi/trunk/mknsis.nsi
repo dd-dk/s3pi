@@ -63,7 +63,7 @@ gotAll:
 NotHaveCustom:
   File /a System.Custom.dll
 HaveCustom:
-  File /a /x *Resources.txt /x *Resource.dll Extensions.txt s3pi.* ${tla}-Version.txt
+  File /a /x *Resources.txt /x *Resource.dll DemoPlugins.txt Extensions.txt s3pi.* ${tla}-Version.txt
   File /a s3pi.DefaultResource.dll
 
   Call InstallTemplateConfig
@@ -82,6 +82,7 @@ Section "Uninstall"
   DeleteRegKey HKLM Software\s3pi\${tla}
  
   Delete $INSTDIR\*Resources.txt
+  Delete $INSTDIR\DemoPlugins.txt
   Delete $INSTDIR\Extensions.txt
   Delete $INSTDIR\s3pi.*.dll
   Delete $INSTDIR\s3pi.Template.Config
@@ -189,6 +190,7 @@ Function InstallTemplateConfig
   FileWrite $R0 `  <runtime>$\r$\n`
   FileWrite $R0 `    <assemblyBinding xmlns="urn:schemas-microsoft-com:asm.v1">$\r$\n`
   ${gai} System.Custom broken $R0
+  ${gai} s3pi.DemoPlugins broken $R0
   ${gai} s3pi.Extensions broken $R0
   ${gai} s3pi.Interfaces broken $R0
   ${gai} s3pi.Package broken $R0
