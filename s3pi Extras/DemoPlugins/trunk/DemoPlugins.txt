@@ -1,0 +1,11 @@
+001.Wrapper: TextResource
+001.Editor: start /wait {}
+001.Export: true
+
+002.Wrapper: ImageResource
+002.Editor: mspaint.exe {}
+002.Export: true
+
+003.ResourceType: 0x00000001
+003.Editor: binaryEditor /dde
+003.Clipboard: dde
