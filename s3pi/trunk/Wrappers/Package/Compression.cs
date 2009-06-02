@@ -168,8 +168,8 @@ namespace s3pi.Package
             else if (realsize >= 0x000080000000) { len = 6; }
             else if (realsize >= 0x000001000000) { len = 4; }
             else { len = 3; }
-            bw.Write((byte)(len == 8 ? 0x81 : len == 6 ? 0x01 : len == 4 ? 0x80 : 0x00));
-            bw.Write((byte)0);
+            bw.Write((byte)(0x10 | (len == 8 ? 0x81 : len == 6 ? 0x01 : len == 4 ? 0x80 : 0x00)));
+            bw.Write((byte)0xFB);
             for (int i = len - 1; i >= 0; i--) bw.Write((byte)((realsize >> (8 * i)) & 0xFF));
 
             for (int i = 0; i < data.Length; i += Enchunk(data, i, bw)) { }
