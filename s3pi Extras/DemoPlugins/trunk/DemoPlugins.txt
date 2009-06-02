@@ -1,21 +1,21 @@
 001.Wrapper: TextResource
-001.Command: start
-001.Arguments: /wait notepad {}
+001.Editor: notepad
+001.EditorArguments: {}
 001.Export: true
 
 002.Wrapper: ImageResource
-002.Command: C:\Program Files\GIMP-2.0\bin\gimp-2.6.exe
-002.Arguments: {}
+002.Editor: C:\Program Files\GIMP-2.0\bin\gimp-2.6.exe
+002.EditorArguments: {}
 002.Export: true
 
 ;; dds dds jpg
 004.ResourceType: 0x00B2D882 0x8FFB80F6 0x2F7D0002
-004.Command: C:\Program Files\GIMP-2.0\bin\gimp-2.6.exe
-004.Arguments: {}
+004.Editor: C:\Program Files\GIMP-2.0\bin\gimp-2.6.exe
+004.EditorArguments: {}
 004.Export: true
 
 ;; Might as well try just running it
 999.Wrapper: DefaultResource
-999.Command: start
-999.Arguments: /wait {}
+999.Viewer: {}
+999.ViewerArguments:
 999.Export: true

@@ -32,7 +32,7 @@ namespace s3pi.DemoPlugins
     public class DemoPlugins
     {
         static List<string> reserved = new List<string>(new string[] {
-                "command", "arguments", "export", "wrapper", // must be lower case
+                "viewer", "viewerarguments", "editor", "editorarguments", "export", "wrapper", // must be lower case
             });
         static List<string> keywords = new List<string>();
         static Dictionary<string, Dictionary<string, string>> demoPlugins = new Dictionary<string, Dictionary<string, string>>();
@@ -65,7 +65,9 @@ namespace s3pi.DemoPlugins
 
             List<string> toDelete = new List<string>();
             foreach (string group in demoPlugins.Keys)
-                if (!(demoPlugins[group].ContainsKey("command") && demoPlugins[group].ContainsKey("arguments")))
+                if (!((demoPlugins[group].ContainsKey("viewer") && demoPlugins[group].ContainsKey("viewerarguments"))
+                    || (demoPlugins[group].ContainsKey("editor") && demoPlugins[group].ContainsKey("editorarguments"))
+                    ))
                     toDelete.Add(group);
             foreach (string group in toDelete) demoPlugins.Remove(group);
         }
@@ -74,10 +76,12 @@ namespace s3pi.DemoPlugins
         {
             public string group;
             public string filename;
-            public bool isValid;
+            public bool hasViewer;
+            public bool hasEditor;
         }
         Cmd cmd = new Cmd();
-        public bool IsValid { get { return cmd.isValid; } }
+        public bool HasViewer { get { return cmd.hasViewer; } }
+        public bool HasEditor { get { return cmd.hasEditor; } }
 
         /// <summary>
         /// Get the command line to execute for a given resource
@@ -99,7 +103,7 @@ namespace s3pi.DemoPlugins
                 {
                     if (kwd.Equals("wrapper"))
                     {
-                        if ((new List<string>(demoPlugins[g]["wrapper"].Split(' '))).Contains(wrapper)) { cmd.group = g; match = true; goto matched; }
+                        if ((new List<string>(demoPlugins[g]["wrapper"].ToLower().Split(' '))).Contains(wrapper)) { cmd.group = g; match = true; goto matched; }
                         continue;
                     }
 
@@ -118,30 +122,41 @@ namespace s3pi.DemoPlugins
             if (demoPlugins[cmd.group].ContainsKey("export"))
                 cmd.filename = Path.Combine(Path.GetTempPath(), (s3pi.Extensions.TGIN)(key as AResourceIndexEntry));
 
-            cmd.isValid = true;
+            cmd.hasViewer = demoPlugins[cmd.group].ContainsKey("viewer");
+            cmd.hasEditor = demoPlugins[cmd.group].ContainsKey("editor");
         }
 
-        public bool Execute(IResource res)
+        public bool View(IResource res)
         {
-            if (!cmd.isValid) return false;
+            if (!cmd.hasViewer) return false;
 
             DateTime lastWriteTime = new DateTime();
             if (demoPlugins[cmd.group].ContainsKey("export") && Clipboard.ContainsData(DataFormats.Serializable))
                 lastWriteTime = pasteTo(cmd.filename);
 
-            string arguments = demoPlugins[cmd.group]["arguments"].Replace("{}", cmd.filename);
-            foreach (string prop in res.ContentFields)
-                if (arguments.IndexOf("{" + prop.ToLower() + "}") >= 0) arguments = arguments.Replace("{" + prop.ToLower() + "}", "" + res[prop]);
+            bool result = Execute(res, demoPlugins[cmd.group]["viewer"], demoPlugins[cmd.group]["viewerarguments"]);
 
-            bool result = runProcess(demoPlugins[cmd.group]["command"], arguments);
+            if (File.Exists(cmd.filename))
+                File.Delete(cmd.filename);
+
+            return result;
+        }
+
+        public bool Edit(IResource res)
+        {
+            if (!cmd.hasEditor) return false;
+
+            DateTime lastWriteTime = new DateTime();
+            if (demoPlugins[cmd.group].ContainsKey("export") && Clipboard.ContainsData(DataFormats.Serializable))
+                lastWriteTime = pasteTo(cmd.filename);
+
+            bool result = Execute(res, demoPlugins[cmd.group]["editor"], demoPlugins[cmd.group]["editorarguments"]);
 
             if (result)
             {
                 if (demoPlugins[cmd.group].ContainsKey("export"))
                     result = copyFile(lastWriteTime);
             }
-            if (File.Exists(cmd.filename))
-                File.Delete(cmd.filename);
 
             return result;
         }
@@ -161,20 +176,33 @@ namespace s3pi.DemoPlugins
 
         bool copyFile(DateTime lastWriteTime)
         {
-            if (File.Exists(cmd.filename) && File.GetLastWriteTime(cmd.filename) != lastWriteTime)
-            {
-                MemoryStream ms = new MemoryStream();
-                FileStream fs = new FileStream(cmd.filename, FileMode.Open, FileAccess.Read);
-                (new BinaryWriter(ms)).Write((new BinaryReader(fs)).ReadBytes((int)fs.Length));
-                fs.Close();
-                Clipboard.SetData(DataFormats.Serializable, ms);
-                return true;
-            }
+            if (File.Exists(cmd.filename))
+                try
+                {
+                    if (File.GetLastWriteTime(cmd.filename) != lastWriteTime)
+                    {
+                        MemoryStream ms = new MemoryStream();
+                        FileStream fs = new FileStream(cmd.filename, FileMode.Open, FileAccess.Read);
+                        (new BinaryWriter(ms)).Write((new BinaryReader(fs)).ReadBytes((int)fs.Length));
+                        fs.Close();
+                        Clipboard.SetData(DataFormats.Serializable, ms);
+                        return true;
+                    }
+                }
+                finally
+                {
+                    File.Delete(cmd.filename);
+                }
             return false;
         }
 
-        bool runProcess(string command, string arguments)
+        bool Execute(IResource res, string command, string arguments)
         {
+            command = command.Replace("{}", cmd.filename);
+            arguments = arguments.Replace("{}", cmd.filename);
+            foreach (string prop in res.ContentFields)
+                if (arguments.IndexOf("{" + prop.ToLower() + "}") >= 0) arguments = arguments.Replace("{" + prop.ToLower() + "}", "" + res[prop]);
+
             System.Diagnostics.Process p = new System.Diagnostics.Process();
 
             p.StartInfo.FileName = command;
@@ -182,9 +210,12 @@ namespace s3pi.DemoPlugins
             p.StartInfo.UseShellExecute = false;
 
             try { p.Start(); }
-            catch
+            catch(Exception ex)
             {
-                MessageBox.Show(String.Format("Application failed to start:\n{0}\n{1}", command, arguments), "Launch failed",
+                string exmsg = ex.Message;
+                for (Exception inex = ex.InnerException; inex != null; inex = inex.InnerException) exmsg += "\n" + inex.Message;
+                MessageBox.Show(String.Format("Application failed to start:\n{0}\n{1}\n{2}", command, arguments, exmsg),
+                    "Launch failed",
                     MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
                 return false;
             }
