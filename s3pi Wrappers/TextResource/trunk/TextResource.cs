@@ -47,7 +47,19 @@ namespace TextResource
         /// </summary>
         [MinimumVersion(1)]
         [MaximumVersion(recommendedApiVersion)]
-        public StreamReader TextFileReader { get { return new StreamReader(this.stream, true); } }
+        public TextReader TextFileReader
+        {
+            get { return new StreamReader(this.stream, true); }
+            set
+            {
+                MemoryStream ms = new MemoryStream();
+                (new BinaryWriter(ms)).Write(value.ReadToEnd());
+                ms.Flush();
+                ms.Position = 0;
+                stream = ms;
+                OnResourceChanged(this, new EventArgs());
+            }
+        }
 
         /// <summary>
         /// Return the resource stream as a string (resetting stream position)
