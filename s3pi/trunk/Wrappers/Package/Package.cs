@@ -146,7 +146,7 @@ namespace s3pi.Package
         [MaximumVersion(recommendedApiVersion)]
         public override void SaveAs(string path)
         {
-            FileStream fs = new FileStream(path, FileMode.OpenOrCreate);
+            FileStream fs = new FileStream(path, FileMode.Create);
             SaveAs(fs);
             fs.Close();
         }
