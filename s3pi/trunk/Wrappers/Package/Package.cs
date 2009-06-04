@@ -289,6 +289,7 @@ namespace s3pi.Package
             public bool Match(IResourceIndexEntry rie)
             {
                 if (flags == 0) return true;
+                if (rie.IsDeleted) return false;
 
                 bool res = true;
                 for (int i = 0; i < values.ContentFields.Count && i < flags.Length; i++)
@@ -313,6 +314,7 @@ namespace s3pi.Package
             public bool Match(IResourceIndexEntry rie)
             {
                 if (names.Length == 0) return true;
+                if (rie.IsDeleted) return false;
 
                 bool res = true;
                 for (int i = 0; i < names.Length; i++) if (!values[i].Equals(rie[names[i]])) { res = false; break; }
@@ -390,7 +392,7 @@ namespace s3pi.Package
         /// <returns>Null if rejectDups and the t/g/i exists; or the new IResourceIndexEntry</returns>
         public override IResourceIndexEntry AddResource(uint type, uint group, ulong instance, Stream stream, bool rejectDups)
         {
-            if (rejectDups && Index[type, group, instance] != null) return null;
+            if (rejectDups && Index[type, group, instance] != null && !Index[type, group, instance].IsDeleted) return null;
             IResourceIndexEntry newrc = Index.Add(type, group, instance);
             if (stream != null) (newrc as ResourceIndexEntry).ResourceStream = stream;
 
