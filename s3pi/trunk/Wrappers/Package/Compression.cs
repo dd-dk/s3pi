@@ -106,7 +106,7 @@ namespace s3pi.Package
             }
             #endregion
             #region Uncompressed
-            else if (packing < 0xFC) // 1110000 - 11111011; new data 4-128
+            else if (packing < 0xFC) // 1110000 - 11101111; new data 4-128
                 datalen = (((packing & 0x1F) + 1) << 2);
             else // 111111..; new data 3
                 datalen = packing & 0x03;
@@ -159,18 +159,20 @@ namespace s3pi.Package
 
         public static byte[] CompressStream(byte[] data)
         {
+            if (data.Length < 10) return data;
+
             MemoryStream ms = new MemoryStream();
             BinaryWriter bw = new BinaryWriter(ms);
 
             int len = 8;
-            long realsize = data.LongLength;
-            if (realsize >= 0x800000000000) { len = 8; }
-            else if (realsize >= 0x000080000000) { len = 6; }
-            else if (realsize >= 0x000001000000) { len = 4; }
+            if (data.LongLength >= 0x800000000000) { len = 8; }
+            else if (data.LongLength >= 0x000080000000) { len = 6; }
+            else if (data.LongLength >= 0x000001000000) { len = 4; }
             else { len = 3; }
-            bw.Write((byte)(0x10 | (len == 8 ? 0x81 : len == 6 ? 0x01 : len == 4 ? 0x80 : 0x00)));
-            bw.Write((byte)0xFB);
-            for (int i = len - 1; i >= 0; i--) bw.Write((byte)((realsize >> (8 * i)) & 0xFF));
+
+            bw.Write((ushort)(0xFB10 | (len == 8 ? 0x81 : len == 6 ? 0x01 : len == 4 ? 0x80 : 0x00)));
+            byte[] reallength=BitConverter.GetBytes(data.LongLength);
+            for (int i = len; i > 0; i--) bw.Write(reallength[i - 1]);
 
             for (int i = 0; i < data.Length; i += Enchunk(data, i, bw)) { }
 
@@ -185,13 +187,16 @@ namespace s3pi.Package
             if (buffer.Length - pos < 4)
                 return WriteChunk(bw, buffer, pos, buffer.Length - pos, -1, 0);//EOF!
 
+            if (buffer.Length - pos < 6)
+                return WriteChunk(bw, buffer, pos, (buffer.Length - pos) & ~0x03, -1, 0);//too near EOF!
+
             int copysize = 3; // don't try to compress less than 3 bytes
             int uncsize = pos < 3 ? 3 : 0; // need at least copysize uncompressed bytes to copy!
-            int buflen = ((buffer.Length >> 2) << 2) - 1; // round to multiple of four and sub one as it's always needed
+            int buflen = (buffer.Length & ~0x03) - 1; // truncate to multiple of four and sub one as it's always needed
 
 
             int hit = Search(buffer, pos + uncsize, copysize, -1);
-            while (hit == -1 /*not found*/ && uncsize < 112 /*max uncomp*/ && pos + uncsize + copysize < buflen /*EOF!*/)
+            while (hit == -1 /*not found*/ && uncsize < 0x70 /*max uncomp*/ && pos + uncsize + copysize < buflen /*EOF!*/)
             {
                 uncsize++; /*skip*/
                 hit = Search(buffer, pos + uncsize, copysize, -1); /*keep trying*/
@@ -200,7 +205,7 @@ namespace s3pi.Package
             int copypos = hit; /*remember last found position, if any*/
             if (hit != -1) /*found*/
             {
-                while (copysize < 1027 /*max buffer - 1(lookahead)*/
+                while (copysize <= 0x403 /*max buffer - 1(lookahead)*/
                     && copysize < pos + uncsize /*max avail data*/
                     && pos + uncsize + copysize < buflen /*EOF!*/)
                 {
@@ -212,7 +217,7 @@ namespace s3pi.Package
                 }
             }
             else
-                if (uncsize + copysize < 112) uncsize += copysize;
+                if (uncsize + copysize <= 0x70) uncsize += copysize;
 
             
 
@@ -223,15 +228,15 @@ namespace s3pi.Package
              * precomp -- uncompressed data passed with compressed
              */
 
-            int precomp = uncsize & 0x03;
-            uncsize -= precomp; // uncsize must be multiple of 4
+            int precomp = uncsize & 0x03; // uncsize must be multiple of 4
+            uncsize &= ~0x03;
 
             /*Write uncompressed*/
             if (uncsize > 0)
                 uncsize = WriteChunk(bw, buffer, pos, uncsize, -1, 0);
 
-            /*Write compressed (or EOF)*/
-            if (precomp != 0 || copypos != -1)
+            /*Write compressed*/
+            if (/*precomp != 0 || */copypos != -1)
                 uncsize += WriteChunk(bw, buffer, pos + uncsize, precomp, copypos, copypos == -1 ? 0 : copysize);
 
             return uncsize;
@@ -323,16 +328,26 @@ namespace s3pi.Package
                 {
                     #region Assertions
                     if (checking) if ((datalen & 0x03) != 0)
-                        throw new InvalidOperationException(
-                            String.Format("At position 0x{0:X8}, requested uncompressed length 0x{1:X4} not a multiple of 4.",
-                            posn, datalen));
+                            throw new InvalidOperationException(
+                                String.Format("At position 0x{0:X8}, requested uncompressed length 0x{1:X4} not a multiple of 4.",
+                                posn, datalen));
+                    if (checking) if (datalen > 0x70)
+                            throw new InvalidOperationException(
+                                String.Format("At position 0x{0:X8}, requested uncompressed length 0x{1:X4} greater than 0x70.",
+                                posn, datalen));
                     #endregion
 
-                    packing = (byte)((datalen >> 2) - 1); //00000000 - 01110000 >> 00000000 - 00011011
-                    packing |= 0xE0; // 000aaaaa >> 111aaaaa
+                    packing = (byte)((datalen >> 2) - 1); //00000000 - 01110000 >> 00000000 - 00001111
+                    packing |= 0xE0; // 0000aaaa >> 1110aaaa
                 }
                 else // Should only happen at end of file
                 {
+                    #region Assertions
+                    if (checking) if (data.Length - posn > 3)
+                            throw new InvalidOperationException(
+                                String.Format("At position 0x{0:X8}, requested end of file with 0x{1:X4} bytes remaining: must be 3 or less.",
+                                posn, data.Length - posn));
+                    #endregion
                     packing = (byte)datalen;//(uncsize & 0x03)
                     packing |= 0xFC;
                 }
@@ -373,33 +388,33 @@ namespace s3pi.Package
                 }
                 #endregion
 
-                if (copyoffset < 1024 && copysize < 11)
+                if (copyoffset < 0x400 && copysize <= 0x0A)
                 {
                     parm = new byte[1];
 
-                    parm[0] = (byte)(copyoffset & 0xFF);
                     packing = (byte)((copyoffset & 0x300) >> 3); // aa ........ >> 0aa.....
+                    parm[0] = (byte)(copyoffset & 0xFF);
 
                     copysize -= 3;
                     packing |= (byte)((copysize & 0x07) << 2); // .....bbb >> ...bbb..
 
                     packing |= (byte)(datalen & 0x03); // >> ......cc
                 }
-                else if (copyoffset < 16384 && copysize < 68)
+                else if (copyoffset < 0x4000 && copysize <= 0x43)
                 {
                     parm = new byte[2];
 
                     parm[0] = (byte)((copyoffset & 0x3f00) >> 8);
-                    parm[0] |= (byte)((datalen & 0x03) << 6);
-
                     parm[1] = (byte)(copyoffset & 0xFF);
 
                     copysize -= 4;
                     packing = (byte)(copysize & 0x3F);
 
+                    parm[0] |= (byte)((datalen & 0x03) << 6);
+
                     packing |= 0x80;
                 }
-                else
+                else // copyoffset < 0x20000 && copysize <= 0x404
                 {
                     parm = new byte[3];
 
