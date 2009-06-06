@@ -1,21 +1,20 @@
 001.Wrapper: TextResource
 001.Editor: notepad
 001.EditorArguments: {}
-001.Export: true
 
+;; jpg
+002.ResourceType: 0x2F7D0002
 002.Wrapper: ImageResource
 002.Editor: C:\Program Files\GIMP-2.0\bin\gimp-2.6.exe
 002.EditorArguments: {}
-002.Export: true
 
-;; dds dds jpg
-004.ResourceType: 0x00B2D882 0x8FFB80F6 0x2F7D0002
-004.Editor: C:\Program Files\GIMP-2.0\bin\gimp-2.6.exe
-004.EditorArguments: {}
-004.Export: true
+;; dds dds
+003.ResourceType: 0x00B2D882 0x8FFB80F6
+003.Viewer: C:\Program Files\ViewDDS\ViewDDS.exe
+003.ViewerArguments: /clipboard
+003.Editor: C:\Program Files\GIMP-2.0\bin\gimp-2.6.exe
+003.EditorArguments: {}
 
 ;; Might as well try just running it
 999.Wrapper: DefaultResource
 999.Viewer: {}
-999.ViewerArguments:
-999.Export: true

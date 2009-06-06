@@ -32,7 +32,7 @@ namespace s3pi.DemoPlugins
     public class DemoPlugins
     {
         static List<string> reserved = new List<string>(new string[] {
-                "viewer", "viewerarguments", "editor", "editorarguments", "export", "wrapper", // must be lower case
+                "viewer", "viewerarguments", "editor", "editorarguments", "wrapper", // must be lower case
             });
         static List<string> keywords = new List<string>();
         static Dictionary<string, Dictionary<string, string>> demoPlugins = new Dictionary<string, Dictionary<string, string>>();
@@ -65,9 +65,7 @@ namespace s3pi.DemoPlugins
 
             List<string> toDelete = new List<string>();
             foreach (string group in demoPlugins.Keys)
-                if (!((demoPlugins[group].ContainsKey("viewer") && demoPlugins[group].ContainsKey("viewerarguments"))
-                    || (demoPlugins[group].ContainsKey("editor") && demoPlugins[group].ContainsKey("editorarguments"))
-                    ))
+                if (!(demoPlugins[group].ContainsKey("viewer")|| demoPlugins[group].ContainsKey("editor")))
                     toDelete.Add(group);
             foreach (string group in toDelete) demoPlugins.Remove(group);
         }
@@ -78,6 +76,8 @@ namespace s3pi.DemoPlugins
             public string filename;
             public bool hasViewer;
             public bool hasEditor;
+            public bool exportViewer;
+            public bool exportEditor;
         }
         Cmd cmd = new Cmd();
         public bool HasViewer { get { return cmd.hasViewer; } }
@@ -119,11 +119,18 @@ namespace s3pi.DemoPlugins
         matched:
             if (!match) return;
 
-            if (demoPlugins[cmd.group].ContainsKey("export"))
-                cmd.filename = Path.Combine(Path.GetTempPath(), (s3pi.Extensions.TGIN)(key as AResourceIndexEntry));
-
             cmd.hasViewer = demoPlugins[cmd.group].ContainsKey("viewer");
             cmd.hasEditor = demoPlugins[cmd.group].ContainsKey("editor");
+            cmd.exportViewer = cmd.hasViewer &&
+                (demoPlugins[cmd.group]["viewer"].IndexOf("{}") >= 0
+                || (demoPlugins[cmd.group].ContainsKey("viewerarguments") && demoPlugins[cmd.group]["viewerarguments"].IndexOf("{}") >= 0)
+                );
+            cmd.exportEditor = cmd.hasEditor &&
+                (demoPlugins[cmd.group]["editor"].IndexOf("{}") >= 0
+                || (demoPlugins[cmd.group].ContainsKey("editorarguments") && demoPlugins[cmd.group]["editorarguments"].IndexOf("{}") >= 0)
+                );
+            if (cmd.exportViewer || cmd.exportEditor)
+                cmd.filename = Path.Combine(Path.GetTempPath(), (s3pi.Extensions.TGIN)(key as AResourceIndexEntry));
         }
 
         public bool View(IResource res)
@@ -131,7 +138,7 @@ namespace s3pi.DemoPlugins
             if (!cmd.hasViewer) return false;
 
             DateTime lastWriteTime = new DateTime();
-            if (demoPlugins[cmd.group].ContainsKey("export") && Clipboard.ContainsData(DataFormats.Serializable))
+            if (cmd.exportViewer && Clipboard.ContainsData(DataFormats.Serializable))
                 lastWriteTime = pasteTo(cmd.filename);
 
             bool result = Execute(res, demoPlugins[cmd.group]["viewer"], demoPlugins[cmd.group]["viewerarguments"]);
@@ -147,7 +154,7 @@ namespace s3pi.DemoPlugins
             if (!cmd.hasEditor) return false;
 
             DateTime lastWriteTime = new DateTime();
-            if (demoPlugins[cmd.group].ContainsKey("export") && Clipboard.ContainsData(DataFormats.Serializable))
+            if (cmd.exportEditor && Clipboard.ContainsData(DataFormats.Serializable))
                 lastWriteTime = pasteTo(cmd.filename);
 
             bool result = Execute(res, demoPlugins[cmd.group]["editor"], demoPlugins[cmd.group]["editorarguments"]);
