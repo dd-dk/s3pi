@@ -35,14 +35,26 @@ namespace s3pi.DemoPlugins
                 "viewer", "viewerarguments", "editor", "editorarguments", "wrapper", // must be lower case
             });
         static List<string> keywords = new List<string>();
-        static Dictionary<string, Dictionary<string, string>> demoPlugins = new Dictionary<string, Dictionary<string, string>>();
+        static Dictionary<string, Dictionary<string, string>> demoPlugins = null;
 
-        static DemoPlugins()
+        static string config = "";
+
+        public static string Config
+        {
+            get { return config.Length > 0 ? config : Path.Combine(Path.GetDirectoryName(typeof(DemoPlugins).Assembly.Location), "DemoPlugins.txt"); }
+            set { if (config != value) { config = value; demoPlugins = null; } }
+        }
+
+        static void ReadConfig()
         {
             keywords.AddRange(reserved.ToArray());
             keywords.AddRange(AApiVersionedFields.GetContentFields(0, typeof(IResourceIndexEntry)).ToArray()); // must be correct case
 
-            StreamReader sr = new StreamReader(new FileStream(Path.Combine(Path.GetDirectoryName(typeof(DemoPlugins).Assembly.Location), "DemoPlugins.txt"), FileMode.Open, FileAccess.Read));
+            demoPlugins = new Dictionary<string, Dictionary<string, string>>();
+            if (!File.Exists(Config)) return;
+
+            StreamReader sr = new StreamReader(new FileStream(Config, FileMode.Open, FileAccess.Read));
+
             for (string s = sr.ReadLine(); s != null; s = sr.ReadLine())
             {
                 s = s.Trim();
@@ -65,7 +77,7 @@ namespace s3pi.DemoPlugins
 
             List<string> toDelete = new List<string>();
             foreach (string group in demoPlugins.Keys)
-                if (!(demoPlugins[group].ContainsKey("viewer")|| demoPlugins[group].ContainsKey("editor")))
+                if (!(demoPlugins[group].ContainsKey("viewer") || demoPlugins[group].ContainsKey("editor")))
                     toDelete.Add(group);
             foreach (string group in toDelete) demoPlugins.Remove(group);
         }
@@ -91,6 +103,8 @@ namespace s3pi.DemoPlugins
         /// <returns></returns>
         public DemoPlugins(IResourceIndexEntry key, IResource res)
         {
+            if (demoPlugins == null) ReadConfig();
+
             if (res == null || key == null) return;
 
             string wrapper = res.GetType().Name.ToLower();
@@ -141,7 +155,7 @@ namespace s3pi.DemoPlugins
             if (cmd.exportViewer && Clipboard.ContainsData(DataFormats.Serializable))
                 lastWriteTime = pasteTo(cmd.filename);
 
-            bool result = Execute(res, demoPlugins[cmd.group]["viewer"], demoPlugins[cmd.group]["viewerarguments"]);
+            bool result = Execute(res, demoPlugins[cmd.group]["viewer"], demoPlugins[cmd.group].ContainsKey("viewerarguments") ? demoPlugins[cmd.group]["viewerarguments"] : "");
 
             if (File.Exists(cmd.filename))
                 File.Delete(cmd.filename);
@@ -157,11 +171,11 @@ namespace s3pi.DemoPlugins
             if (cmd.exportEditor && Clipboard.ContainsData(DataFormats.Serializable))
                 lastWriteTime = pasteTo(cmd.filename);
 
-            bool result = Execute(res, demoPlugins[cmd.group]["editor"], demoPlugins[cmd.group]["editorarguments"]);
+            bool result = Execute(res, demoPlugins[cmd.group]["editor"], demoPlugins[cmd.group].ContainsKey("editorarguments") ? demoPlugins[cmd.group]["editorarguments"] : "");
 
             if (result)
             {
-                if (demoPlugins[cmd.group].ContainsKey("export"))
+                if (cmd.exportEditor)
                     result = copyFile(lastWriteTime);
             }
 
