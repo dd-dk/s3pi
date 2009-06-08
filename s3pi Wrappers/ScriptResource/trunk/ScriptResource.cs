@@ -105,7 +105,7 @@ namespace ScriptResource
         Stream UnParse()
         {
             MemoryStream ms = new MemoryStream();
-            BinaryWriter bw = new BinaryWriter(stream);
+            BinaryWriter bw = new BinaryWriter(ms);
             bw.Write(unknown1);
             bw.Write(unknown2);
             md5data = encrypt();
