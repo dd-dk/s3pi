@@ -36,7 +36,7 @@ namespace ScriptResource
 
         #region Attributes
         byte unknown1 = 1;
-        uint unknown2 = 0x63AA08AF;
+        uint unknown2 = 0x2BC4F79F;
         byte[] md5sum = new byte[64];
         byte[] md5table = new byte[0];
         byte[] md5data = new byte[0];
@@ -99,7 +99,7 @@ namespace ScriptResource
                 w.Write(buffer, 0, buffer.Length);
             }
 
-            return w.GetBuffer();
+            return w.ToArray();
         }
 
         Stream UnParse()
@@ -108,9 +108,10 @@ namespace ScriptResource
             BinaryWriter bw = new BinaryWriter(ms);
             bw.Write(unknown1);
             bw.Write(unknown2);
+            md5table = new byte[(((cleardata.Length & ~0x1ff) == 0 ? 0 : 1) + (cleardata.Length >> 9)) << 3];
             md5data = encrypt();
             bw.Write(md5sum);
-            bw.Write(md5table.Length);
+            bw.Write((ushort)(md5table.Length >> 3));
             bw.Write(md5table);
             bw.Write(md5data);
             return ms;
@@ -125,7 +126,7 @@ namespace ScriptResource
             MemoryStream w = new MemoryStream();
             MemoryStream r = new MemoryStream(cleardata);
 
-            for (int i = 0; i < md5table.Length; i+=8)
+            for (int i = 0; i < md5table.Length; i += 8)
             {
                 byte[] buffer = new byte[512];
                 r.Read(buffer, 0, buffer.Length);
@@ -139,7 +140,7 @@ namespace ScriptResource
                 w.Write(buffer, 0, buffer.Length);
             }
 
-            return w.GetBuffer();
+            return w.ToArray();
         }
         #endregion
 
@@ -222,7 +223,7 @@ namespace ScriptResource
                     byte[] buffer = new byte[1024*1024];
                     for (int read = value.BaseStream.Read(buffer, 0, buffer.Length); read > 0; read = value.BaseStream.Read(buffer, 0, buffer.Length))
                         ms.Write(buffer, 0, read);
-                    cleardata = ms.GetBuffer();
+                    cleardata = ms.ToArray();
                 }
                 OnResourceChanged(this, new EventArgs());
             }
