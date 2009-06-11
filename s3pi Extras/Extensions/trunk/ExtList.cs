@@ -1,6 +1,6 @@
 ﻿/***************************************************************************
  *  Copyright (C) 2009 by Peter L Jones                                    *
- *  peter@users.sf.net                                                     *
+ *  pljones@users.sf.net                                                   *
  *                                                                         *
  *  Based on an idea by atavera                                            *
  *                                                                         *
