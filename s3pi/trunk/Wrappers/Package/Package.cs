@@ -333,7 +333,7 @@ namespace s3pi.Package
         [MaximumVersion(recommendedApiVersion)]
         public override IResourceIndexEntry Find(uint flags, IResourceIndexEntry values)
         {
-            return index.Find((new FlagMatch(flags, values)).Match);
+            return Index.Find((new FlagMatch(flags, values)).Match);
         }
 
         /// <summary>
@@ -347,7 +347,7 @@ namespace s3pi.Package
         [MaximumVersion(recommendedApiVersion)]
         public override IResourceIndexEntry Find(string[] names, TypedValue[] values)
         {
-            return index.Find((new NameMatch(names, values)).Match);
+            return Index.Find((new NameMatch(names, values)).Match);
         }
 
         /// <summary>
@@ -361,7 +361,7 @@ namespace s3pi.Package
         [MaximumVersion(recommendedApiVersion)]
         public override IList<IResourceIndexEntry> FindAll(uint flags, IResourceIndexEntry values)
         {
-            return index.FindAll((new FlagMatch(flags, values)).Match);
+            return Index.FindAll((new FlagMatch(flags, values)).Match);
         }
 
         /// <summary>
@@ -375,7 +375,7 @@ namespace s3pi.Package
         [MaximumVersion(recommendedApiVersion)]
         public override IList<IResourceIndexEntry> FindAll(string[] names, TypedValue[] values)
         {
-            return index.FindAll((new NameMatch(names, values)).Match);
+            return Index.FindAll((new NameMatch(names, values)).Match);
         }
 
         #endregion
