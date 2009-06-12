@@ -320,19 +320,7 @@ namespace CatalogResource
             public uint ResourceGroup { get { return resourceGroup; } set { if (resourceGroup != value) { resourceGroup = value; parent.OnResourceChanged(this, new EventArgs()); } } }
             public ulong Instance { get { return instance; } set { if (instance != value) { instance = value; parent.OnResourceChanged(this, new EventArgs()); } } }
 
-            public String Value
-            {
-                get
-                {
-                    string s = "";
-                    foreach (string f in this.ContentFields)
-                    {
-                        if (f.Equals("Value")) continue;
-                        s += String.Format("{0}: {1}\n", f, "" + this[f]);
-                    }
-                    return s;
-                }
-            }
+            public String Value { get { return String.Format("0x{0:X8}-0x{1:X8}-0x{2:X16}", resourceType, resourceGroup, instance); } }
             #endregion
         }
 
@@ -383,7 +371,7 @@ namespace CatalogResource
             #endregion
 
             #region Content Fields
-            public String Value { get { string s = ""; for (int i = 0; i < Count; i++) s += string.Format("\n--{0}--\n", i) + this[i].Value; return s; } }
+            public String Value { get { string s = ""; for (int i = 0; i < Count; i++) s += string.Format("{0:X8}: {1}\n", i, this[i].Value); return s; } }
             #endregion
         }
 
