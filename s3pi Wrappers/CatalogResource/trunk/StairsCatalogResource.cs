@@ -67,7 +67,7 @@ namespace CatalogResource
         public StairsCatalogResource(int APIversion, uint unknown1, Common common,
             uint unknown2, byte unknown3, uint unknown4, byte unknown5, uint unknown6, byte unknown7, uint index1, uint index2, uint index3,
             uint catalogRailing, uint catalogWall, uint catalogWallFloorPattern, uint catalogFence,
-            TGIBlockList ltgib)
+            TGIBlockList<CatalogResource> ltgib)
             : base(APIversion, ltgib)
         {
             this.unknown1 = unknown1;
@@ -112,7 +112,7 @@ namespace CatalogResource
             this.catalogWallFloorPattern = r.ReadUInt32();
             this.catalogFence = r.ReadUInt32();
 
-            list = new TGIBlockList(this, s, tgiPosn, tgiSize);
+            list = new TGIBlockList<CatalogResource>(this, s, tgiPosn, tgiSize);
         }
 
         protected override Stream UnParse()

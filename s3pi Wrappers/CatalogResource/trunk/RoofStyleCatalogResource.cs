@@ -63,7 +63,7 @@ namespace CatalogResource
         public RoofStyleCatalogResource(int APIversion, uint unknown1, Common common,
             uint unknown2, byte unknown3, uint unknown4, byte unknown5, byte unknown6, uint unknown7, uint unknown8,
             uint catalogRoofStyle, uint catalogWallStyle, float unknown9, uint unknown10,
-            TGIBlockList ltgib)
+            TGIBlockList<CatalogResource> ltgib)
             : base(APIversion, ltgib)
         {
             this.unknown1 = unknown1;
@@ -104,7 +104,7 @@ namespace CatalogResource
             this.unknown9 = r.ReadSingle();
             this.unknown10 = r.ReadUInt32();
 
-            list = new TGIBlockList(this, s, tgiPosn, tgiSize);
+            list = new TGIBlockList<CatalogResource>(this, s, tgiPosn, tgiSize);
         }
 
         protected override Stream UnParse()

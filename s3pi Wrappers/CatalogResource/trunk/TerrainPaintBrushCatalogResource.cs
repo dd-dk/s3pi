@@ -27,7 +27,7 @@ namespace CatalogResource
     class TerrainPaintBrushCatalogResource : TerrainGeometryWaterBrushCatalogResource
     {
         #region Attributes
-        TGIBlock brushTexture = null;
+        TGIBlock<CatalogResource> brushTexture = null;
         #endregion
 
         #region Constructors
@@ -35,15 +35,16 @@ namespace CatalogResource
         public TerrainPaintBrushCatalogResource(int APIversion, TerrainPaintBrushCatalogResource basis)
             : base(APIversion, basis)
         {
-            this.brushTexture = (TGIBlock)basis.brushTexture.Clone();
+            this.brushTexture = (TGIBlock<CatalogResource>)basis.brushTexture.Clone();
         }
         public TerrainPaintBrushCatalogResource(int APIversion, uint unknown1, Common common,
             uint unknown2, byte unknown3, byte unknown4, uint unknown5, byte unknown6, byte unknown7, uint unknown8, uint unknown9, uint unknown10,
-            TGIBlock brushShape, byte[] unknown11, float unknown12, float unknown13, byte[] unknown14, TGIBlock brushTexture)
+            TGIBlock<CatalogResource> brushShape, byte[] unknown11, float unknown12, float unknown13, byte[] unknown14,
+            TGIBlock<CatalogResource> brushTexture)
             : base(APIversion, unknown1, common, unknown2, unknown3, unknown4, unknown5, unknown6, unknown7, unknown8, unknown9, unknown10,
             brushShape, unknown11, unknown12, unknown13, unknown14)
         {
-            this.brushTexture = (TGIBlock)brushTexture.Clone();
+            this.brushTexture = (TGIBlock<CatalogResource>)brushTexture.Clone();
         }
         #endregion
 
@@ -51,7 +52,7 @@ namespace CatalogResource
         protected override void Parse(Stream s)
         {
             base.Parse(s);
-            this.brushTexture = new TGIBlock(this, s);
+            this.brushTexture = new TGIBlock<CatalogResource>(this, s);
         }
 
         protected override Stream UnParse()
@@ -70,7 +71,11 @@ namespace CatalogResource
         #endregion
 
         #region Content Fields
-        public TGIBlock BrushTexture { get { return brushTexture; } set { if (brushTexture != value) { brushTexture = new TGIBlock(this, value); OnResourceChanged(this, new EventArgs()); } } }
+        public TGIBlock<CatalogResource> BrushTexture
+        {
+            get { return brushTexture; }
+            set { if (brushTexture != value) { brushTexture = new TGIBlock<CatalogResource>(this, value); OnResourceChanged(this, new EventArgs()); } }
+        }
         #endregion
     }
 }

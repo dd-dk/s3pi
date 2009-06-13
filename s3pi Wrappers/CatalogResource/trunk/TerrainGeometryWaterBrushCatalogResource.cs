@@ -37,7 +37,7 @@ namespace CatalogResource
         uint unknown8;
         uint unknown9;
         uint unknown10;
-        TGIBlock brushShape = null;
+        TGIBlock<CatalogResource> brushShape = null;
         byte[] unknown11 = new byte[4];
         float unknown12;
         float unknown13;
@@ -60,7 +60,7 @@ namespace CatalogResource
             this.unknown8 = basis.unknown8;
             this.unknown9 = basis.unknown9;
             this.unknown10 = basis.unknown10;
-            this.brushShape = (TGIBlock)basis.brushShape.Clone();
+            this.brushShape = (TGIBlock<CatalogResource>)basis.brushShape.Clone();
             this.unknown11 = (byte[])basis.unknown11.Clone();
             this.unknown12 = basis.unknown12;
             this.unknown13 = basis.unknown13;
@@ -68,7 +68,7 @@ namespace CatalogResource
         }
         public TerrainGeometryWaterBrushCatalogResource(int APIversion, uint unknown1, Common common,
             uint unknown2, byte unknown3, byte unknown4, uint unknown5, byte unknown6, byte unknown7, uint unknown8, uint unknown9, uint unknown10,
-            TGIBlock brushShape, byte[] unknown11, float unknown12, float unknown13, byte[] unknown14)
+            TGIBlock<CatalogResource> brushShape, byte[] unknown11, float unknown12, float unknown13, byte[] unknown14)
             : base(APIversion, null)
         {
             this.unknown1 = unknown1;
@@ -82,7 +82,7 @@ namespace CatalogResource
             this.unknown8 = unknown8;
             this.unknown9 = unknown9;
             this.unknown10 = unknown10;
-            this.brushShape = (TGIBlock)brushShape.Clone();
+            this.brushShape = (TGIBlock<CatalogResource>)brushShape.Clone();
             if (unknown11.Length != this.unknown11.Length) throw new ArgumentLengthException("unknown11", this.unknown11.Length);
             this.unknown11 = (byte[])unknown11.Clone();
             this.unknown12 = unknown12;
@@ -108,7 +108,7 @@ namespace CatalogResource
             this.unknown8 = r.ReadUInt32();
             this.unknown9 = r.ReadUInt32();
             this.unknown10 = r.ReadUInt32();
-            this.brushShape = new TGIBlock(this, s);
+            this.brushShape = new TGIBlock<CatalogResource>(this, s);
             this.unknown11 = r.ReadBytes(4);
             if (checking) if (this.unknown11.Length != 4)
                     throw new InvalidDataException(String.Format("unknown11: read {0} bytes; expected 4 at 0x{1:X8}.", unknown11.Length, s.Position));
@@ -164,7 +164,18 @@ namespace CatalogResource
         public uint Unknown8 { get { return unknown8; } set { if (unknown8 != value) { unknown8 = value; OnResourceChanged(this, new EventArgs()); } } }
         public uint Unknown9 { get { return unknown9; } set { if (unknown9 != value) { unknown9 = value; OnResourceChanged(this, new EventArgs()); } } }
         public uint Unknown10 { get { return unknown10; } set { if (unknown10 != value) { unknown10 = value; OnResourceChanged(this, new EventArgs()); } } }
-        public TGIBlock BrushShape { get { return brushShape; } set { if (brushShape != value) { brushShape = new TGIBlock(this, value); OnResourceChanged(this, new EventArgs()); } } }
+        public TGIBlock<CatalogResource> BrushShape
+        {
+            get { return brushShape; }
+            set
+            {
+                if (brushShape != value)
+                {
+                    brushShape = new TGIBlock<CatalogResource>(this, value);
+                    OnResourceChanged(this, new EventArgs());
+                }
+            }
+        }
         public byte[] Unknown11 { get { return (byte[])unknown11.Clone(); } set { if (!ArrayCompare(unknown11, value)) { unknown11 = (byte[])value.Clone(); OnResourceChanged(this, new EventArgs()); } } }
         public float Unknown12 { get { return unknown12; } set { if (unknown12 != value) { unknown12 = value; OnResourceChanged(this, new EventArgs()); } } }
         public float Unknown13 { get { return unknown13; } set { if (unknown13 != value) { unknown13 = value; OnResourceChanged(this, new EventArgs()); } } }

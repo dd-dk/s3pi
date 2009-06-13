@@ -73,7 +73,7 @@ namespace CatalogResource
         public WallCatalogResource(int APIversion, uint unknown1, Common common,
             uint unknown2, uint unknown3, byte unknown4, uint unknown5, byte unknown6, uint unknown7, byte unknown8, uint unknown9,
             byte[] unknown10, uint unknown11, uint unknown12, uint unknown13, uint unknown14, uint unknown15, uint unknown16, byte[] unknown17,
-            TGIBlockList ltgib)
+            TGIBlockList<CatalogResource> ltgib)
             : base(APIversion, ltgib)
         {
             this.unknown1 = unknown1;
@@ -130,7 +130,7 @@ namespace CatalogResource
             if (checking) if (unknown17.Length != 8)
                     throw new InvalidDataException(String.Format("unknown17: read {0} bytes; expected 8 at 0x{1:X8}.", unknown17.Length, s.Position));
 
-            list = new TGIBlockList(this, s, tgiPosn, tgiSize);
+            list = new TGIBlockList<CatalogResource>(this, s, tgiPosn, tgiSize);
         }
 
         protected override Stream UnParse()

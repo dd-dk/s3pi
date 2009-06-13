@@ -66,7 +66,7 @@ namespace CatalogResource
         public WallFloorPatternCatalogResource(int APIversion, uint unknown1, IList<WallFloorPatternMaterial> materialList, Common common,
             uint unknown2, byte unknown3, uint unknown4, byte unknown5, byte unknown6, uint unknown7, uint unknown8,
             uint index1, uint unknown9, string unknown10, byte[] unknown11,
-            TGIBlockList ltgib)
+            TGIBlockList<CatalogResource> ltgib)
             : base(APIversion, ltgib)
         {
             this.unknown1 = unknown1;
@@ -112,7 +112,7 @@ namespace CatalogResource
             if (checking) if (unknown11.Length != 8)
                     throw new InvalidDataException(String.Format("unknown11: read {0} bytes; expected 8 at 0x{1:X8}.", unknown11.Length, s.Position));
 
-            list = new TGIBlockList(this, s, tgiPosn, tgiSize);
+            list = new TGIBlockList<CatalogResource>(this, s, tgiPosn, tgiSize);
         }
 
         protected override Stream UnParse()
@@ -166,7 +166,7 @@ namespace CatalogResource
             internal WallFloorPatternMaterial(WallFloorPatternCatalogResource parent, Stream s) : base(parent, s) { this.parent = parent; }
             public WallFloorPatternMaterial(WallFloorPatternCatalogResource parent, WallFloorPatternMaterial basis) : base(parent, basis) { this.parent = parent; this.unknown4 = basis.unknown4; }
             public WallFloorPatternMaterial(WallFloorPatternCatalogResource parent, byte materialType, uint unknown1, ushort unknown2,
-                MaterialBlock mb, IList<TGIBlock> ltgib, uint unknown3, uint unknown4)
+                MaterialBlock mb, IList<TGIBlock<CatalogResource>> ltgib, uint unknown3, uint unknown4)
                 : base(parent, materialType, unknown1, unknown2, mb, ltgib, unknown3) { this.parent = parent; this.unknown4 = unknown4; }
             #endregion
 
@@ -267,20 +267,20 @@ namespace CatalogResource
             }
         }
 
-        public new String Value
+        public override String Value
         {
             get
             {
                 string s = "";
                 foreach (string f in this.ContentFields)
                 {
-                    if (f.Equals("Value")) continue;
+                    if (f.Equals("Value") || f.Equals("Stream") || f.Equals("AsBytes")) continue;
                     TypedValue tv = this[f];
                     string h = String.Format("\n---------\n---------\n{0}: {1}\n---------\n", tv.Type.Name, f);
                     string t = "---------\n";
                     if (typeof(IList<WallFloorPatternMaterial>).IsAssignableFrom(tv.Type)) s += h + (tv.Value as WallFloorPatternMaterialList).Value + t;
                     else if (typeof(IList<MaterialBlock>).IsAssignableFrom(tv.Type)) s += h + (tv.Value as MaterialBlockList).Value + t;
-                    else if (typeof(IList<TGIBlock>).IsAssignableFrom(tv.Type)) s += h + (tv.Value as TGIBlockList).Value + t;
+                    else if (typeof(IList<TGIBlock<CatalogResource>>).IsAssignableFrom(tv.Type)) s += h + (tv.Value as TGIBlockList<CatalogResource>).Value + t;
                     else if (typeof(Common).IsAssignableFrom(tv.Type)) s += h + (tv.Value as Common).Value + t;
                     else if (typeof(TypeCode).IsAssignableFrom(tv.Type)) s += h + (tv.Value as TypeCode).Value + t;
                     else if (typeof(IList<ObjectCatalogResource.MTDoor>).IsAssignableFrom(tv.Type)) s += h + (tv.Value as ObjectCatalogResource.MTDoorList).Value + t;

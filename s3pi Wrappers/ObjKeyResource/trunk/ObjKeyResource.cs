@@ -39,7 +39,7 @@ namespace ObjKeyResource
         ComponentList components;
         KeyList keys;
         byte unknown1;
-        TGIBlockList tgiBlocks;
+        TGIBlockList<ObjKeyResource> tgiBlocks;
         #endregion
 
         #region Constructors
@@ -49,7 +49,7 @@ namespace ObjKeyResource
             {
                 components = new ComponentList(this);
                 keys = new KeyList(this);
-                tgiBlocks = new TGIBlockList(this);
+                tgiBlocks = new TGIBlockList<ObjKeyResource>(this);
                 s = stream = UnParse();
                 s.Position = 0;
             }
@@ -71,7 +71,7 @@ namespace ObjKeyResource
             keys = new KeyList(this, s);
             unknown1 = r.ReadByte();
 
-            tgiBlocks = new TGIBlockList(this, s, tgiPosn, tgiSize);
+            tgiBlocks = new TGIBlockList<ObjKeyResource>(this, s, tgiPosn, tgiSize);
         }
 
         Stream UnParse()
@@ -309,151 +309,6 @@ namespace ObjKeyResource
             #endregion
         }
 
-        public class TGIBlock : AApiVersionedFields, IComparable<TGIBlock>, IEqualityComparer<TGIBlock>, IEquatable<TGIBlock>, ICloneableWithParent
-        {
-            #region Attributes
-            ObjKeyResource parent = null;
-            uint resourceType;
-            uint resourceGroup;
-            ulong instance;
-            #endregion
-
-            #region Constructors
-            internal TGIBlock(ObjKeyResource parent, Stream s) { this.parent = parent; Parse(s); }
-            internal TGIBlock(ObjKeyResource parent, TGIBlock tgib) : this(parent, tgib.resourceType, tgib.resourceGroup, tgib.instance) { }
-
-            public TGIBlock(ObjKeyResource parent, uint resourceType, uint resourceGroup, ulong instance)
-            {
-                this.parent = parent;
-                this.resourceType = resourceType;
-                this.resourceGroup = resourceGroup;
-                this.instance = instance;
-            }
-            #endregion
-
-            #region Data I/O
-            void Parse(Stream s)
-            {
-                BinaryReader r = new BinaryReader(s);
-                resourceType = r.ReadUInt32();
-                resourceGroup = r.ReadUInt32();
-                instance = r.ReadUInt64();
-            }
-
-            internal void UnParse(Stream s)
-            {
-                BinaryWriter w = new BinaryWriter(s);
-                w.Write(resourceType);
-                w.Write(resourceGroup);
-                w.Write(instance);
-            }
-            #endregion
-
-            #region IComparable<TGIBlock> Members
-
-            public int CompareTo(TGIBlock other)
-            {
-                int res = resourceType.CompareTo(other.resourceType); if (res != 0) return res;
-                res = resourceGroup.CompareTo(other.resourceGroup); if (res != 0) return res;
-                return instance.CompareTo(other.instance);
-            }
-
-            #endregion
-
-            #region IEqualityComparer<TGIBlock> Members
-
-            public bool Equals(TGIBlock x, TGIBlock y) { return x.Equals(y); }
-
-            public int GetHashCode(TGIBlock obj) { return obj.GetHashCode(); }
-
-            public override int GetHashCode() { return resourceType.GetHashCode() ^ resourceGroup.GetHashCode() ^ instance.GetHashCode(); }
-
-            #endregion
-
-            #region IEquatable<TGIBlock> Members
-
-            public bool Equals(TGIBlock other) { return this.CompareTo(other) == 0; }
-
-            #endregion
-
-            #region ICloneableWithParent Members
-
-            public object Clone(object newParent) { return new TGIBlock(newParent as ObjKeyResource, this); }
-
-            #endregion
-
-            #region ICloneable Members
-
-            public object Clone() { return Clone(parent); }
-
-            #endregion
-
-            #region AApiVersionedFields
-            public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
-
-            public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
-            #endregion
-
-            #region Content Fields
-            public uint ResourceType { get { return resourceType; } set { if (resourceType != value) { resourceType = value; parent.OnResourceChanged(this, new EventArgs()); } } }
-            public uint ResourceGroup { get { return resourceGroup; } set { if (resourceGroup != value) { resourceGroup = value; parent.OnResourceChanged(this, new EventArgs()); } } }
-            public ulong Instance { get { return instance; } set { if (instance != value) { instance = value; parent.OnResourceChanged(this, new EventArgs()); } } }
-
-            public String Value { get { return String.Format("0x{0:X8}-0x{1:X8}-0x{2:X16}", resourceType, resourceGroup, instance); } }
-            #endregion
-        }
-
-        public class TGIBlockList : AResource.DependentList<TGIBlock, ObjKeyResource>
-        {
-            #region Constructors
-            public TGIBlockList(ObjKeyResource parent) : base(parent) { }
-            public TGIBlockList(ObjKeyResource parent, IList<TGIBlock> lme) : base(parent, lme) { }
-            internal TGIBlockList(ObjKeyResource parent, Stream s, long tgiOffset, long tgiSize)
-                : base(parent) { Parse(s, tgiOffset, tgiSize); }
-            #endregion
-
-            #region Data I/O
-            protected override TGIBlock CreateElement(ObjKeyResource parent, Stream s) { return new TGIBlock(parent, s); }
-            protected override void WriteElement(Stream s, TGIBlock element) { element.UnParse(s); }
-
-            protected void Parse(Stream s, long tgiPosn, long tgiSize)
-            {
-                if (checking) if (tgiPosn != s.Position)
-                        throw new InvalidDataException(String.Format("Position of TGIBlock read: 0x{0:X8}, actual: 0x{1:X8}",
-                            tgiPosn, s.Position));
-
-                Parse(s);
-
-                if (checking) if (tgiSize != s.Position - tgiPosn)
-                        throw new InvalidDataException(String.Format("Size of TGIBlock read: 0x{0:X8}, actual: 0x{1:X8}; at 0x{2:X8}",
-                            tgiSize, s.Position - tgiPosn, s.Position));
-            }
-
-            public void UnParse(Stream s, long ptgiO)
-            {
-                BinaryWriter w = new BinaryWriter(s);
-
-                long tgiPosn = s.Position;
-                UnParse(s);
-                long pos = s.Position;
-
-                s.Position = ptgiO;
-                w.Write((uint)(tgiPosn - ptgiO - sizeof(uint)));
-                w.Write((uint)(pos - tgiPosn));
-
-                s.Position = pos;
-            }
-            #endregion
-
-            #region ADependentList
-            public override object Clone(ObjKeyResource newParent) { return new TGIBlockList(newParent, this); }
-            #endregion
-
-            #region Content Fields
-            public String Value { get { string s = ""; for (int i = 0; i < Count; i++) s += string.Format("0x{0:X8}: {1}\n", i, this[i].Value); return s; } }
-            #endregion
-        }
-
         #endregion
 
 
@@ -462,7 +317,7 @@ namespace ObjKeyResource
         public ComponentList Components { get { return components; } set { if (components != value) { components = new ComponentList(this, value); OnResourceChanged(this, new EventArgs()); } } }
         public KeyList Keys { get { return keys; } set { if (keys != value) { keys = new KeyList(this, value); OnResourceChanged(this, new EventArgs()); } } }
         public byte Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; OnResourceChanged(this, new EventArgs()); } } }
-        public TGIBlockList TGIBlocks { get { return tgiBlocks; } set { if (tgiBlocks != value) { tgiBlocks = new TGIBlockList(this, value); OnResourceChanged(this, new EventArgs()); } } }
+        public TGIBlockList<ObjKeyResource> TGIBlocks { get { return tgiBlocks; } set { if (tgiBlocks != value) { tgiBlocks = new TGIBlockList<ObjKeyResource>(this, value); OnResourceChanged(this, new EventArgs()); } } }
 
         public string Value
         {

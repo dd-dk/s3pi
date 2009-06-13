@@ -102,7 +102,7 @@ namespace CatalogResource
             uint unknown11, uint unknown12, IList<MTDoor> mtDoorList, byte unknown13, uint diagonalIndex, uint hash,
             Boolset roomFlags, Boolset functionCategoryFlags, Boolset subCategoryFlags, Boolset subRoomFlags, Boolset buildCategoryFlags,
             uint sinkDDSIndex, uint unknown14, string materialGrouping1, string materialGrouping2, uint[] unknown15, uint nullTGIIndex,
-            IList<TGIBlock> ltgib)
+            IList<TGIBlock<CatalogResource>> ltgib)
             : base(APIversion, ltgib)
         {
             this.unknown1 = unknown1;
@@ -199,7 +199,7 @@ namespace CatalogResource
             for (int i = 0; i < this.unknown15.Length; i++) unknown15[i] = r.ReadUInt32();
             this.nullTGIIndex = r.ReadUInt32();
 
-            list = new TGIBlockList(this, s, tgiPosn, tgiSize);
+            list = new TGIBlockList<CatalogResource>(this, s, tgiPosn, tgiSize);
 
             ApplyBoolsetChangedHandlers();
         }

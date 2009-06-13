@@ -62,7 +62,7 @@ namespace CatalogResource
         }
         public FenceCatalogResource(int APIversion, uint unknown1, Common common, uint unknown2, byte unknown3, uint unknown4,
             byte unknown5, uint unknown6, byte unknown7, uint unknown8, uint unknown9, uint unknown10, uint unknown11, byte unknown12,
-            TGIBlockList ltgib)
+            TGIBlockList<CatalogResource> ltgib)
             : base(APIversion, ltgib)
         {
             this.unknown1 = unknown1;
@@ -102,7 +102,7 @@ namespace CatalogResource
             this.unknown11 = r.ReadUInt32();
             this.unknown12 = r.ReadByte();
 
-            list = new TGIBlockList(this, s, tgiPosn, tgiSize);
+            list = new TGIBlockList<CatalogResource>(this, s, tgiPosn, tgiSize);
         }
 
         protected override Stream UnParse()

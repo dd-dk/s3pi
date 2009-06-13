@@ -230,151 +230,6 @@ namespace CatalogResource
             #endregion
         }
 
-        public class TGIBlock : AApiVersionedFields, IComparable<TGIBlock>, IEqualityComparer<TGIBlock>, IEquatable<TGIBlock>, ICloneableWithParent
-        {
-            #region Attributes
-            CatalogResource parent = null;
-            uint resourceType;
-            uint resourceGroup;
-            ulong instance;
-            #endregion
-
-            #region Constructors
-            internal TGIBlock(CatalogResource parent, Stream s) { this.parent = parent; Parse(s); }
-            internal TGIBlock(CatalogResource parent, TGIBlock tgib) : this(parent, tgib.resourceType, tgib.resourceGroup, tgib.instance) { }
-
-            public TGIBlock(CatalogResource parent, uint resourceType, uint resourceGroup, ulong instance)
-            {
-                this.parent = parent;
-                this.resourceType = resourceType;
-                this.resourceGroup = resourceGroup;
-                this.instance = instance;
-            }
-            #endregion
-
-            #region Data I/O
-            void Parse(Stream s)
-            {
-                BinaryReader r = new BinaryReader(s);
-                resourceType = r.ReadUInt32();
-                resourceGroup = r.ReadUInt32();
-                instance = r.ReadUInt64();
-            }
-
-            internal void UnParse(Stream s)
-            {
-                BinaryWriter w = new BinaryWriter(s);
-                w.Write(resourceType);
-                w.Write(resourceGroup);
-                w.Write(instance);
-            }
-            #endregion
-
-            #region IComparable<TGIBlock> Members
-
-            public int CompareTo(TGIBlock other)
-            {
-                int res = resourceType.CompareTo(other.resourceType); if (res != 0) return res;
-                res = resourceGroup.CompareTo(other.resourceGroup); if (res != 0) return res;
-                return instance.CompareTo(other.instance);
-            }
-
-            #endregion
-
-            #region IEqualityComparer<TGIBlock> Members
-
-            public bool Equals(TGIBlock x, TGIBlock y) { return x.Equals(y); }
-
-            public int GetHashCode(TGIBlock obj) { return obj.GetHashCode(); }
-
-            public override int GetHashCode() { return resourceType.GetHashCode() ^ resourceGroup.GetHashCode() ^ instance.GetHashCode(); }
-
-            #endregion
-
-            #region IEquatable<TGIBlock> Members
-
-            public bool Equals(TGIBlock other) { return this.CompareTo(other) == 0; }
-
-            #endregion
-
-            #region ICloneableWithParent Members
-
-            public object Clone(object newParent) { return new TGIBlock(newParent as CatalogResource, this); }
-
-            #endregion
-
-            #region ICloneable Members
-
-            public object Clone() { return Clone(parent); }
-
-            #endregion
-
-            #region AApiVersionedFields
-            public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
-
-            public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
-            #endregion
-
-            #region Content Fields
-            public uint ResourceType { get { return resourceType; } set { if (resourceType != value) { resourceType = value; parent.OnResourceChanged(this, new EventArgs()); } } }
-            public uint ResourceGroup { get { return resourceGroup; } set { if (resourceGroup != value) { resourceGroup = value; parent.OnResourceChanged(this, new EventArgs()); } } }
-            public ulong Instance { get { return instance; } set { if (instance != value) { instance = value; parent.OnResourceChanged(this, new EventArgs()); } } }
-
-            public String Value { get { return String.Format("0x{0:X8}-0x{1:X8}-0x{2:X16}", resourceType, resourceGroup, instance); } }
-            #endregion
-        }
-
-        public class TGIBlockList : AResource.DependentList<TGIBlock, CatalogResource>
-        {
-            #region Constructors
-            public TGIBlockList(CatalogResource parent) : base(parent) { }
-            public TGIBlockList(CatalogResource parent, IList<TGIBlock> lme) : base(parent, lme) { }
-            internal TGIBlockList(CatalogResource parent, Stream s, long tgiOffset, long tgiSize)
-                : base(parent) { Parse(s, tgiOffset, tgiSize); }
-            #endregion
-
-            #region Data I/O
-            protected override TGIBlock CreateElement(CatalogResource parent, Stream s) { return new TGIBlock(parent, s); }
-            protected override void WriteElement(Stream s, TGIBlock element) { element.UnParse(s); }
-
-            protected void Parse(Stream s, long tgiPosn, long tgiSize)
-            {
-                if (checking) if (tgiPosn != s.Position)
-                        throw new InvalidDataException(String.Format("Position of TGIBlock read: 0x{0:X8}, actual: 0x{1:X8}",
-                            tgiPosn, s.Position));
-
-                Parse(s);
-
-                if (checking) if (tgiSize != s.Position - tgiPosn)
-                        throw new InvalidDataException(String.Format("Size of TGIBlock read: 0x{0:X8}, actual: 0x{1:X8}; at 0x{2:X8}",
-                            tgiSize, s.Position - tgiPosn, s.Position));
-            }
-
-            public void UnParse(Stream s, long ptgiO)
-            {
-                BinaryWriter w = new BinaryWriter(s);
-
-                long tgiPosn = s.Position;
-                UnParse(s);
-                long pos = s.Position;
-
-                s.Position = ptgiO;
-                w.Write((uint)(tgiPosn - ptgiO - sizeof(uint)));
-                w.Write((uint)(pos - tgiPosn));
-
-                s.Position = pos;
-            }
-            #endregion
-
-            #region ADependentList
-            public override object Clone(CatalogResource newParent) { return new TGIBlockList(newParent, this); }
-            #endregion
-
-            #region Content Fields
-            public String Value { get { string s = ""; for (int i = 0; i < Count; i++) s += string.Format("{0:X8}: {1}\n", i, this[i].Value); return s; } }
-            #endregion
-        }
-
         #region TypeCode
         public abstract class TypeCode : AApiVersionedFields, ICloneableWithParent,
             IComparable<TypeCode>, IEqualityComparer<TypeCode>, IEquatable<TypeCode>
@@ -1168,7 +1023,7 @@ namespace CatalogResource
             uint unknown1;
             ushort unknown2;
             MaterialBlock mb = null;
-            TGIBlockList list = null;
+            TGIBlockList<CatalogResource> list = null;
             uint unknown3;
             #endregion
 
@@ -1181,17 +1036,17 @@ namespace CatalogResource
                 this.unknown1 = basis.unknown1;
                 this.unknown2 = basis.unknown2;
                 this.mb = (MaterialBlock)basis.mb.Clone(parent);
-                this.list = new TGIBlockList(parent, basis.list);
+                this.list = new TGIBlockList<CatalogResource>(parent, basis.list);
                 this.unknown3 = basis.unknown3;
             }
-            public Material(CatalogResource parent, byte materialType, uint unknown1, ushort unknown2, MaterialBlock mb, IList<TGIBlock> ltgib, uint unknown3)
+            public Material(CatalogResource parent, byte materialType, uint unknown1, ushort unknown2, MaterialBlock mb, IList<TGIBlock<CatalogResource>> ltgib, uint unknown3)
             {
                 this.parent = parent;
                 this.materialType = materialType;
                 this.unknown1 = unknown1;
                 this.unknown2 = unknown2;
                 this.mb = (MaterialBlock)mb.Clone(parent);
-                this.list = new TGIBlockList(parent, ltgib);
+                this.list = new TGIBlockList<CatalogResource>(parent, ltgib);
                 this.unknown3 = unknown3;
             }
             #endregion
@@ -1210,7 +1065,7 @@ namespace CatalogResource
 
                 mb = new MaterialBlock(parent, s);
 
-                list = new TGIBlockList(parent, s, tgiPosn, tgiSize);
+                list = new TGIBlockList<CatalogResource>(parent, s, tgiPosn, tgiSize);
 
                 if (checking) if (oset != s.Position)
                         throw new InvalidDataException(String.Format("Position of final DWORD read: 0x{0:X8}, actual: 0x{1:X8}",
@@ -1300,7 +1155,18 @@ namespace CatalogResource
             public uint Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; parent.OnResourceChanged(this, new EventArgs()); } } }
             public ushort Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; parent.OnResourceChanged(this, new EventArgs()); } } }
             public MaterialBlock MaterialBlock { get { return mb; } set { if (mb != value) { mb = value; parent.OnResourceChanged(this, new EventArgs()); } } }
-            public IList<TGIBlock> TGIBlocks { get { return list; } set { if (list != (value as TGIBlockList)) { list = new TGIBlockList(parent, value); parent.OnResourceChanged(this, new EventArgs()); } } }
+            public IList<TGIBlock<CatalogResource>> TGIBlocks
+            {
+                get { return list; }
+                set
+                {
+                    if (list != (value as TGIBlockList<CatalogResource>))
+                    {
+                        list = new TGIBlockList<CatalogResource>(parent, value);
+                        parent.OnResourceChanged(this, new EventArgs());
+                    }
+                }
+            }
             public uint Unknown3 { get { return unknown3; } set { if (unknown3 != value) { unknown3 = value; parent.OnResourceChanged(this, new EventArgs()); } } }
 
             public String Value
@@ -1315,7 +1181,7 @@ namespace CatalogResource
                         string h = String.Format("\n---------\n---------\n{0}: {1}\n---------\n", tv.Type.Name, f);
                         string t = "---------\n";
                         if (typeof(MaterialBlock).IsAssignableFrom(tv.Type)) s += h + (tv.Value as MaterialBlock).Value + t;
-                        else if (typeof(IList<TGIBlock>).IsAssignableFrom(tv.Type)) s += h + (tv.Value as TGIBlockList).Value + t;
+                        else if (typeof(IList<TGIBlock<CatalogResource>>).IsAssignableFrom(tv.Type)) s += h + (tv.Value as TGIBlockList<CatalogResource>).Value + t;
                         else s += string.Format("{0}: {1}\n", f, "" + tv);
                     }
                     return s;
@@ -1350,7 +1216,7 @@ namespace CatalogResource
         #region Content Fields
         public Common CommonBlock { get { return common; } set { if (common != value) { common = new Common(this, value); OnResourceChanged(this, new EventArgs()); } } }
         
-        public String Value
+        public virtual String Value
         {
             get
             {
@@ -1363,7 +1229,7 @@ namespace CatalogResource
                     string t = "---------\n";
                     if (typeof(IList<Material>).IsAssignableFrom(tv.Type)) s += h + (tv.Value as MaterialList).Value + t;
                     else if (typeof(IList<MaterialBlock>).IsAssignableFrom(tv.Type)) s += h + (tv.Value as MaterialBlockList).Value + t;
-                    else if (typeof(IList<TGIBlock>).IsAssignableFrom(tv.Type)) s += h + (tv.Value as TGIBlockList).Value + t;
+                    else if (typeof(IList<TGIBlock<CatalogResource>>).IsAssignableFrom(tv.Type)) s += h + (tv.Value as TGIBlockList<CatalogResource>).Value + t;
                     else if (typeof(Common).IsAssignableFrom(tv.Type)) s += h + (tv.Value as Common).Value + t;
                     else if (typeof(TypeCode).IsAssignableFrom(tv.Type)) s += h + (tv.Value as TypeCode).Value + t;
                     else if (typeof(IList<ObjectCatalogResource.MTDoor>).IsAssignableFrom(tv.Type)) s += h + (tv.Value as ObjectCatalogResource.MTDoorList).Value + t;
@@ -1378,27 +1244,27 @@ namespace CatalogResource
     /// <summary>
     /// A CatalogResource wrapper that contains a TGIBlockList
     /// </summary>
-    public abstract class CatalogResourceTGIBlockList : CatalogResource, IList<CatalogResource.TGIBlock>
+    public abstract class CatalogResourceTGIBlockList : CatalogResource, IList<AResource.TGIBlock<CatalogResource>>
     {
         #region Attributes
-        protected TGIBlockList list = null;
+        protected TGIBlockList<CatalogResource> list = null;
         #endregion
 
         #region Constructors
-        public CatalogResourceTGIBlockList(int APIversion) : base(APIversion, null) { this.list = new TGIBlockList(this); dirty = true; }
+        public CatalogResourceTGIBlockList(int APIversion) : base(APIversion, null) { this.list = new TGIBlockList<CatalogResource>(this); dirty = true; }
         public CatalogResourceTGIBlockList(int APIversion, Stream s) : base(APIversion, s) { }
-        public CatalogResourceTGIBlockList(int APIversion, IList<CatalogResource.TGIBlock> ltgib) : base(APIversion, null) { this.list = new TGIBlockList(this, ltgib); dirty = true; }
+        public CatalogResourceTGIBlockList(int APIversion, IList<CatalogResource.TGIBlock<CatalogResource>> ltgib) : base(APIversion, null) { this.list = new TGIBlockList<CatalogResource>(this, ltgib); dirty = true; }
         #endregion
 
-        #region IList<TGIBlock> Members
+        #region IList<TGIBlock<CatalogResource>> Members
 
-        public int IndexOf(CatalogResource.TGIBlock item) { return list.IndexOf(item); }
+        public int IndexOf(CatalogResource.TGIBlock<CatalogResource> item) { return list.IndexOf(item); }
 
-        public void Insert(int index, CatalogResource.TGIBlock item) { list.Insert(index, item); OnResourceChanged(this, new EventArgs()); }
+        public void Insert(int index, CatalogResource.TGIBlock<CatalogResource> item) { list.Insert(index, item); OnResourceChanged(this, new EventArgs()); }
 
         public void RemoveAt(int index) { list.RemoveAt(index); OnResourceChanged(this, new EventArgs()); }
 
-        public CatalogResource.TGIBlock this[int index]
+        public CatalogResource.TGIBlock<CatalogResource> this[int index]
         {
             get { return list[index]; }
             set { if (list[index] != value) { list[index] = value; OnResourceChanged(this, new EventArgs()); } }
@@ -1408,19 +1274,19 @@ namespace CatalogResource
 
         #region ICollection<TGIBlock> Members
 
-        public void Add(CatalogResource.TGIBlock item) { list.Add(item); OnResourceChanged(this, new EventArgs()); }
+        public void Add(CatalogResource.TGIBlock<CatalogResource> item) { list.Add(item); OnResourceChanged(this, new EventArgs()); }
 
         public void Clear() { list.Clear(); OnResourceChanged(this, new EventArgs()); }
 
-        public bool Contains(CatalogResource.TGIBlock item) { return list.Contains(item); }
+        public bool Contains(CatalogResource.TGIBlock<CatalogResource> item) { return list.Contains(item); }
 
-        public void CopyTo(CatalogResource.TGIBlock[] array, int arrayIndex) { list.CopyTo(array, arrayIndex); }
+        public void CopyTo(CatalogResource.TGIBlock<CatalogResource>[] array, int arrayIndex) { list.CopyTo(array, arrayIndex); }
 
         public int Count { get { return list.Count; } }
 
         public bool IsReadOnly { get { return false; } }
 
-        public bool Remove(CatalogResource.TGIBlock item)
+        public bool Remove(CatalogResource.TGIBlock<CatalogResource> item)
         {
             bool res = list.Remove(item);
             if (res) OnResourceChanged(this, new EventArgs());
@@ -1431,7 +1297,7 @@ namespace CatalogResource
 
         #region IEnumerable<TGIBlock> Members
 
-        public IEnumerator<CatalogResource.TGIBlock> GetEnumerator() { return list.GetEnumerator(); }
+        public IEnumerator<CatalogResource.TGIBlock<CatalogResource>> GetEnumerator() { return list.GetEnumerator(); }
 
         #endregion
 
@@ -1442,7 +1308,18 @@ namespace CatalogResource
         #endregion
 
         #region Content Fields
-        public IList<TGIBlock> TGIBlocks { get { return list; } set { if (list != value as TGIBlockList) { list = new TGIBlockList(this, value); OnResourceChanged(this, new EventArgs()); } } }
+        public IList<TGIBlock<CatalogResource>> TGIBlocks
+        {
+            get { return list; }
+            set
+            {
+                if (list != value as TGIBlockList<CatalogResource>)
+                {
+                    list = new TGIBlockList<CatalogResource>(this, value);
+                    OnResourceChanged(this, new EventArgs());
+                }
+            }
+        }
         #endregion
     }
 
