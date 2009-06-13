@@ -140,6 +140,157 @@ namespace s3pi.Interfaces
             }
             #endregion
         }
+
+        public class TGIBlock<T> : AApiVersionedFields, IComparable<TGIBlock<T>>, IEqualityComparer<TGIBlock<T>>, IEquatable<TGIBlock<T>>, ICloneableWithParent
+            where T : AResource
+        {
+            #region Attributes
+            T parent = null;
+            uint resourceType;
+            uint resourceGroup;
+            ulong instance;
+            #endregion
+
+            #region Constructors
+            public TGIBlock(T parent, Stream s) { this.parent = parent; Parse(s); }
+            public TGIBlock(T parent, TGIBlock<T> tgib) : this(parent, tgib.resourceType, tgib.resourceGroup, tgib.instance) { }
+
+            public TGIBlock(T parent, uint resourceType, uint resourceGroup, ulong instance)
+            {
+                this.parent = parent;
+                this.resourceType = resourceType;
+                this.resourceGroup = resourceGroup;
+                this.instance = instance;
+            }
+            #endregion
+
+            #region Data I/O
+            protected void Parse(Stream s)
+            {
+                BinaryReader r = new BinaryReader(s);
+                resourceType = r.ReadUInt32();
+                resourceGroup = r.ReadUInt32();
+                instance = r.ReadUInt64();
+            }
+
+            public void UnParse(Stream s)
+            {
+                BinaryWriter w = new BinaryWriter(s);
+                w.Write(resourceType);
+                w.Write(resourceGroup);
+                w.Write(instance);
+            }
+            #endregion
+
+            #region IComparable<TGIBlock<T>> Members
+
+            public int CompareTo(TGIBlock<T> other)
+            {
+                int res = resourceType.CompareTo(other.resourceType); if (res != 0) return res;
+                res = resourceGroup.CompareTo(other.resourceGroup); if (res != 0) return res;
+                return instance.CompareTo(other.instance);
+            }
+
+            #endregion
+
+            #region IEqualityComparer<TGIBlock<T>> Members
+
+            public bool Equals(TGIBlock<T> x, TGIBlock<T> y) { return x.Equals(y); }
+
+            public int GetHashCode(TGIBlock<T> obj) { return obj.GetHashCode(); }
+
+            public override int GetHashCode() { return resourceType.GetHashCode() ^ resourceGroup.GetHashCode() ^ instance.GetHashCode(); }
+
+            #endregion
+
+            #region IEquatable<TGIBlock<T>> Members
+
+            public bool Equals(TGIBlock<T> other) { return this.CompareTo(other) == 0; }
+
+            #endregion
+
+            #region ICloneableWithParent Members
+
+            public object Clone(object newParent) { return new TGIBlock<T>(newParent as T, this); }
+
+            #endregion
+
+            #region ICloneable Members
+
+            public object Clone() { return Clone(parent); }
+
+            #endregion
+
+            #region AApiVersionedFields
+            public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
+
+            public override int RecommendedApiVersion { get { return parent.RecommendedApiVersion; } }
+            #endregion
+
+            #region Content Fields
+            public uint ResourceType { get { return resourceType; } set { if (resourceType != value) { resourceType = value; parent.OnResourceChanged(this, new EventArgs()); } } }
+            public uint ResourceGroup { get { return resourceGroup; } set { if (resourceGroup != value) { resourceGroup = value; parent.OnResourceChanged(this, new EventArgs()); } } }
+            public ulong Instance { get { return instance; } set { if (instance != value) { instance = value; parent.OnResourceChanged(this, new EventArgs()); } } }
+
+            public String Value { get { return String.Format("0x{0:X8}-0x{1:X8}-0x{2:X16}", resourceType, resourceGroup, instance); } }
+            #endregion
+
+            public override string ToString() { return Value; }
+            public static implicit operator String(TGIBlock<T> value) { return value.ToString(); }
+        }
+
+        public class TGIBlockList<T> : AResource.DependentList<TGIBlock<T>, T>
+            where T : AResource
+        {
+            #region Constructors
+            public TGIBlockList(T parent) : base(parent) { }
+            public TGIBlockList(T parent, IList<TGIBlock<T>> lme) : base(parent, lme) { }
+            public TGIBlockList(T parent, Stream s, long tgiOffset, long tgiSize)
+                : base(parent) { Parse(s, tgiOffset, tgiSize); }
+            #endregion
+
+            #region Data I/O
+            protected override TGIBlock<T> CreateElement(T parent, Stream s) { return new TGIBlock<T>(parent, s); }
+            protected override void WriteElement(Stream s, TGIBlock<T> element) { element.UnParse(s); }
+
+            protected void Parse(Stream s, long tgiPosn, long tgiSize)
+            {
+                bool checking = true;
+                if (checking) if (tgiPosn != s.Position)
+                        throw new InvalidDataException(String.Format("Position of TGIBlock read: 0x{0:X8}, actual: 0x{1:X8}",
+                            tgiPosn, s.Position));
+
+                if (tgiSize > 0) Parse(s);
+
+                if (checking) if (tgiSize != s.Position - tgiPosn)
+                        throw new InvalidDataException(String.Format("Size of TGIBlock read: 0x{0:X8}, actual: 0x{1:X8}; at 0x{2:X8}",
+                            tgiSize, s.Position - tgiPosn, s.Position));
+            }
+
+            public void UnParse(Stream s, long ptgiO)
+            {
+                BinaryWriter w = new BinaryWriter(s);
+
+                long tgiPosn = s.Position;
+                UnParse(s);
+                long pos = s.Position;
+
+                s.Position = ptgiO;
+                w.Write((uint)(tgiPosn - ptgiO - sizeof(uint)));
+                w.Write((uint)(pos - tgiPosn));
+
+                s.Position = pos;
+            }
+            #endregion
+
+            #region ADependentList
+            public override object Clone(T newParent) { return new TGIBlockList<T>(newParent, this); }
+            #endregion
+
+            #region Content Fields
+            public String Value { get { string s = ""; for (int i = 0; i < Count; i++) s += string.Format("{0:X8}: {1}\n", i, this[i].Value); return s; } }
+            #endregion
+        }
         #endregion
 
         /// <summary>
