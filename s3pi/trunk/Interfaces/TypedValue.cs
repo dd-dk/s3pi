@@ -20,13 +20,15 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Runtime.Serialization;
 
 namespace s3pi.Interfaces
 {
     /// <summary>
     /// A tuple associating a data type (or class) with a value object (of the given type)
     /// </summary>
-    public class TypedValue : IComparable<TypedValue>, IEqualityComparer<TypedValue>, IEquatable<TypedValue>, IConvertible, ICloneable
+    [Serializable]
+    public class TypedValue : IComparable<TypedValue>, IEqualityComparer<TypedValue>, IEquatable<TypedValue>, IConvertible, ICloneable, ISerializable
     {
         /// <summary>
         /// The data type
@@ -280,6 +282,17 @@ namespace s3pi.Interfaces
         {
             if (typeof(ICloneable).IsAssignableFrom(this.Type)) return new TypedValue(this.Type, ((ICloneable)this.Value).Clone(), this.format);
             return this;
+        }
+
+        #endregion
+
+        #region ISerializable Members
+
+        public void GetObjectData(SerializationInfo info, StreamingContext context)
+        {
+            info.AddValue("Type", Type, typeof(Type));
+            info.AddValue("Value", Value, Type);
+            info.AddValue("format", format);
         }
 
         #endregion
