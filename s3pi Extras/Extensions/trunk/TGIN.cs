@@ -33,8 +33,8 @@ namespace s3pi.Extensions
         public static implicit operator string(TGIN value)
         {
             string extn = ".dat";
-            if (ExtList.Ext.ContainsKey("0x" + value.ResType.ToString("X")))
-                extn = String.Join("", ExtList.Ext["0x" + value.ResType.ToString("X")].ToArray());
+            if (ExtList.Ext.ContainsKey("0x" + value.ResType.ToString("X8")))
+                extn = String.Join("", ExtList.Ext["0x" + value.ResType.ToString("X8")].ToArray());
             else if (ExtList.Ext.ContainsKey("*"))
                 extn = String.Join("", ExtList.Ext["*"].ToArray());
 
