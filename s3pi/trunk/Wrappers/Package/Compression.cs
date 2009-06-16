@@ -187,7 +187,7 @@ namespace s3pi.Package
             if (buffer.Length - pos < 4)
                 return WriteChunk(bw, buffer, pos, buffer.Length - pos, -1, 0);//EOF!
 
-            if (buffer.Length - pos < 6)
+            if (buffer.Length - pos < 8)
                 return WriteChunk(bw, buffer, pos, (buffer.Length - pos) & ~0x03, -1, 0);//too near EOF!
 
             int copysize = 3; // don't try to compress less than 3 bytes
