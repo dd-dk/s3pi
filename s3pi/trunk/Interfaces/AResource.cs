@@ -146,18 +146,27 @@ namespace s3pi.Interfaces
         {
             #region Attributes
             T parent = null;
+            string order;
             uint resourceType;
             uint resourceGroup;
             ulong instance;
             #endregion
 
             #region Constructors
-            public TGIBlock(T parent, Stream s) { this.parent = parent; Parse(s); }
-            public TGIBlock(T parent, TGIBlock<T> tgib) : this(parent, tgib.resourceType, tgib.resourceGroup, tgib.instance) { }
+            public TGIBlock(T parent, Stream s) : this(parent, "TGI", s) { }
+            public TGIBlock(T parent, string order, Stream s) { this.parent = parent; this.order = order; Parse(s); }
 
-            public TGIBlock(T parent, uint resourceType, uint resourceGroup, ulong instance)
+            public TGIBlock(T parent, TGIBlock<T> tgib) : this(parent, "TGI", tgib) { }
+            public TGIBlock(T parent, string order, TGIBlock<T> tgib) : this(parent, order, tgib.resourceType, tgib.resourceGroup, tgib.instance) { }
+            public TGIBlock(T parent, uint resourceType, uint resourceGroup, ulong instance) : this(parent, "TGI", resourceType, resourceGroup, instance) { }
+            public TGIBlock(T parent, string order, uint resourceType, uint resourceGroup, ulong instance)
             {
                 this.parent = parent;
+                this.order = order;
+                if (order.Length != 3)
+                    throw new ArgumentLengthException("order", 3);
+                foreach (char c in order) if ("TGI".IndexOf(c) < 0)
+                        throw new ArgumentException(String.Format("Invalid character '{0}': only T, G and I allowed", c), "order");
                 this.resourceType = resourceType;
                 this.resourceGroup = resourceGroup;
                 this.instance = instance;
@@ -168,17 +177,25 @@ namespace s3pi.Interfaces
             protected void Parse(Stream s)
             {
                 BinaryReader r = new BinaryReader(s);
-                resourceType = r.ReadUInt32();
-                resourceGroup = r.ReadUInt32();
-                instance = r.ReadUInt64();
+                foreach (char c in order)
+                    switch (c)
+                    {
+                        case 'T': resourceType = r.ReadUInt32(); break;
+                        case 'G': resourceGroup = r.ReadUInt32(); break;
+                        case 'I': instance = r.ReadUInt64(); break;
+                    }
             }
 
             public void UnParse(Stream s)
             {
                 BinaryWriter w = new BinaryWriter(s);
-                w.Write(resourceType);
-                w.Write(resourceGroup);
-                w.Write(instance);
+                foreach (char c in order)
+                    switch (c)
+                    {
+                        case 'T': w.Write(resourceType); break;
+                        case 'G': w.Write(resourceGroup); break;
+                        case 'I': w.Write(instance); break;
+                    }
             }
             #endregion
 
