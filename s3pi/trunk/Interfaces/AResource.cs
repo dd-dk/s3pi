@@ -146,31 +146,46 @@ namespace s3pi.Interfaces
         {
             #region Attributes
             T parent = null;
-            string order;
+            string order = "TGI";
             uint resourceType;
             uint resourceGroup;
             ulong instance;
             #endregion
 
             #region Constructors
-            public TGIBlock(T parent, Stream s) : this(parent, "TGI", s) { }
-            public TGIBlock(T parent, string order, Stream s) { this.parent = parent; this.order = order; Parse(s); }
+            public enum Order
+            {
+                TGI,
+                TIG,
+                GTI,
+                GIT,
+                ITG,
+                IGT,
+            }
+            void ok(string v) { ok((Order)Enum.Parse(typeof(Order), v)); }
+            void ok(Order v) { if (!Enum.IsDefined(typeof(Order), v)) throw new ArgumentException("Invalid value " + v, "order"); }
 
-            public TGIBlock(T parent, TGIBlock<T> tgib) : this(parent, "TGI", tgib) { }
-            public TGIBlock(T parent, string order, TGIBlock<T> tgib) : this(parent, order, tgib.resourceType, tgib.resourceGroup, tgib.instance) { }
-            public TGIBlock(T parent, uint resourceType, uint resourceGroup, ulong instance) : this(parent, "TGI", resourceType, resourceGroup, instance) { }
-            public TGIBlock(T parent, string order, uint resourceType, uint resourceGroup, ulong instance)
+            public TGIBlock(T parent, uint resourceType, uint resourceGroup, ulong instance)
             {
                 this.parent = parent;
-                this.order = order;
-                if (order.Length != 3)
-                    throw new ArgumentLengthException("order", 3);
-                foreach (char c in order) if ("TGI".IndexOf(c) < 0)
-                        throw new ArgumentException(String.Format("Invalid character '{0}': only T, G and I allowed", c), "order");
                 this.resourceType = resourceType;
                 this.resourceGroup = resourceGroup;
                 this.instance = instance;
             }
+
+            public TGIBlock(T parent, string order, uint resourceType, uint resourceGroup, ulong instance)
+                : this(parent, resourceType, resourceGroup, instance) { ok(order); this.order = order; }
+            public TGIBlock(T parent, Order order, uint resourceType, uint resourceGroup, ulong instance)
+                : this(parent, resourceType, resourceGroup, instance) { ok(order); this.order = "" + order; }
+
+            public TGIBlock(T parent, TGIBlock<T> tgib) : this(parent, "TGI", tgib) { }
+            public TGIBlock(T parent, Order order, TGIBlock<T> tgib) : this(parent, order, tgib.resourceType, tgib.resourceGroup, tgib.instance) { }
+            public TGIBlock(T parent, string order, TGIBlock<T> tgib) : this(parent, order, tgib.resourceType, tgib.resourceGroup, tgib.instance) { }
+
+            // With stream, order is needed in the constructor for parsing
+            public TGIBlock(T parent, Stream s) : this(parent, "TGI", s) { }
+            public TGIBlock(T parent, Order order, Stream s) : this(parent, "" + order, s) { }
+            public TGIBlock(T parent, string order, Stream s) { this.parent = parent; ok(order); this.order = order; Parse(s); }
             #endregion
 
             #region Data I/O
