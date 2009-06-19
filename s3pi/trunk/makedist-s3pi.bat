@@ -36,21 +36,7 @@ popd
 
 
 mkdir %base%
-copy "..\CS System Classes\bin\%ConfigurationName%\*.dll" %base%
-
 copy "build\bin\%ConfigurationName%\*" %base%
-
-for /d %%x in ("..\s3pi Extras\*") do (
-	if exist "%%x\bin\%ConfigurationName%" (
-		copy "%%x\bin\%ConfigurationName%\*" %base%
-	)
-)
-
-for /d %%x in ("..\s3pi Wrappers\*") do (
-	if exist "%%x\bin\%ConfigurationName%" (
-		copy "%%x\bin\%ConfigurationName%\*" %base%
-	)
-)
 
 pushd %base%
 echo %suffix% >%TargetName%-Version.txt
@@ -59,11 +45,11 @@ attrib +r %TargetName%-Version.txt
 del /f %TargetName%-Version.txt
 popd
 
-7za x -o"%base%-%suffix%" "%out%%base%_%suffix%.7z"
+rem 7za x -o"%base%-%suffix%" "%out%%base%_%suffix%.7z"
 rem No point copying anything but Release as we don't install this:
-copy ..\GetAssemblyInfo\bin\Release\GetAssemblyInfo.exe "%base%-%suffix%"
-"%PROGRAMFILES%\nsis\makensis" "/DTARGET=%base%-%suffix%" %nsisv% mknsis.nsi "/XOutFile %out%%base%_%suffix%.exe"
+rem copy ..\GetAssemblyInfo\bin\Release\GetAssemblyInfo.exe "%base%-%suffix%"
+rem "%PROGRAMFILES%\nsis\makensis" "/DTARGET=%base%-%suffix%" %nsisv% mknsis.nsi "/XOutFile %out%%base%_%suffix%.exe"
 
 rmdir /s/q %base%
-rmdir /s/q %base%-%suffix%
+rem rmdir /s/q %base%-%suffix%
 pause
