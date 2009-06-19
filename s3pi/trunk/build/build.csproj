@@ -53,7 +53,7 @@
       <Project>{FE111523-3266-409B-BC72-F8D4A909A554}</Project>
       <Name>WrapperDealer</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Wrappers\Package\Package.csproj">
+    <ProjectReference Include="..\Package\Package.csproj">
       <Project>{9D8BB6F7-373E-4FBC-B5E8-9709B4CE9A37}</Project>
       <Name>Package</Name>
     </ProjectReference>
