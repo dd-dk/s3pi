@@ -108,7 +108,7 @@ namespace ScriptResource
             BinaryWriter bw = new BinaryWriter(ms);
             bw.Write(unknown1);
             bw.Write(unknown2);
-            md5table = new byte[(((cleardata.Length & ~0x1ff) == 0 ? 0 : 1) + (cleardata.Length >> 9)) << 3];
+            md5table = new byte[(((cleardata.Length & 0x1ff) == 0 ? 0 : 1) + (cleardata.Length >> 9)) << 3];
             md5data = encrypt();
             bw.Write(md5sum);
             bw.Write((ushort)(md5table.Length >> 3));
@@ -180,15 +180,14 @@ namespace ScriptResource
                 foreach (string f in this.ContentFields)
                 {
                     if (f.Equals("Value") || f.Equals("Stream") || f.Equals("AsBytes") || f.Equals("DecryptedBytes")) continue;
-                    TypedValue tv = this[f];
-                    string h = String.Format("\n---------\n---------\n{0}: {1}\n---------\n", tv.Type.Name, f);
-                    string t = "---------\n";
                     if (f.Equals("Assembly"))
                     {
                         System.Reflection.Assembly assy = System.Reflection.Assembly.Load(cleardata);
+                        string h = String.Format("\n---------\n---------\n{0}: {1}\n---------\n", assy.GetType().Name, f);
+                        string t = "---------\n";
                         s += h;
                         s += assy.ToString() + "\n";
-                        foreach(var p in typeof(System.Reflection.Assembly).GetProperties())
+                        foreach (var p in typeof(System.Reflection.Assembly).GetProperties())
                         {
                             if (!p.CanRead) continue;
                             s += string.Format("  {0}: {1}\n", p.Name, "" + p.GetValue(assy, null));
@@ -203,7 +202,8 @@ namespace ScriptResource
                         catch { }
                         s += t;
                     }
-                    else s += string.Format("{0}: {1}\n", f, "" + tv);
+                    else
+                        s += string.Format("{0}: {1}\n", f, "" + this[f]);
                 }
                 return s;
             }
