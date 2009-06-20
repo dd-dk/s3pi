@@ -39,7 +39,7 @@ namespace CatalogResource
         #endregion
 
         #region Constructors
-        protected CatalogResource(int APIversion, Stream s) : base(APIversion, s) { Parse(s); }
+        protected CatalogResource(int APIversion, Stream s) : base(APIversion, s) { if (stream == null) stream = UnParse(); s.Position = 0; Parse(s); }
         #endregion
 
         #region Data I/O

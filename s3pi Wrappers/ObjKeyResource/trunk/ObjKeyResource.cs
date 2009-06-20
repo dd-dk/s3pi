@@ -45,14 +45,12 @@ namespace ObjKeyResource
         #region Constructors
         public ObjKeyResource(int APIversion, Stream s) : base(APIversion, s)
         {
-            if (s == null)
-            {
-                components = new ComponentList(this);
-                keys = new KeyList(this);
-                tgiBlocks = new TGIBlockList<ObjKeyResource>(this);
-                s = stream = UnParse();
-                s.Position = 0;
-            }
+            components = new ComponentList(this);
+            keys = new KeyList(this);
+            tgiBlocks = new TGIBlockList<ObjKeyResource>(this);
+
+            if (s == null) s = UnParse();
+            s.Position = 0;
             Parse(s);
         }
         #endregion

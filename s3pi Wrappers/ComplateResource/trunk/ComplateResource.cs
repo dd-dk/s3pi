@@ -45,12 +45,7 @@ namespace ComplateResource
         /// </summary>
         /// <param name="APIversion">Requested API version</param>
         /// <param name="s">Data stream to use, or null to create from scratch</param>
-        public ComplateResource(int APIversion, Stream s) : base(APIversion, s)
-        {
-            if (stream == null) stream = UnParse();
-            stream.Position = 0;
-            Parse(stream);
-        }
+        public ComplateResource(int APIversion, Stream s) : base(APIversion, s) { if (stream == null) stream = UnParse(); stream.Position = 0; Parse(stream); }
         #endregion
 
         #region IResource Members

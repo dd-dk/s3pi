@@ -31,9 +31,8 @@ namespace NameMapResource
     {
         static bool checking = s3pi.Settings.Settings.Checking;
         const Int32 recommendedApiVersion = 1;
-        BinaryReader br = null;
-        BinaryWriter bw = null;
-        Dictionary<ulong, string> data = null;
+        uint version = 1;
+        Dictionary<ulong, string> data = new Dictionary<ulong, string>();
 
         #region IResource Members
         /// <summary>
@@ -69,33 +68,20 @@ namespace NameMapResource
         public NameMapResource(int APIversion, Stream s)
             : base(APIversion, s)
         {
-            if (stream != null)
-            {
-                br = new BinaryReader(stream);
-                bw = new BinaryWriter(stream);
-            }
-            else
-            {
-                stream = new MemoryStream();
-                br = new BinaryReader(stream);
-                bw = new BinaryWriter(stream);
-                bw.Write((uint)1);
-                bw.Write((uint)0);
-                bw.Flush();
-            }
+            if (stream == null) stream = UnParse();
+            stream.Position = 0;
             Parse(stream);
         }
 
         void Parse(Stream s)
         {
-            data = new Dictionary<ulong, string>();
-            s.Position = 0;
-            uint vsn = br.ReadUInt32();
-            if (checking) if (vsn != 1)
-                    throw new InvalidDataException(String.Format("{0}: unsupported 'version'.  Read '0x{1:X8}', supported: '0x00000001'", this.GetType().Name, vsn));
+            BinaryReader br = new BinaryReader(s);
 
-            int count = br.ReadInt32();
-            for (int i = 0; i < count; i++)
+            version = br.ReadUInt32();
+            if (checking) if (version != 1)
+                    throw new InvalidDataException(String.Format("{0}: unsupported 'version'.  Read '0x{1:X8}', supported: '0x00000001'", this.GetType().Name, version));
+
+            for (int i = br.ReadInt32(); i > 0; i--)
                 data.Add(br.ReadUInt64(), new String(br.ReadChars(br.ReadInt32())));
 
             if (checking) if (s.Position != s.Length)
@@ -106,7 +92,7 @@ namespace NameMapResource
         {
             MemoryStream ms = new MemoryStream();
             BinaryWriter w = new BinaryWriter(ms);
-            w.Write(Version);
+            w.Write(version);
             w.Write(Count);
             foreach (KeyValuePair<ulong, string> kvp in this)
             {
@@ -122,17 +108,7 @@ namespace NameMapResource
 
         [MinimumVersion(1)]
         [MaximumVersion(recommendedApiVersion)]
-        public uint Version
-        {
-            get { stream.Position = 0; return br.ReadUInt32(); }
-            set
-            {
-                if (Version == value) return;
-                stream.Position = 0;
-                bw.Write(value);
-                OnResourceChanged(this, new EventArgs());
-            }
-        }
+        public uint Version { get { return version; } set { if (Version == value) return; version = value; OnResourceChanged(this, new EventArgs()); } }
 
         [MinimumVersion(1)]
         [MaximumVersion(recommendedApiVersion)]
@@ -143,7 +119,7 @@ namespace NameMapResource
                 string s = "";
                 string fmt = "\n0x{0:X" + Count.ToString("X").Length + "}: 0x{1:X16} {2}";
 
-                s = "Version: " + this["Version"];
+                s = "Version: " + Version;
                 s += String.Format("\nCount: 0x{0:X8}", this.Count);
 
                 int i = 0;
