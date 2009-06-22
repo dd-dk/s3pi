@@ -23,6 +23,7 @@ using s3pi.Interfaces;
 
 namespace s3pi.Extensions
 {
+    [Serializable]
     public struct TGIN
     {
         public uint ResType;
