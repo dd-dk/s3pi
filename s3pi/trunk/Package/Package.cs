@@ -59,6 +59,8 @@ namespace s3pi.Package
             BinaryReader r = new BinaryReader(new FileStream(tmpfile, FileMode.Open));
             BinaryWriter w = new BinaryWriter(packageStream);
             w.Write(r.ReadBytes((int)r.BaseStream.Length));
+            packageStream.SetLength(packageStream.Position);
+            w.Flush();
 
             packageStream.Position = 0;
             header = (new BinaryReader(packageStream)).ReadBytes(header.Length);
