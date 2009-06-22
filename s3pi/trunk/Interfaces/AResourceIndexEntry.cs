@@ -78,7 +78,7 @@ namespace s3pi.Interfaces
         /// <summary>
         /// True if the index entry has been deleted from the package index
         /// </summary>
-        public abstract bool IsDeleted { get; }
+        public abstract bool IsDeleted { get; set; }
 
         #endregion
 

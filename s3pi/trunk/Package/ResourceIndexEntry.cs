@@ -133,7 +133,7 @@ namespace s3pi.Package
         /// </summary>
         [MinimumVersion(1)]
         [MaximumVersion(recommendedApiVersion)]
-        public override bool IsDeleted { get { return isDeleted; } }
+        public override bool IsDeleted { get { return isDeleted; } set { if (isDeleted != value) { isDeleted = value; OnResourceIndexEntryChanged(this, new EventArgs()); } } }
         #endregion
 
 

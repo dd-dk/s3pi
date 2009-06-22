@@ -74,7 +74,7 @@ namespace s3pi.Interfaces
         /// <summary>
         /// True if the index entry has been deleted from the package index
         /// </summary>
-        bool IsDeleted { get; }
+        bool IsDeleted { get; set; }
 
         //IResourceIndexEntry Clone();
     }
