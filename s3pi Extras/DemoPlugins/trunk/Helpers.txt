@@ -15,6 +15,6 @@ dds.ViewerArguments: /clipboard
 dds.Editor: C:\Program Files\GIMP-2.0\bin\gimp-2.6.exe
 dds.EditorArguments: {}
 
-;; Might as well try just running it
-unk.Wrapper: DefaultResource
-unk.Viewer: {}
+;; Could try just running it... but we won't
+;unk.Wrapper: DefaultResource
+;unk.Viewer: {}
