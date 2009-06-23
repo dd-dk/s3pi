@@ -65,7 +65,17 @@ namespace s3pi.Interfaces
         /// <summary>
         /// The resource content as a byte array
         /// </summary>
-        public virtual byte[] AsBytes { get { stream.Position = 0; return (new BinaryReader(Stream)).ReadBytes((int)Stream.Length); } }
+        public virtual byte[] AsBytes
+        {
+            get
+            {
+                MemoryStream s = this.Stream as MemoryStream;
+                if (s != null) return s.ToArray();
+
+                stream.Position = 0;
+                return (new BinaryReader(stream)).ReadBytes((int)stream.Length);
+            }
+        }
 
         /// <summary>
         /// Raised if the resource is changed
