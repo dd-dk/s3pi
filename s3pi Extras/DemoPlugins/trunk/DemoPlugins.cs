@@ -41,7 +41,7 @@ namespace s3pi.DemoPlugins
 
         public static string Config
         {
-            get { return config.Length > 0 ? config : Path.Combine(Path.GetDirectoryName(typeof(DemoPlugins).Assembly.Location), "DemoPlugins.txt"); }
+            get { return config.Length > 0 ? config : Path.Combine(Path.GetDirectoryName(typeof(DemoPlugins).Assembly.Location), "Helpers.txt"); }
             set { if (config != value) { config = value; demoPlugins = null; } }
         }
 
