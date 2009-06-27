@@ -246,7 +246,7 @@ namespace s3pi.Package
         /// </summary>
         [MinimumVersion(1)]
         [MaximumVersion(recommendedApiVersion)]
-        public override int Always3 { get { headerReader.BaseStream.Position = 60; return headerReader.ReadInt32(); } }
+        public override int Indexversion { get { headerReader.BaseStream.Position = 60; return headerReader.ReadInt32(); } }
         /// <summary>
         /// Package header: index position in file
         /// </summary>

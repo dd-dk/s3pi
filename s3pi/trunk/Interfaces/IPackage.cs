@@ -78,7 +78,7 @@ namespace s3pi.Interfaces
         /// <summary>
         /// Package header: always 3?
         /// </summary>
-        Int32 Always3 { get; }
+        Int32 Indexversion { get; }
         /// <summary>
         /// Package header: index position in file
         /// </summary>
