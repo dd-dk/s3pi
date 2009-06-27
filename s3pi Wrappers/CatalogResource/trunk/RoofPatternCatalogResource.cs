@@ -34,8 +34,8 @@ namespace CatalogResource
         byte unknown5;
         uint unknown6;
         byte unknown7;
-        uint index1;
-        uint index2;
+        uint vpxy_index1;
+        uint vpxy_index2;
         uint unknown8;
         #endregion
 
@@ -52,8 +52,8 @@ namespace CatalogResource
             this.unknown5 = basis.unknown5;
             this.unknown6 = basis.unknown6;
             this.unknown7 = basis.unknown7;
-            this.index1 = basis.index1;
-            this.index2 = basis.index2;
+            this.vpxy_index1 = basis.vpxy_index1;
+            this.vpxy_index2 = basis.vpxy_index2;
             this.unknown8 = basis.unknown8;
         }
         public RoofPatternCatalogResource(int APIversion, uint unknown1, Common common,
@@ -69,8 +69,8 @@ namespace CatalogResource
             this.unknown5 = unknown5;
             this.unknown6 = unknown6;
             this.unknown7 = unknown7;
-            this.index1 = index1;
-            this.index2 = index2;
+            this.vpxy_index1 = index1;
+            this.vpxy_index2 = index2;
             this.unknown8 = unknown8;
         }
         #endregion
@@ -91,8 +91,8 @@ namespace CatalogResource
             this.unknown5 = r.ReadByte();
             this.unknown6 = r.ReadUInt32();
             this.unknown7 = r.ReadByte();
-            this.index1 = r.ReadUInt32();
-            this.index2 = r.ReadUInt32();
+            this.vpxy_index1 = r.ReadUInt32();
+            this.vpxy_index2 = r.ReadUInt32();
             this.unknown8 = r.ReadUInt32();
 
             list = new TGIBlockList<CatalogResource>(this, s, tgiPosn, tgiSize);
@@ -116,8 +116,8 @@ namespace CatalogResource
             w.Write(unknown5);
             w.Write(unknown6);
             w.Write(unknown7);
-            w.Write(index1);
-            w.Write(index2);
+            w.Write(vpxy_index1);
+            w.Write(vpxy_index2);
             w.Write(unknown8);
 
             list.UnParse(s, pos);
@@ -142,8 +142,8 @@ namespace CatalogResource
         public byte Unknown5 { get { return unknown5; } set { if (unknown5 != value) { unknown5 = value; OnResourceChanged(this, new EventArgs()); } } }
         public uint Unknown6 { get { return unknown6; } set { if (unknown6 != value) { unknown6 = value; OnResourceChanged(this, new EventArgs()); } } }
         public byte Unknown7 { get { return unknown7; } set { if (unknown7 != value) { unknown7 = value; OnResourceChanged(this, new EventArgs()); } } }
-        public uint Index1 { get { return index1; } set { if (index1 != value) { index1 = value; OnResourceChanged(this, new EventArgs()); } } }
-        public uint Index2 { get { return index2; } set { if (index2 != value) { index2 = value; OnResourceChanged(this, new EventArgs()); } } }
+        public uint VPXYIndex1 { get { return vpxy_index1; } set { if (vpxy_index1 != value) { vpxy_index1 = value; OnResourceChanged(this, new EventArgs()); } } }
+        public uint VPXYIndex2 { get { return vpxy_index2; } set { if (vpxy_index2 != value) { vpxy_index2 = value; OnResourceChanged(this, new EventArgs()); } } }
         public uint Unknown8 { get { return unknown8; } set { if (unknown8 != value) { unknown8 = value; OnResourceChanged(this, new EventArgs()); } } }
         #endregion
     }

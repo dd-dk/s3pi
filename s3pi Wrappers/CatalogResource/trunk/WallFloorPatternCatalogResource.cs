@@ -36,7 +36,7 @@ namespace CatalogResource
         byte unknown6;
         uint unknown7;
         uint unknown8;
-        uint index1;
+        uint vpxy_index1;
         uint unknown9;
         string unknown10;
         byte[] unknown11 = new byte[8];
@@ -58,7 +58,7 @@ namespace CatalogResource
             this.unknown6 = basis.unknown6;
             this.unknown7 = basis.unknown7;
             this.unknown8 = basis.unknown8;
-            this.index1 = basis.index1;
+            this.vpxy_index1 = basis.vpxy_index1;
             this.unknown9 = basis.unknown9;
             this.unknown10 = basis.unknown10;
             this.unknown11 = (byte[])basis.unknown11.Clone();
@@ -79,7 +79,7 @@ namespace CatalogResource
             this.unknown6 = unknown6;
             this.unknown7 = unknown7;
             this.unknown8 = unknown8;
-            this.index1 = index1;
+            this.vpxy_index1 = index1;
             this.unknown9 = unknown9;
             this.unknown10 = unknown10;
             if (unknown11.Length != this.unknown11.Length) throw new ArgumentLengthException("unknown11", this.unknown11.Length);
@@ -92,6 +92,7 @@ namespace CatalogResource
         {
             long tgiPosn, tgiSize;
             BinaryReader r = new BinaryReader(s);
+            //BinaryReader rr = new BinaryReader(s, System.Text.Encoding.BigEndianUnicode);
 
             this.unknown1 = r.ReadUInt32();
             tgiPosn = r.ReadUInt32() + s.Position;
@@ -105,8 +106,9 @@ namespace CatalogResource
             this.unknown6 = r.ReadByte();
             this.unknown7 = r.ReadUInt32();
             this.unknown8 = r.ReadUInt32();
-            this.index1 = r.ReadUInt32();
+            this.vpxy_index1 = r.ReadUInt32();
             this.unknown9 = r.ReadUInt32();
+            //this.unknown10 = rr.ReadString();
             this.unknown10 = r.ReadString();
             this.unknown11 = r.ReadBytes(8);
             if (checking) if (unknown11.Length != 8)
@@ -120,6 +122,7 @@ namespace CatalogResource
             long pos;
             MemoryStream s = new MemoryStream();
             BinaryWriter w = new BinaryWriter(s);
+            //BinaryWriter ww = new BinaryWriter(s, System.Text.Encoding.BigEndianUnicode);
 
             w.Write(unknown1);
             pos = s.Position;
@@ -134,8 +137,9 @@ namespace CatalogResource
             w.Write(unknown6);
             w.Write(unknown7);
             w.Write(unknown8);
-            w.Write(index1);
+            w.Write(vpxy_index1);
             w.Write(unknown9);
+            //ww.Write(unknown10);
             Write7BitStr(s, unknown10);
             w.Write(unknown11);
 
@@ -246,7 +250,7 @@ namespace CatalogResource
         public byte Unknown6 { get { return unknown6; } set { if (unknown6 != value) { unknown6 = value; OnResourceChanged(this, new EventArgs()); } } }
         public uint Unknown7 { get { return unknown7; } set { if (unknown7 != value) { unknown7 = value; OnResourceChanged(this, new EventArgs()); } } }
         public uint Unknown8 { get { return unknown8; } set { if (unknown8 != value) { unknown8 = value; OnResourceChanged(this, new EventArgs()); } } }
-        public uint Index1 { get { return index1; } set { if (index1 != value) { index1 = value; OnResourceChanged(this, new EventArgs()); } } }
+        public uint VPXYIndex1 { get { return vpxy_index1; } set { if (vpxy_index1 != value) { vpxy_index1 = value; OnResourceChanged(this, new EventArgs()); } } }
         public uint Unknown9 { get { return unknown9; } set { if (unknown9 != value) { unknown9 = value; OnResourceChanged(this, new EventArgs()); } } }
         public string Unknown10
         {
