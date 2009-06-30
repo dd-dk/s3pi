@@ -52,16 +52,16 @@ namespace CatalogResource
         Boolset buildCategoryFlags = new Boolset((uint)0);
         uint sinkDDSIndex;
         uint unknown14;
-        string materialGrouping1;
-        string materialGrouping2;
+        string materialGrouping1 = "";
+        string materialGrouping2 = "";
         uint[] unknown15 = new uint[13];
         uint nullTGIIndex;
         #endregion
 
         #region Constructors
         public ObjectCatalogResource(int APIversion, Stream s) : base(APIversion, s) { }
-        public ObjectCatalogResource(int APIversion, ObjectCatalogResource basis)
-            : base(APIversion, basis)
+        public ObjectCatalogResource(int APIversion, Stream unused, ObjectCatalogResource basis)
+            : base(APIversion, null, basis)
         {
             this.unknown1 = basis.unknown1;
             this.materialList = new MaterialList(this, basis.materialList);
@@ -103,7 +103,7 @@ namespace CatalogResource
             Boolset roomFlags, Boolset functionCategoryFlags, Boolset subCategoryFlags, Boolset subRoomFlags, Boolset buildCategoryFlags,
             uint sinkDDSIndex, uint unknown14, string materialGrouping1, string materialGrouping2, uint[] unknown15, uint nullTGIIndex,
             IList<TGIBlock<CatalogResource>> ltgib)
-            : base(APIversion, ltgib)
+            : base(APIversion, null, ltgib)
         {
             this.unknown1 = unknown1;
             this.materialList = new MaterialList(this, materialList);
@@ -214,6 +214,7 @@ namespace CatalogResource
             pos = s.Position;
             w.Write((uint)0); // tgiOffset
             w.Write((uint)0); // tgiSize
+            if (materialList == null) materialList = new MaterialList(this);
             materialList.UnParse(s);
             common.UnParse(s);
             w.Write(unknown2);
@@ -228,6 +229,7 @@ namespace CatalogResource
             w.Write(unknown10);
             w.Write(unknown11);
             w.Write(unknown12);
+            if (mtDoorList == null) mtDoorList = new MTDoorList(this);
             mtDoorList.UnParse(s);
             w.Write(unknown13);
             w.Write(diagonalIndex);
@@ -244,7 +246,7 @@ namespace CatalogResource
             for (int i = 0; i < this.unknown15.Length; i++) w.Write(unknown15[i]);
             w.Write(nullTGIIndex);
 
-            list.UnParse(s, pos);
+            base.UnParse(s, pos);
 
             w.Flush();
 
@@ -254,7 +256,7 @@ namespace CatalogResource
 
         #region ICloneable Members
 
-        public override object Clone() { return new ObjectCatalogResource(requestedApiVersion, this); }
+        public override object Clone() { return new ObjectCatalogResource(requestedApiVersion, null, this); }
 
         #endregion
 

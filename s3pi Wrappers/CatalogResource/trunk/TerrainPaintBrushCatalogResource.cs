@@ -32,8 +32,8 @@ namespace CatalogResource
 
         #region Constructors
         public TerrainPaintBrushCatalogResource(int APIversion, Stream s) : base(APIversion, s) { }
-        public TerrainPaintBrushCatalogResource(int APIversion, TerrainPaintBrushCatalogResource basis)
-            : base(APIversion, basis)
+        public TerrainPaintBrushCatalogResource(int APIversion, Stream unused, TerrainPaintBrushCatalogResource basis)
+            : base(APIversion, null, basis)
         {
             this.brushTexture = (TGIBlock<CatalogResource>)basis.brushTexture.Clone();
         }
@@ -58,6 +58,7 @@ namespace CatalogResource
         protected override Stream UnParse()
         {
             Stream s = base.UnParse();
+            if (brushTexture == null) brushTexture = new TGIBlock<CatalogResource>(this, 0, 0, 0);
             brushTexture.UnParse(s);
 
             return s;
@@ -66,7 +67,7 @@ namespace CatalogResource
 
         #region ICloneable Members
 
-        public override object Clone() { return new TerrainPaintBrushCatalogResource(requestedApiVersion, this); }
+        public override object Clone() { return new TerrainPaintBrushCatalogResource(requestedApiVersion, null, this); }
 
         #endregion
 

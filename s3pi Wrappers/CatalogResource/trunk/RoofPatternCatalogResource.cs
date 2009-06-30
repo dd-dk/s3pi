@@ -41,8 +41,8 @@ namespace CatalogResource
 
         #region Constructors
         public RoofPatternCatalogResource(int APIversion, Stream s) : base(APIversion, s) { }
-        public RoofPatternCatalogResource(int APIversion, RoofPatternCatalogResource basis)
-            : base(APIversion, basis)
+        public RoofPatternCatalogResource(int APIversion, Stream unused, RoofPatternCatalogResource basis)
+            : base(APIversion, null, basis)
         {
             this.unknown1 = basis.unknown1;
             this.common = new Common(this, basis.common);
@@ -59,7 +59,7 @@ namespace CatalogResource
         public RoofPatternCatalogResource(int APIversion, uint unknown1, Common common,
             uint unknown2, byte unknown3, uint unknown4, byte unknown5, uint unknown6, byte unknown7, uint index1, uint index2, uint unknown8,
             TGIBlockList<CatalogResource> ltgib)
-            : base(APIversion, ltgib)
+            : base(APIversion, null, ltgib)
         {
             this.unknown1 = unknown1;
             this.common = new Common(this, common);
@@ -120,7 +120,7 @@ namespace CatalogResource
             w.Write(vpxy_index2);
             w.Write(unknown8);
 
-            list.UnParse(s, pos);
+            base.UnParse(s, pos);
 
             w.Flush();
 
@@ -130,7 +130,7 @@ namespace CatalogResource
 
         #region ICloneable Members
 
-        public override object Clone() { return new RoofPatternCatalogResource(requestedApiVersion, this); }
+        public override object Clone() { return new RoofPatternCatalogResource(requestedApiVersion, null, this); }
 
         #endregion
 

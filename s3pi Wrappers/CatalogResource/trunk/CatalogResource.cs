@@ -39,7 +39,14 @@ namespace CatalogResource
         #endregion
 
         #region Constructors
-        protected CatalogResource(int APIversion, Stream s) : base(APIversion, s) { if (stream == null) stream = UnParse(); s.Position = 0; Parse(s); }
+        protected CatalogResource(int APIversion, Stream s)
+            : base(APIversion, s)
+        {
+            common = new Common(this);
+            if (stream == null) { stream = UnParse(); dirty = true; }
+            stream.Position = 0;
+            Parse(stream);
+        }
         #endregion
 
         #region Data I/O
@@ -59,6 +66,7 @@ namespace CatalogResource
                 if (dirty)
                 {
                     stream = UnParse();
+                    stream.Position = 0;
                     dirty = false;
                 }
                 return stream;
@@ -80,8 +88,8 @@ namespace CatalogResource
             uint unknown1;
             ulong nameGUID;
             ulong descGUID;
-            string name;
-            string desc;
+            string name = "";
+            string desc = "";
             float price;
             float unknown2;
             byte[] unknown3 = new byte[4];
@@ -235,12 +243,12 @@ namespace CatalogResource
             IComparable<TypeCode>, IEqualityComparer<TypeCode>, IEquatable<TypeCode>
         {
             #region Attributes
-            protected CatalogResource parent = null;
-            protected byte[] prefix;
+            protected CatalogResource parent;
+            protected byte[] prefix = new byte[0];
             #endregion
 
             #region Constructors
-            protected TypeCode(CatalogResource parent, byte[] pfx) { this.parent = parent; prefix = prefix == null ? null : (byte[])pfx.Clone(); }
+            protected TypeCode(CatalogResource parent, byte[] pfx) { this.parent = parent; prefix = pfx == null ? null : (byte[])pfx.Clone(); }
             protected TypeCode(CatalogResource parent, Stream s, byte[] pfx) : this(parent, pfx) { Parse(s); }
 
             public static TypeCode CreateTypeCode(CatalogResource cr, Stream s, byte[] prefix)
@@ -334,7 +342,7 @@ namespace CatalogResource
         public class TypeCode01 : TypeCode
         {
             byte subType;
-            string unknown1;
+            string unknown1 = "";
             byte unknown2;
 
             internal TypeCode01(CatalogResource parent, Stream s, byte[] prefix) : base(parent, s, prefix) { }
@@ -1251,9 +1259,16 @@ namespace CatalogResource
         #endregion
 
         #region Constructors
-        public CatalogResourceTGIBlockList(int APIversion) : base(APIversion, null) { this.list = new TGIBlockList<CatalogResource>(this); dirty = true; }
         public CatalogResourceTGIBlockList(int APIversion, Stream s) : base(APIversion, s) { }
-        public CatalogResourceTGIBlockList(int APIversion, IList<CatalogResource.TGIBlock<CatalogResource>> ltgib) : base(APIversion, null) { this.list = new TGIBlockList<CatalogResource>(this, ltgib); dirty = true; }
+        public CatalogResourceTGIBlockList(int APIversion, Stream unused, IList<CatalogResource.TGIBlock<CatalogResource>> ltgib) : base(APIversion, null) { this.list = new TGIBlockList<CatalogResource>(this, ltgib); }
+        #endregion
+
+        #region Data I/O
+        protected void UnParse(Stream s, long pos)
+        {
+            if (list == null) list = new TGIBlockList<CatalogResource>(this);
+            list.UnParse(s, pos);
+        }
         #endregion
 
         #region IList<TGIBlock<CatalogResource>> Members

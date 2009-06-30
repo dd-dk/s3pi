@@ -39,7 +39,7 @@ namespace CatalogResource
 
         #region Constructors
         public ProxyProductCatalogResource(int APIversion, Stream s) : base(APIversion, s) { }
-        public ProxyProductCatalogResource(int APIversion, ProxyProductCatalogResource basis)
+        public ProxyProductCatalogResource(int APIversion, Stream unused, ProxyProductCatalogResource basis)
             : base(APIversion, null)
         {
             this.unknown1 = basis.unknown1;
@@ -107,7 +107,7 @@ namespace CatalogResource
 
         #region ICloneable Members
 
-        public override object Clone() { return new ProxyProductCatalogResource(requestedApiVersion, this); }
+        public override object Clone() { return new ProxyProductCatalogResource(requestedApiVersion, null, this); }
 
         #endregion
 

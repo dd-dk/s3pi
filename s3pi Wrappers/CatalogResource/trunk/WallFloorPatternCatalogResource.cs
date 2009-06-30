@@ -38,14 +38,14 @@ namespace CatalogResource
         uint unknown8;
         uint vpxy_index1;
         uint unknown9;
-        string unknown10;
+        string unknown10 = "";
         byte[] unknown11 = new byte[8];
         #endregion
 
         #region Constructors
         public WallFloorPatternCatalogResource(int APIversion, Stream s) : base(APIversion, s) { }
-        public WallFloorPatternCatalogResource(int APIversion, WallFloorPatternCatalogResource basis)
-            : base(APIversion, basis)
+        public WallFloorPatternCatalogResource(int APIversion, Stream unused, WallFloorPatternCatalogResource basis)
+            : base(APIversion, null, basis)
         {
             this.unknown1 = basis.unknown1;
             this.materialList = new WallFloorPatternMaterialList(this, basis.materialList);
@@ -67,7 +67,7 @@ namespace CatalogResource
             uint unknown2, byte unknown3, uint unknown4, byte unknown5, byte unknown6, uint unknown7, uint unknown8,
             uint index1, uint unknown9, string unknown10, byte[] unknown11,
             TGIBlockList<CatalogResource> ltgib)
-            : base(APIversion, ltgib)
+            : base(APIversion, null, ltgib)
         {
             this.unknown1 = unknown1;
             this.materialList = new WallFloorPatternMaterialList(this, materialList);
@@ -128,6 +128,7 @@ namespace CatalogResource
             pos = s.Position;
             w.Write((uint)0); // tgiOffset
             w.Write((uint)0); // tgiSize
+            if (materialList == null) materialList = new WallFloorPatternMaterialList(this);
             materialList.UnParse(s);
             common.UnParse(s);
             w.Write(unknown2);
@@ -143,7 +144,7 @@ namespace CatalogResource
             Write7BitStr(s, unknown10);
             w.Write(unknown11);
 
-            list.UnParse(s, pos);
+            base.UnParse(s, pos);
 
             w.Flush();
 
@@ -153,7 +154,7 @@ namespace CatalogResource
 
         #region ICloneable Members
 
-        public override object Clone() { return new WallFloorPatternCatalogResource(requestedApiVersion, this); }
+        public override object Clone() { return new WallFloorPatternCatalogResource(requestedApiVersion, null, this); }
 
         #endregion
 

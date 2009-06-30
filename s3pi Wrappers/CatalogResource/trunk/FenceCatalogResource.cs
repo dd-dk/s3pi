@@ -43,8 +43,8 @@ namespace CatalogResource
 
         #region Constructors
         public FenceCatalogResource(int APIversion, Stream s) : base(APIversion, s) { }
-        public FenceCatalogResource(int APIversion, FenceCatalogResource basis)
-            : base(APIversion, basis)
+        public FenceCatalogResource(int APIversion, Stream unused, FenceCatalogResource basis)
+            : base(APIversion, null, basis)
         {
             this.unknown1 = basis.unknown1;
             this.common = new Common(this, basis.common);
@@ -63,7 +63,7 @@ namespace CatalogResource
         public FenceCatalogResource(int APIversion, uint unknown1, Common common, uint unknown2, byte unknown3, uint unknown4,
             byte unknown5, uint unknown6, byte unknown7, uint unknown8, uint unknown9, uint unknown10, uint unknown11, byte unknown12,
             TGIBlockList<CatalogResource> ltgib)
-            : base(APIversion, ltgib)
+            : base(APIversion, null, ltgib)
         {
             this.unknown1 = unknown1;
             this.common = new Common(this, common);
@@ -127,7 +127,7 @@ namespace CatalogResource
             w.Write(unknown11);
             w.Write(unknown12);
 
-            list.UnParse(s, pos);
+            base.UnParse(s, pos);
 
             w.Flush();
 
@@ -137,7 +137,7 @@ namespace CatalogResource
 
         #region ICloneable Members
 
-        public override object Clone() { return new FenceCatalogResource(requestedApiVersion, this); }
+        public override object Clone() { return new FenceCatalogResource(requestedApiVersion, null, this); }
 
         #endregion
 

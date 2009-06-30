@@ -46,7 +46,7 @@ namespace CatalogResource
 
         #region Constructors
         public TerrainGeometryWaterBrushCatalogResource(int APIversion, Stream s) : base(APIversion, s) { }
-        public TerrainGeometryWaterBrushCatalogResource(int APIversion, TerrainGeometryWaterBrushCatalogResource basis)
+        public TerrainGeometryWaterBrushCatalogResource(int APIversion, Stream unused, TerrainGeometryWaterBrushCatalogResource basis)
             : base(APIversion, null)
         {
             this.unknown1 = basis.unknown1;
@@ -135,6 +135,7 @@ namespace CatalogResource
             w.Write(unknown8);
             w.Write(unknown9);
             w.Write(unknown10);
+            if (brushShape == null) brushShape = new TGIBlock<CatalogResource>(this, 0, 0, 0);
             brushShape.UnParse(s);
             w.Write(unknown11);
             w.Write(unknown12);
@@ -149,7 +150,7 @@ namespace CatalogResource
 
         #region ICloneable Members
 
-        public override object Clone() { return new TerrainGeometryWaterBrushCatalogResource(requestedApiVersion, this); }
+        public override object Clone() { return new TerrainGeometryWaterBrushCatalogResource(requestedApiVersion, null, this); }
 
         #endregion
 

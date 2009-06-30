@@ -46,8 +46,8 @@ namespace CatalogResource
 
         #region Constructors
         public FireplaceCatalogResource(int APIversion, Stream s) : base(APIversion, s) { }
-        public FireplaceCatalogResource(int APIversion, FireplaceCatalogResource basis)
-            : base(APIversion, basis)
+        public FireplaceCatalogResource(int APIversion, Stream unused, FireplaceCatalogResource basis)
+            : base(APIversion, null, basis)
         {
             this.unknown1 = basis.unknown1;
             this.common = new Common(this, basis.common);
@@ -69,7 +69,7 @@ namespace CatalogResource
         public FireplaceCatalogResource(int APIversion, uint unknown1, Common common, uint unknown2, byte unknown3, uint unknown4, byte unknown5,
             uint unknown6, byte unknown7, byte unknown8, uint index1, uint index2, uint index3, uint index4, uint index5, uint index6, uint index7,
             TGIBlockList<CatalogResource> ltgib)
-            : base(APIversion, ltgib)
+            : base(APIversion, null, ltgib)
         {
             this.unknown1 = unknown1;
             this.common = new Common(this, common);
@@ -145,7 +145,7 @@ namespace CatalogResource
             w.Write(index6);
             w.Write(index7);
 
-            list.UnParse(s, pos);
+            base.UnParse(s, pos);
 
             w.Flush();
 
@@ -155,7 +155,7 @@ namespace CatalogResource
 
         #region ICloneable Members
 
-        public override object Clone() { return new FireplaceCatalogResource(requestedApiVersion, this); }
+        public override object Clone() { return new FireplaceCatalogResource(requestedApiVersion, null, this); }
 
         #endregion
 

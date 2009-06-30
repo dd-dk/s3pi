@@ -45,8 +45,8 @@ namespace CatalogResource
 
         #region Constructors
         public StairsCatalogResource(int APIversion, Stream s) : base(APIversion, s) { }
-        public StairsCatalogResource(int APIversion, StairsCatalogResource basis)
-            : base(APIversion, basis)
+        public StairsCatalogResource(int APIversion, Stream unused, StairsCatalogResource basis)
+            : base(APIversion, null, basis)
         {
             this.unknown1 = basis.unknown1;
             this.common = new Common(this, basis.common);
@@ -68,7 +68,7 @@ namespace CatalogResource
             uint unknown2, byte unknown3, uint unknown4, byte unknown5, uint unknown6, byte unknown7, uint index1, uint index2, uint index3,
             uint catalogRailing, uint catalogWall, uint catalogWallFloorPattern, uint catalogFence,
             TGIBlockList<CatalogResource> ltgib)
-            : base(APIversion, ltgib)
+            : base(APIversion, null, ltgib)
         {
             this.unknown1 = unknown1;
             this.common = new Common(this, common);
@@ -141,7 +141,7 @@ namespace CatalogResource
             w.Write(catalogWallFloorPattern);
             w.Write(catalogFence);
 
-            list.UnParse(s, pos);
+            base.UnParse(s, pos);
 
             w.Flush();
 
@@ -151,7 +151,7 @@ namespace CatalogResource
 
         #region ICloneable Members
 
-        public override object Clone() { return new StairsCatalogResource(requestedApiVersion, this); }
+        public override object Clone() { return new StairsCatalogResource(requestedApiVersion, null, this); }
 
         #endregion
 
