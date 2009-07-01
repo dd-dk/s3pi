@@ -39,7 +39,7 @@ namespace s3pi.Extensions
             while ((s = sr.ReadLine()) != null)
             {
                 if (s.StartsWith(";")) continue;
-                List<string> t = new List<string>(s.Split(new char[] { ' ' }));
+                List<string> t = new List<string>(s.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries));
                 if (t.Count < 2) continue;
                 string t0 = t[0];
                 t.RemoveAt(0);
