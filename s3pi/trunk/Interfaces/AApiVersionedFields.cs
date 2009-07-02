@@ -303,5 +303,6 @@ namespace s3pi.Interfaces
         protected EventHandler handler;
         public AHandlerElement(int APIversion, EventHandler handler) { requestedApiVersion = APIversion; this.handler = handler; }
         public abstract AHandlerElement Clone(EventHandler handler);
+        protected void OnElementChanged() { if (handler != null) handler(this, EventArgs.Empty); }
     }
 }
