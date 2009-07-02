@@ -202,7 +202,7 @@ namespace CatalogResource
             #endregion
 
             #region Content Fields
-            public uint Unknown4 { get { return unknown4; } set { if (unknown4 != value) { unknown4 = value; handler(this, new EventArgs()); } } }
+            public uint Unknown4 { get { return unknown4; } set { if (unknown4 != value) { unknown4 = value; OnElementChanged(); } } }
             #endregion
         }
 

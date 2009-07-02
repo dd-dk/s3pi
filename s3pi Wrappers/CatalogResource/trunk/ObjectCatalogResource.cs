@@ -324,11 +324,11 @@ namespace CatalogResource
                 set
                 {
                     if (value.Length != unknown1.Length) throw new ArgumentLengthException("unknown1", this.unknown1.Length);
-                    if (!ArrayCompare(unknown1, value)) { unknown1 = (float[])value.Clone(); handler(this, new EventArgs()); }
+                    if (!ArrayCompare(unknown1, value)) { unknown1 = (float[])value.Clone(); OnElementChanged(); }
                 }
             }
-            public uint Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; handler(this, new EventArgs()); } } }
-            public uint WallMaskIndex { get { return wallMaskIndex; } set { if (wallMaskIndex != value) { wallMaskIndex = value; handler(this, new EventArgs()); } } }
+            public uint Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; OnElementChanged(); } } }
+            public uint WallMaskIndex { get { return wallMaskIndex; } set { if (wallMaskIndex != value) { wallMaskIndex = value; OnElementChanged(); } } }
 
             public String Value
             {

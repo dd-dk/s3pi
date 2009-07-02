@@ -169,19 +169,19 @@ namespace CatalogResource
             #endregion
 
             #region Content Fields
-            public uint Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; handler(this, new EventArgs()); } } }
+            public uint Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; OnElementChanged(); } } }
 
-            public ulong NameGUID { get { return nameGUID; } set { if (nameGUID == value) { nameGUID = value; handler(this, new EventArgs()); } } }
+            public ulong NameGUID { get { return nameGUID; } set { if (nameGUID == value) { nameGUID = value; OnElementChanged(); } } }
 
-            public ulong DescGUID { get { return descGUID; } set { if (descGUID != value) { descGUID = value; handler(this, new EventArgs()); } } }
+            public ulong DescGUID { get { return descGUID; } set { if (descGUID != value) { descGUID = value; OnElementChanged(); } } }
 
-            public string Name { get { return name; } set { if (name != value) { name = value; handler(this, new EventArgs()); } } }
+            public string Name { get { return name; } set { if (name != value) { name = value; OnElementChanged(); } } }
 
-            public string Desc { get { return desc; } set { if (desc != value) { desc = value; handler(this, new EventArgs()); } } }
+            public string Desc { get { return desc; } set { if (desc != value) { desc = value; OnElementChanged(); } } }
 
-            public float Price { get { return price; } set { if (price != value) { price = value; handler(this, new EventArgs()); } } }
+            public float Price { get { return price; } set { if (price != value) { price = value; OnElementChanged(); } } }
 
-            public float Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; handler(this, new EventArgs()); } } }
+            public float Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; OnElementChanged(); } } }
 
             public byte[] Unknown3
             {
@@ -194,14 +194,14 @@ namespace CatalogResource
                     if (!same)
                     {
                         unknown3 = (byte[])value.Clone();
-                        handler(this, new EventArgs());
+                        OnElementChanged();
                     }
                 }
             }
 
-            public byte Unknown4 { get { return unknown4; } set { if (unknown4 != value) { unknown4 = value; handler(this, new EventArgs()); } } }
+            public byte Unknown4 { get { return unknown4; } set { if (unknown4 != value) { unknown4 = value; OnElementChanged(); } } }
 
-            public ulong PngInstance { get { return pngInstance; } set { if (pngInstance != value) { pngInstance = value; handler(this, new EventArgs()); } } }
+            public ulong PngInstance { get { return pngInstance; } set { if (pngInstance != value) { pngInstance = value; OnElementChanged(); } } }
 
             public String Value
             {
@@ -217,7 +217,6 @@ namespace CatalogResource
                 }
             }
             #endregion
-
         }
 
         #region TypeCode
@@ -384,7 +383,7 @@ namespace CatalogResource
                     if (HasUnknown2) throw new InvalidOperationException("This TypeCode01 has Unknown2 - remove first");
                     subType = (byte)(value ? 0x80 : 0x00);
                     unknown1 = "";
-                    handler(this, new EventArgs());
+                    OnElementChanged();
                 }
             }
             public bool HasUnknown2
@@ -396,7 +395,7 @@ namespace CatalogResource
                     if (HasUnknown1) throw new InvalidOperationException("This TypeCode01 has Unknown1 - remove first");
                     subType = (byte)((value ? 0x40 : 0x00) | SubType);
                     unknown2 = 0x00;
-                    handler(this, new EventArgs());
+                    OnElementChanged();
                 }
             }
 
@@ -408,7 +407,7 @@ namespace CatalogResource
                     if (!HasUnknown1) throw new InvalidOperationException("This TypeCode01 has no Unknown1");
                     if (value.Length > 0x3f)
                         throw new ArgumentException(String.Format("String length (0x{0:X}) must not exceed 0x3F.", value.Length));
-                    if (unknown1 != value) { unknown1 = value; handler(this, new EventArgs()); }
+                    if (unknown1 != value) { unknown1 = value; OnElementChanged(); }
                 }
             }
             public byte Unknown2
@@ -417,7 +416,7 @@ namespace CatalogResource
                 set
                 {
                     if (!HasUnknown2) throw new InvalidOperationException("This TypeCode01 has no Unknown2");
-                    if (unknown2 != value) { unknown2 = value; handler(this, new EventArgs()); }
+                    if (unknown2 != value) { unknown2 = value; OnElementChanged(); }
                 }
             }
             public byte SubType
@@ -434,7 +433,7 @@ namespace CatalogResource
                     if ((value & 0xC0) != 0) throw new ArgumentOutOfRangeException("Maximum value for SubType is 0x3F.");
                     subType &= 0xC0;
                     subType |= value;
-                    handler(this, new EventArgs());
+                    OnElementChanged();
                 }
             }
         }
@@ -487,10 +486,10 @@ namespace CatalogResource
 
             public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
 
-            public byte Red { get { return red; } set { if (red != value) { red = value; handler(this, new EventArgs()); } } }
-            public byte Green { get { return green; } set { if (green != value) { green = value; handler(this, new EventArgs()); } } }
-            public byte Blue { get { return blue; } set { if (blue != value) { blue = value; handler(this, new EventArgs()); } } }
-            public byte Alpha { get { return alpha; } set { if (alpha != value) { alpha = value; handler(this, new EventArgs()); } } }
+            public byte Red { get { return red; } set { if (red != value) { red = value; OnElementChanged(); } } }
+            public byte Green { get { return green; } set { if (green != value) { green = value; OnElementChanged(); } } }
+            public byte Blue { get { return blue; } set { if (blue != value) { blue = value; OnElementChanged(); } } }
+            public byte Alpha { get { return alpha; } set { if (alpha != value) { alpha = value; OnElementChanged(); } } }
         }
 
         public class TypeCode03 : TypeCode
@@ -527,7 +526,7 @@ namespace CatalogResource
 
             public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
 
-            public byte TGIIndex { get { return tgiIndex; } set { if (tgiIndex != value) { tgiIndex = value; handler(this, new EventArgs()); } } }
+            public byte TGIIndex { get { return tgiIndex; } set { if (tgiIndex != value) { tgiIndex = value; OnElementChanged(); } } }
         }
 
         public class TypeCode04 : TypeCode
@@ -564,7 +563,7 @@ namespace CatalogResource
 
             public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
 
-            public float Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; handler(this, new EventArgs()); } } }
+            public float Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; OnElementChanged(); } } }
         }
 
         public class TypeCode05 : TypeCode
@@ -608,8 +607,8 @@ namespace CatalogResource
 
             public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
 
-            public float Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; handler(this, new EventArgs()); } } }
-            public float Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; handler(this, new EventArgs()); } } }
+            public float Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; OnElementChanged(); } } }
+            public float Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; OnElementChanged(); } } }
         }
 
         public class TypeCode06 : TypeCode
@@ -662,9 +661,9 @@ namespace CatalogResource
 
             public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
 
-            public float Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; handler(this, new EventArgs()); } } }
-            public float Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; handler(this, new EventArgs()); } } }
-            public float Unknown3 { get { return unknown3; } set { if (unknown3 != value) { unknown3 = value; handler(this, new EventArgs()); } } }
+            public float Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; OnElementChanged(); } } }
+            public float Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; OnElementChanged(); } } }
+            public float Unknown3 { get { return unknown3; } set { if (unknown3 != value) { unknown3 = value; OnElementChanged(); } } }
         }
 
         public class TypeCode07 : TypeCode
@@ -700,7 +699,7 @@ namespace CatalogResource
 
             public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
 
-            public byte Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; handler(this, new EventArgs()); } } }
+            public byte Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; OnElementChanged(); } } }
         }
 
         public class TypeCode2F : TypeCode
@@ -744,8 +743,8 @@ namespace CatalogResource
 
             public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
 
-            public byte Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; handler(this, new EventArgs()); } } }
-            public uint Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; handler(this, new EventArgs()); } } }
+            public byte Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; OnElementChanged(); } } }
+            public uint Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; OnElementChanged(); } } }
         }
 
         public class TypeCode40 : TypeCode
@@ -785,7 +784,7 @@ namespace CatalogResource
 
             public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
 
-            public int Length { get { return length; } set { if (length != value) { length = value; handler(this, new EventArgs()); } } }
+            public int Length { get { return length; } set { if (length != value) { length = value; OnElementChanged(); } } }
         }
 
         public class TypeCodeList : AResource.DependentList<TypeCode>
@@ -931,11 +930,11 @@ namespace CatalogResource
             #endregion
 
             #region Content Fields
-            public byte XMLIndex { get { return xmlindex; } set { if (xmlindex != value) { xmlindex = value; handler(this, new EventArgs()); } } }
-            public TypeCode01 Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; handler(this, new EventArgs()); } } }
-            public TypeCode01 Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; handler(this, new EventArgs()); } } }
-            public IList<TypeCode> TypeCodes { get { return tcList; } set { if (tcList != (value as TypeCodeList)) { tcList = new TypeCodeList(handler, value); handler(this, new EventArgs()); } } }
-            public IList<MaterialBlock> MaterialBlocks { get { return mbList; } set { if (mbList != (value as MaterialBlockList)) { mbList = new MaterialBlockList(handler, value); handler(this, new EventArgs()); } } }
+            public byte XMLIndex { get { return xmlindex; } set { if (xmlindex != value) { xmlindex = value; OnElementChanged(); } } }
+            public TypeCode01 Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; OnElementChanged(); } } }
+            public TypeCode01 Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; OnElementChanged(); } } }
+            public IList<TypeCode> TypeCodes { get { return tcList; } set { if (tcList != (value as TypeCodeList)) { tcList = new TypeCodeList(handler, value); OnElementChanged(); } } }
+            public IList<MaterialBlock> MaterialBlocks { get { return mbList; } set { if (mbList != (value as MaterialBlockList)) { mbList = new MaterialBlockList(handler, value); OnElementChanged(); } } }
 
             public String Value
             {
@@ -1110,10 +1109,10 @@ namespace CatalogResource
             #endregion
 
             #region Content Fields
-            public byte MaterialType { get { return materialType; } set { if (materialType != value) { materialType = value; handler(this, new EventArgs()); } } }
-            public uint Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; handler(this, new EventArgs()); } } }
-            public ushort Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; handler(this, new EventArgs()); } } }
-            public MaterialBlock MaterialBlock { get { return mb; } set { if (mb != value) { mb = value; handler(this, new EventArgs()); } } }
+            public byte MaterialType { get { return materialType; } set { if (materialType != value) { materialType = value; OnElementChanged(); } } }
+            public uint Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; OnElementChanged(); } } }
+            public ushort Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; OnElementChanged(); } } }
+            public MaterialBlock MaterialBlock { get { return mb; } set { if (mb != value) { mb = value; OnElementChanged(); } } }
             public IList<TGIBlock> TGIBlocks
             {
                 get { return list; }
@@ -1122,11 +1121,11 @@ namespace CatalogResource
                     if (list != (value as TGIBlockList))
                     {
                         list = new TGIBlockList(handler, value);
-                        handler(this, new EventArgs());
+                        OnElementChanged();
                     }
                 }
             }
-            public uint Unknown3 { get { return unknown3; } set { if (unknown3 != value) { unknown3 = value; handler(this, new EventArgs()); } } }
+            public uint Unknown3 { get { return unknown3; } set { if (unknown3 != value) { unknown3 = value; OnElementChanged(); } } }
 
             public String Value
             {
