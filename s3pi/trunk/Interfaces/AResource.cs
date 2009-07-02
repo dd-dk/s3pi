@@ -281,7 +281,7 @@ namespace s3pi.Interfaces
             #region Constructors
             public TGIBlockList(EventHandler handler) : base(handler) { }
             public TGIBlockList(EventHandler handler, IList<TGIBlock> lme) : base(handler, lme) { }
-            public TGIBlockList(EventHandler handler, Stream s, long tgiOffset, long tgiSize) : base(handler) { Parse(s, tgiOffset, tgiSize); }
+            public TGIBlockList(EventHandler handler, Stream s, long tgiPosn, long tgiSize) : base(handler) { Parse(s, tgiPosn, tgiSize); }
             #endregion
 
             #region Data I/O
