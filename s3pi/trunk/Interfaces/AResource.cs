@@ -226,9 +226,9 @@ namespace s3pi.Interfaces
             #endregion
 
             #region Content Fields
-            public uint ResourceType { get { return resourceType; } set { if (resourceType != value) { resourceType = value; handler(this, new EventArgs()); } } }
-            public uint ResourceGroup { get { return resourceGroup; } set { if (resourceGroup != value) { resourceGroup = value; handler(this, new EventArgs()); } } }
-            public ulong Instance { get { return instance; } set { if (instance != value) { instance = value; handler(this, new EventArgs()); } } }
+            public uint ResourceType { get { return resourceType; } set { if (resourceType != value) { resourceType = value; OnElementChanged(); } } }
+            public uint ResourceGroup { get { return resourceGroup; } set { if (resourceGroup != value) { resourceGroup = value; OnElementChanged(); } } }
+            public ulong Instance { get { return instance; } set { if (instance != value) { instance = value; OnElementChanged(); } } }
 
             public String Value { get { return String.Format("0x{0:X8}-0x{1:X8}-0x{2:X16}", resourceType, resourceGroup, instance); } }
             #endregion
