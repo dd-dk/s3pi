@@ -85,22 +85,19 @@ namespace s3pi.Interfaces
         #endregion
 
         #region Sub-classes
-        public abstract class DependentList<T, U> : ADependentList<T, U>
-            where U : AResource
+        public abstract class DependentList<T> : AHandlerList<T>
             where T : IEquatable<T>
         {
             #region Constructors
-            protected DependentList(U parent) : this(parent, -1) { }
-            protected DependentList(U parent, long size) : base(parent, size) { }
-            protected DependentList(U parent, IList<T> ilt) : this(parent, -1, ilt) { }
-            protected DependentList(U parent, long size, IList<T> ilt) : base(parent, size, ilt) { }
-            /// <summary>
-            /// Allow contruction from a stream
-            /// </summary>
-            /// <param name="parent">Resource that parents this list</param>
-            /// <param name="s">Stream containing list entries</param>
-            protected DependentList(U parent, Stream s) : this(parent, -1, s) { }
-            protected DependentList(U parent, long size, Stream s) : base(parent, size) { Parse(s); }
+            // base class constructors...
+            protected DependentList(EventHandler handler) : this(handler, -1) { }
+            protected DependentList(EventHandler handler, long size) : base(handler, size) { }
+            protected DependentList(EventHandler handler, IList<T> ilt) : this(handler, -1, ilt) { }
+            protected DependentList(EventHandler handler, long size, IList<T> ilt) : base(handler, size, ilt) { }
+
+            // Add stream-based constructors and support
+            protected DependentList(EventHandler handler, Stream s) : this(handler, -1, s) { }
+            protected DependentList(EventHandler handler, long size, Stream s) : base(handler, size) { Parse(s); }
             #endregion
 
             #region Data I/O
@@ -108,10 +105,10 @@ namespace s3pi.Interfaces
             /// Read list entries from a stream
             /// </summary>
             /// <param name="s">Stream containing list entries</param>
-            protected virtual void Parse(Stream s) { base.Clear(); bool inc = true; for (uint i = ReadCount(s); i > 0; i = (uint)(i - (inc ? 1 : 0))) base.Add(CreateElement(parent, s, out inc)); }
+            protected virtual void Parse(Stream s) { base.Clear(); bool inc = true; for (uint i = ReadCount(s); i > 0; i = (uint)(i - (inc ? 1 : 0))) base.Add(CreateElement(s, out inc)); }
             protected virtual uint ReadCount(Stream s) { return (new BinaryReader(s)).ReadUInt32(); }
-            protected abstract T CreateElement(U parent, Stream s);
-            protected virtual T CreateElement(U parent, Stream s, out bool inc) { inc = true; return CreateElement(parent, s); }
+            protected abstract T CreateElement(Stream s);
+            protected virtual T CreateElement(Stream s, out bool inc) { inc = true; return CreateElement(s); }
 
             /// <summary>
             /// Write list entries to a stream
@@ -121,41 +118,19 @@ namespace s3pi.Interfaces
             protected virtual void WriteCount(Stream s, uint count) { (new BinaryWriter(s)).Write(count); }
             protected abstract void WriteElement(Stream s, T element);
             #endregion
-
-            #region ResourceChanged overrides for list
-            public virtual new void Insert(int index, T item) { base.Insert(index, item); parent.OnResourceChanged(this, new EventArgs()); }
-
-            public virtual new void RemoveAt(int index) { base.RemoveAt(index); parent.OnResourceChanged(this, new EventArgs()); }
-
-            public virtual new T this[int index]
-            {
-                get { return base[index]; }
-                set
-                {
-                    if (base[index].Equals(value)) return;
-                    base[index] = value;
-                    parent.OnResourceChanged(this, new EventArgs());
-                }
-            }
-
-            public virtual new void Add(T item) { base.Add(item); parent.OnResourceChanged(this, new EventArgs()); }
-
-            public virtual new void Clear() { base.Clear(); parent.OnResourceChanged(this, new EventArgs()); }
-
-            public virtual new bool Remove(T item)
-            {
-                bool res = base.Remove(item);
-                if (res) parent.OnResourceChanged(this, new EventArgs());
-                return res;
-            }
-            #endregion
         }
 
-        public class TGIBlock<T> : AApiVersionedFields, IComparable<TGIBlock<T>>, IEqualityComparer<TGIBlock<T>>, IEquatable<TGIBlock<T>>, ICloneableWithParent
-            where T : AResource
+        public abstract class AHandlerElement : AApiVersionedFields
+        {
+            protected EventHandler handler;
+            public AHandlerElement(int APIversion, EventHandler handler) { requestedApiVersion = APIversion; this.handler = handler; }
+            public abstract AHandlerElement Clone(EventHandler handler);
+        }
+
+        public class TGIBlock : AHandlerElement, IComparable<TGIBlock>, IEqualityComparer<TGIBlock>, IEquatable<TGIBlock>
         {
             #region Attributes
-            T parent = null;
+            const int recommendedApiVersion = 1;
             string order = "TGI";
             uint resourceType;
             uint resourceGroup;
@@ -175,27 +150,27 @@ namespace s3pi.Interfaces
             void ok(string v) { ok((Order)Enum.Parse(typeof(Order), v)); }
             void ok(Order v) { if (!Enum.IsDefined(typeof(Order), v)) throw new ArgumentException("Invalid value " + v, "order"); }
 
-            public TGIBlock(T parent, uint resourceType, uint resourceGroup, ulong instance)
+            public TGIBlock(int APIversion, EventHandler handler, uint resourceType, uint resourceGroup, ulong instance)
+                : base(APIversion, handler)
             {
-                this.parent = parent;
                 this.resourceType = resourceType;
                 this.resourceGroup = resourceGroup;
                 this.instance = instance;
             }
 
-            public TGIBlock(T parent, string order, uint resourceType, uint resourceGroup, ulong instance)
-                : this(parent, resourceType, resourceGroup, instance) { ok(order); this.order = order; }
-            public TGIBlock(T parent, Order order, uint resourceType, uint resourceGroup, ulong instance)
-                : this(parent, resourceType, resourceGroup, instance) { ok(order); this.order = "" + order; }
+            public TGIBlock(int APIversion, EventHandler handler, string order, uint resourceType, uint resourceGroup, ulong instance)
+                : this(APIversion, handler, resourceType, resourceGroup, instance) { ok(order); this.order = order; }
+            public TGIBlock(int APIversion, EventHandler handler, Order order, uint resourceType, uint resourceGroup, ulong instance)
+                : this(APIversion, handler, resourceType, resourceGroup, instance) { ok(order); this.order = "" + order; }
 
-            public TGIBlock(T parent, TGIBlock<T> tgib) : this(parent, "TGI", tgib) { }
-            public TGIBlock(T parent, Order order, TGIBlock<T> tgib) : this(parent, order, tgib.resourceType, tgib.resourceGroup, tgib.instance) { }
-            public TGIBlock(T parent, string order, TGIBlock<T> tgib) : this(parent, order, tgib.resourceType, tgib.resourceGroup, tgib.instance) { }
+            public TGIBlock(int APIversion, EventHandler handler, TGIBlock tgib) : this(APIversion, handler, "TGI", tgib) { }
+            public TGIBlock(int APIversion, EventHandler handler, Order order, TGIBlock tgib) : this(APIversion, handler, order, tgib.resourceType, tgib.resourceGroup, tgib.instance) { }
+            public TGIBlock(int APIversion, EventHandler handler, string order, TGIBlock tgib) : this(APIversion, handler, order, tgib.resourceType, tgib.resourceGroup, tgib.instance) { }
 
             // With stream, order is needed in the constructor for parsing
-            public TGIBlock(T parent, Stream s) : this(parent, "TGI", s) { }
-            public TGIBlock(T parent, Order order, Stream s) : this(parent, "" + order, s) { }
-            public TGIBlock(T parent, string order, Stream s) { this.parent = parent; ok(order); this.order = order; Parse(s); }
+            public TGIBlock(int APIversion, EventHandler handler, Stream s) : this(APIversion, handler, "TGI", s) { }
+            public TGIBlock(int APIversion, EventHandler handler, Order order, Stream s) : this(APIversion, handler, "" + order, s) { }
+            public TGIBlock(int APIversion, EventHandler handler, string order, Stream s) : base(APIversion, handler) { ok(order); this.order = order; Parse(s); }
             #endregion
 
             #region Data I/O
@@ -224,9 +199,9 @@ namespace s3pi.Interfaces
             }
             #endregion
 
-            #region IComparable<TGIBlock<T>> Members
+            #region IComparable<TGIBlock> Members
 
-            public int CompareTo(TGIBlock<T> other)
+            public int CompareTo(TGIBlock other)
             {
                 int res = resourceType.CompareTo(other.resourceType); if (res != 0) return res;
                 res = resourceGroup.CompareTo(other.resourceGroup); if (res != 0) return res;
@@ -235,65 +210,90 @@ namespace s3pi.Interfaces
 
             #endregion
 
-            #region IEqualityComparer<TGIBlock<T>> Members
+            #region IEqualityComparer<TGIBlock> Members
 
-            public bool Equals(TGIBlock<T> x, TGIBlock<T> y) { return x.Equals(y); }
+            public bool Equals(TGIBlock x, TGIBlock y) { return x.Equals(y); }
 
-            public int GetHashCode(TGIBlock<T> obj) { return obj.GetHashCode(); }
+            public int GetHashCode(TGIBlock obj) { return obj.GetHashCode(); }
 
             public override int GetHashCode() { return resourceType.GetHashCode() ^ resourceGroup.GetHashCode() ^ instance.GetHashCode(); }
 
             #endregion
 
-            #region IEquatable<TGIBlock<T>> Members
+            #region IEquatable<TGIBlock> Members
 
-            public bool Equals(TGIBlock<T> other) { return this.CompareTo(other) == 0; }
-
-            #endregion
-
-            #region ICloneableWithParent Members
-
-            public object Clone(object newParent) { return new TGIBlock<T>(newParent as T, this); }
+            public bool Equals(TGIBlock other) { return this.CompareTo(other) == 0; }
 
             #endregion
 
-            #region ICloneable Members
-
-            public object Clone() { return Clone(parent); }
-
-            #endregion
-
-            #region AApiVersionedFields
+            #region AHandlerElement
             public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
-
-            public override int RecommendedApiVersion { get { return parent.RecommendedApiVersion; } }
+            public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
+            public override AHandlerElement Clone(EventHandler handler) { return new TGIBlock(requestedApiVersion, handler, this); }
             #endregion
 
             #region Content Fields
-            public uint ResourceType { get { return resourceType; } set { if (resourceType != value) { resourceType = value; parent.OnResourceChanged(this, new EventArgs()); } } }
-            public uint ResourceGroup { get { return resourceGroup; } set { if (resourceGroup != value) { resourceGroup = value; parent.OnResourceChanged(this, new EventArgs()); } } }
-            public ulong Instance { get { return instance; } set { if (instance != value) { instance = value; parent.OnResourceChanged(this, new EventArgs()); } } }
+            public uint ResourceType { get { return resourceType; } set { if (resourceType != value) { resourceType = value; handler(this, new EventArgs()); } } }
+            public uint ResourceGroup { get { return resourceGroup; } set { if (resourceGroup != value) { resourceGroup = value; handler(this, new EventArgs()); } } }
+            public ulong Instance { get { return instance; } set { if (instance != value) { instance = value; handler(this, new EventArgs()); } } }
 
             public String Value { get { return String.Format("0x{0:X8}-0x{1:X8}-0x{2:X16}", resourceType, resourceGroup, instance); } }
             #endregion
 
             public override string ToString() { return Value; }
-            public static implicit operator String(TGIBlock<T> value) { return value.ToString(); }
+            public static implicit operator String(TGIBlock value) { return value.ToString(); }
         }
 
-        public class TGIBlockList<T> : AResource.DependentList<TGIBlock<T>, T>
-            where T : AResource
+        /// <summary>
+        /// A TGIBlock list class where the count of elements is separate from the stored list
+        /// </summary>
+        public class CountedTGIBlockList : DependentList<TGIBlock>
         {
+            uint origCount; // count at the time the list was constructed, used to Parse() list from stream
+            string order = "TGI";
+
             #region Constructors
-            public TGIBlockList(T parent) : base(parent) { }
-            public TGIBlockList(T parent, IList<TGIBlock<T>> lme) : base(parent, lme) { }
-            public TGIBlockList(T parent, Stream s, long tgiOffset, long tgiSize)
-                : base(parent) { Parse(s, tgiOffset, tgiSize); }
+            public CountedTGIBlockList(EventHandler handler) : base(handler) { }
+            public CountedTGIBlockList(EventHandler handler, string order) : base(handler) { this.order = order; }
+            public CountedTGIBlockList(EventHandler handler, TGIBlock.Order order) : this(handler, "" + order) { }
+
+            public CountedTGIBlockList(EventHandler handler, IList<TGIBlock> lme) : base(handler, lme) { }
+            public CountedTGIBlockList(EventHandler handler, string order, IList<TGIBlock> lme) : base(handler, lme) { this.order = order; }
+            public CountedTGIBlockList(EventHandler handler, TGIBlock.Order order, IList<TGIBlock> lme) : this(handler, "" + order, lme) { }
+
+            public CountedTGIBlockList(EventHandler handler, uint count, Stream s) : base(handler) { this.origCount = count; Parse(s); }
+            public CountedTGIBlockList(EventHandler handler, string order, uint count, Stream s) : this(handler, order) { this.origCount = count; Parse(s); }
+            public CountedTGIBlockList(EventHandler handler, TGIBlock.Order order, uint count, Stream s) : this(handler, "" + order, count, s) { }
             #endregion
 
             #region Data I/O
-            protected override TGIBlock<T> CreateElement(T parent, Stream s) { return new TGIBlock<T>(parent, s); }
-            protected override void WriteElement(Stream s, TGIBlock<T> element) { element.UnParse(s); }
+            protected override TGIBlock CreateElement(Stream s) { return new TGIBlock(0, handler, order, s); }
+            protected override void WriteElement(Stream s, TGIBlock element) { element.UnParse(s); }
+
+            protected override uint ReadCount(Stream s) { return origCount; } // creator supplies
+            protected override void WriteCount(Stream s, uint count) { } // creator stores
+            #endregion
+
+            #region Content Fields
+            public String Value { get { string s = ""; for (int i = 0; i < Count; i++) s += string.Format("{0:X8}: {1}\n", i, this[i].Value); return s; } }
+            #endregion
+        }
+
+        /// <summary>
+        /// A TGIBlock list class where the count and size of the list are stored separately (but managed by this class)
+        /// </summary>
+        /// <typeparam name="T">Class of the parent</typeparam>
+        public class TGIBlockList : DependentList<TGIBlock>
+        {
+            #region Constructors
+            public TGIBlockList(EventHandler handler) : base(handler) { }
+            public TGIBlockList(EventHandler handler, IList<TGIBlock> lme) : base(handler, lme) { }
+            public TGIBlockList(EventHandler handler, Stream s, long tgiOffset, long tgiSize) : base(handler) { Parse(s, tgiOffset, tgiSize); }
+            #endregion
+
+            #region Data I/O
+            protected override TGIBlock CreateElement(Stream s) { return new TGIBlock(0, handler, s); }
+            protected override void WriteElement(Stream s, TGIBlock element) { element.UnParse(s); }
 
             protected void Parse(Stream s, long tgiPosn, long tgiSize)
             {
@@ -323,10 +323,6 @@ namespace s3pi.Interfaces
 
                 s.Position = pos;
             }
-            #endregion
-
-            #region ADependentList
-            public override object Clone(T newParent) { return new TGIBlockList<T>(newParent, this); }
             #endregion
 
             #region Content Fields
