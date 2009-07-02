@@ -255,9 +255,9 @@ namespace s3pi.Interfaces
         /// <returns>UInt64 packed representation of <paramref name="s"/></returns>
         public static UInt64 FOURCC(string s)
         {
-            if (s.Length > 8) throw new ArgumentException(String.Format("String length {0} invalid; maximum is 8.", s.Length), "s");
+            if (s.Length > 8) throw new ArgumentLengthException("String", 8);
             UInt64 i = 0;
-            for (int j = s.Length; j >= 0; j--) i += (((uint)s[j]) << (8 * j));
+            for (int j = s.Length - 1; j >= 0; j--) i += ((uint)s[j]) << (j * 8);
             return i;
         }
 
