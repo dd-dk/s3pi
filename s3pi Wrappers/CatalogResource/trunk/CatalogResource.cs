@@ -1207,7 +1207,7 @@ namespace CatalogResource
 
         #region Constructors
         public CatalogResourceTGIBlockList(int APIversion, Stream s) : base(APIversion, s) { }
-        public CatalogResourceTGIBlockList(int APIversion, Stream unused, IList<TGIBlock> ltgib) : base(APIversion, null) { this.list = new TGIBlockList(OnResourceChanged, ltgib); }
+        public CatalogResourceTGIBlockList(int APIversion, IList<TGIBlock> ltgib) : base(APIversion, null) { this.list = new TGIBlockList(OnResourceChanged, ltgib); }
         #endregion
 
         #region Data I/O

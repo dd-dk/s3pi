@@ -46,7 +46,7 @@ namespace CatalogResource
         #region Constructors
         public StairsCatalogResource(int APIversion, Stream s) : base(APIversion, s) { }
         public StairsCatalogResource(int APIversion, Stream unused, StairsCatalogResource basis)
-            : base(APIversion, null, basis)
+            : base(APIversion, basis)
         {
             this.unknown1 = basis.unknown1;
             this.common = new Common(requestedApiVersion, OnResourceChanged, basis.common);
@@ -68,7 +68,7 @@ namespace CatalogResource
             uint unknown2, byte unknown3, uint unknown4, byte unknown5, uint unknown6, byte unknown7, uint index1, uint index2, uint index3,
             uint catalogRailing, uint catalogWall, uint catalogWallFloorPattern, uint catalogFence,
             TGIBlockList ltgib)
-            : base(APIversion, null, ltgib)
+            : base(APIversion, ltgib)
         {
             this.unknown1 = unknown1;
             this.common = new Common(requestedApiVersion, OnResourceChanged, common);

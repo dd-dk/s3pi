@@ -44,7 +44,7 @@ namespace CatalogResource
         #region Constructors
         public RoofStyleCatalogResource(int APIversion, Stream s) : base(APIversion, s) { }
         public RoofStyleCatalogResource(int APIversion, Stream unused, RoofStyleCatalogResource basis)
-            : base(APIversion, null, basis)
+            : base(APIversion, basis)
         {
             this.unknown1 = basis.unknown1;
             this.common = new Common(requestedApiVersion, OnResourceChanged, basis.common);
@@ -64,7 +64,7 @@ namespace CatalogResource
             uint unknown2, byte unknown3, uint unknown4, byte unknown5, byte unknown6, uint unknown7, uint unknown8,
             uint catalogRoofStyle, uint catalogWallStyle, float unknown9, uint unknown10,
             TGIBlockList ltgib)
-            : base(APIversion, null, ltgib)
+            : base(APIversion, ltgib)
         {
             this.unknown1 = unknown1;
             this.common = new Common(requestedApiVersion, OnResourceChanged, common);

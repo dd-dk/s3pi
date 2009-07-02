@@ -61,7 +61,7 @@ namespace CatalogResource
         #region Constructors
         public ObjectCatalogResource(int APIversion, Stream s) : base(APIversion, s) { }
         public ObjectCatalogResource(int APIversion, Stream unused, ObjectCatalogResource basis)
-            : base(APIversion, null, basis)
+            : base(APIversion, basis)
         {
             this.unknown1 = basis.unknown1;
             this.materialList = new MaterialList(OnResourceChanged, basis.materialList);
@@ -103,7 +103,7 @@ namespace CatalogResource
             Boolset roomFlags, Boolset functionCategoryFlags, Boolset subCategoryFlags, Boolset subRoomFlags, Boolset buildCategoryFlags,
             uint sinkDDSIndex, uint unknown14, string materialGrouping1, string materialGrouping2, uint[] unknown15, uint nullTGIIndex,
             IList<TGIBlock> ltgib)
-            : base(APIversion, null, ltgib)
+            : base(APIversion, ltgib)
         {
             this.unknown1 = unknown1;
             this.materialList = new MaterialList(OnResourceChanged, materialList);

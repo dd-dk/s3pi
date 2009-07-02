@@ -49,7 +49,7 @@ namespace CatalogResource
         #region Constructors
         public WallCatalogResource(int APIversion, Stream s) : base(APIversion, s) { }
         public WallCatalogResource(int APIversion, Stream unused, WallCatalogResource basis)
-            : base(APIversion, null, basis)
+            : base(APIversion, basis)
         {
             this.unknown1 = basis.unknown1;
             this.common = new Common(requestedApiVersion, OnResourceChanged, basis.common);
@@ -74,7 +74,7 @@ namespace CatalogResource
             uint unknown2, uint unknown3, byte unknown4, uint unknown5, byte unknown6, uint unknown7, byte unknown8, uint unknown9,
             byte[] unknown10, uint unknown11, uint unknown12, uint unknown13, uint unknown14, uint unknown15, uint unknown16, byte[] unknown17,
             TGIBlockList ltgib)
-            : base(APIversion, null, ltgib)
+            : base(APIversion, ltgib)
         {
             this.unknown1 = unknown1;
             this.common = new Common(requestedApiVersion, OnResourceChanged, common);

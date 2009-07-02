@@ -45,7 +45,7 @@ namespace CatalogResource
         #region Constructors
         public WallFloorPatternCatalogResource(int APIversion, Stream s) : base(APIversion, s) { }
         public WallFloorPatternCatalogResource(int APIversion, Stream unused, WallFloorPatternCatalogResource basis)
-            : base(APIversion, null, basis)
+            : base(APIversion, basis)
         {
             this.unknown1 = basis.unknown1;
             this.materialList = new WallFloorPatternMaterialList(OnResourceChanged, basis.materialList);
@@ -67,7 +67,7 @@ namespace CatalogResource
             uint unknown2, byte unknown3, uint unknown4, byte unknown5, byte unknown6, uint unknown7, uint unknown8,
             uint index1, uint unknown9, string unknown10, byte[] unknown11,
             TGIBlockList ltgib)
-            : base(APIversion, null, ltgib)
+            : base(APIversion, ltgib)
         {
             this.unknown1 = unknown1;
             this.materialList = new WallFloorPatternMaterialList(OnResourceChanged, materialList);
@@ -157,7 +157,6 @@ namespace CatalogResource
             IComparable<WallFloorPatternMaterial>, IEqualityComparer<WallFloorPatternMaterial>, IEquatable<WallFloorPatternMaterial>
         {
             #region Attributes
-            WallFloorPatternCatalogResource parent;
             uint unknown4;
             #endregion
 
