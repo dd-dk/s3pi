@@ -103,7 +103,7 @@ namespace s3pi.WrapperDealer
             Type t = null;
             foreach (KeyValuePair<string, Type> kvp in typeMap) if (kvp.Key == type) { t = kvp.Value; break; }
 
-            if (type == null)
+            if (t == null)
                 foreach (KeyValuePair<string, Type> kvp in typeMap) if (kvp.Key == "*") { t = kvp.Value; break; }
 
             if (Settings.Settings.Checking) if (t == null)
