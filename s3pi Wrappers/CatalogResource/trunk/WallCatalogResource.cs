@@ -52,7 +52,7 @@ namespace CatalogResource
             : base(APIversion, null, basis)
         {
             this.unknown1 = basis.unknown1;
-            this.common = new Common(this, basis.common);
+            this.common = new Common(requestedApiVersion, OnResourceChanged, basis.common);
             this.unknown2 = basis.unknown2;
             this.unknown3 = basis.unknown3;
             this.unknown4 = basis.unknown4;
@@ -73,11 +73,11 @@ namespace CatalogResource
         public WallCatalogResource(int APIversion, uint unknown1, Common common,
             uint unknown2, uint unknown3, byte unknown4, uint unknown5, byte unknown6, uint unknown7, byte unknown8, uint unknown9,
             byte[] unknown10, uint unknown11, uint unknown12, uint unknown13, uint unknown14, uint unknown15, uint unknown16, byte[] unknown17,
-            TGIBlockList<CatalogResource> ltgib)
+            TGIBlockList ltgib)
             : base(APIversion, null, ltgib)
         {
             this.unknown1 = unknown1;
-            this.common = new Common(this, common);
+            this.common = new Common(requestedApiVersion, OnResourceChanged, common);
             this.unknown2 = unknown2;
             this.unknown3 = unknown3;
             this.unknown4 = unknown4;
@@ -109,7 +109,7 @@ namespace CatalogResource
             tgiPosn = r.ReadUInt32() + s.Position;
             tgiSize = r.ReadUInt32();
             this.unknown2 = r.ReadUInt32();
-            this.common = new Common(this, s);
+            this.common = new Common(requestedApiVersion, OnResourceChanged, s);
             this.unknown3 = r.ReadUInt32();
             this.unknown4 = r.ReadByte();
             this.unknown5 = r.ReadUInt32();
@@ -130,7 +130,7 @@ namespace CatalogResource
             if (checking) if (unknown17.Length != 8)
                     throw new InvalidDataException(String.Format("unknown17: read {0} bytes; expected 8 at 0x{1:X8}.", unknown17.Length, s.Position));
 
-            list = new TGIBlockList<CatalogResource>(this, s, tgiPosn, tgiSize);
+            list = new TGIBlockList(OnResourceChanged, s, tgiPosn, tgiSize);
         }
 
         protected override Stream UnParse()
@@ -167,12 +167,6 @@ namespace CatalogResource
 
             return s;
         }
-        #endregion
-
-        #region ICloneable Members
-
-        public override object Clone() { return new WallCatalogResource(requestedApiVersion, null, this); }
-
         #endregion
 
         #region Content Fields

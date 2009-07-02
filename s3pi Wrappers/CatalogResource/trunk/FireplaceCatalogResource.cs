@@ -50,7 +50,7 @@ namespace CatalogResource
             : base(APIversion, null, basis)
         {
             this.unknown1 = basis.unknown1;
-            this.common = new Common(this, basis.common);
+            this.common = new Common(requestedApiVersion, OnResourceChanged, basis.common);
             this.unknown2 = basis.unknown2;
             this.unknown3 = basis.unknown3;
             this.unknown4 = basis.unknown4;
@@ -68,11 +68,11 @@ namespace CatalogResource
         }
         public FireplaceCatalogResource(int APIversion, uint unknown1, Common common, uint unknown2, byte unknown3, uint unknown4, byte unknown5,
             uint unknown6, byte unknown7, byte unknown8, uint index1, uint index2, uint index3, uint index4, uint index5, uint index6, uint index7,
-            TGIBlockList<CatalogResource> ltgib)
+            TGIBlockList ltgib)
             : base(APIversion, null, ltgib)
         {
             this.unknown1 = unknown1;
-            this.common = new Common(this, common);
+            this.common = new Common(requestedApiVersion, OnResourceChanged, common);
             this.unknown2 = unknown2;
             this.unknown3 = unknown3;
             this.unknown4 = unknown4;
@@ -99,7 +99,7 @@ namespace CatalogResource
             this.unknown1 = r.ReadUInt32();
             tgiPosn = r.ReadUInt32() + s.Position;
             tgiSize = r.ReadUInt32();
-            this.common = new Common(this, s);
+            this.common = new Common(requestedApiVersion, OnResourceChanged, s);
             this.unknown2 = r.ReadUInt32();
             this.unknown3 = r.ReadByte();
             this.unknown4 = r.ReadUInt32();
@@ -115,7 +115,7 @@ namespace CatalogResource
             this.index6 = r.ReadUInt32();
             this.index7 = r.ReadUInt32();
 
-            list = new TGIBlockList<CatalogResource>(this, s, tgiPosn, tgiSize);
+            list = new TGIBlockList(OnResourceChanged, s, tgiPosn, tgiSize);
         }
 
         protected override Stream UnParse()
@@ -151,12 +151,6 @@ namespace CatalogResource
 
             return s;
         }
-        #endregion
-
-        #region ICloneable Members
-
-        public override object Clone() { return new FireplaceCatalogResource(requestedApiVersion, null, this); }
-
         #endregion
 
         #region Content Fields

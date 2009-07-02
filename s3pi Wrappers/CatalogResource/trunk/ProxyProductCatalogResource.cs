@@ -43,7 +43,7 @@ namespace CatalogResource
             : base(APIversion, null)
         {
             this.unknown1 = basis.unknown1;
-            this.common = new Common(this, basis.common);
+            this.common = new Common(requestedApiVersion, OnResourceChanged, basis.common);
             this.unknown2 = basis.unknown2;
             this.unknown3 = basis.unknown3;
             this.unknown4 = basis.unknown4;
@@ -57,7 +57,7 @@ namespace CatalogResource
             : base(APIversion, null)
         {
             this.unknown1 = unknown1;
-            this.common = new Common(this, common);
+            this.common = new Common(requestedApiVersion, OnResourceChanged, common);
             this.unknown2 = unknown2;
             this.unknown3 = unknown3;
             this.unknown4 = unknown4;
@@ -74,7 +74,7 @@ namespace CatalogResource
             BinaryReader r = new BinaryReader(s);
 
             this.unknown1 = r.ReadUInt32();
-            this.common = new Common(this, s);
+            this.common = new Common(requestedApiVersion, OnResourceChanged, s);
             this.unknown2 = r.ReadUInt32();
             this.unknown3 = r.ReadByte();
             this.unknown4 = r.ReadUInt32();
@@ -103,12 +103,6 @@ namespace CatalogResource
 
             return s;
         }
-        #endregion
-
-        #region ICloneable Members
-
-        public override object Clone() { return new ProxyProductCatalogResource(requestedApiVersion, null, this); }
-
         #endregion
 
         #region Content Fields

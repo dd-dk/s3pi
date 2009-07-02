@@ -27,7 +27,7 @@ namespace CatalogResource
     /// <summary>
     /// A resource wrapper that understands Catalog Entry resources
     /// </summary>
-    public abstract class CatalogResource : AResource, ICloneable
+    public abstract class CatalogResource : AResource
     {
         protected const Int32 recommendedApiVersion = 1;
         public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
@@ -42,7 +42,7 @@ namespace CatalogResource
         protected CatalogResource(int APIversion, Stream s)
             : base(APIversion, s)
         {
-            common = new Common(this);
+            common = new Common(requestedApiVersion, OnResourceChanged);
             if (stream == null) { stream = UnParse(); dirty = true; }
             stream.Position = 0;
             Parse(stream);
@@ -74,17 +74,10 @@ namespace CatalogResource
         }
         #endregion
 
-        #region ICloneable Members
-
-        public abstract object Clone();
-
-        #endregion
-
         #region Sub-classes
-        public class Common : AApiVersionedFields, ICloneableWithParent
+        public class Common : AHandlerElement
         {
             #region Attributes
-            CatalogResource parent = null;
             uint unknown1;
             ulong nameGUID;
             ulong descGUID;
@@ -98,14 +91,14 @@ namespace CatalogResource
             #endregion
 
             #region Constructors
-            internal Common(CatalogResource parent, Stream s) { this.parent = parent; Parse(s); }
+            internal Common(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
 
-            public Common(CatalogResource parent) { this.parent = parent; }
+            public Common(int APIversion, EventHandler handler) : base(APIversion, handler) { }
 
-            public Common(CatalogResource parent, uint unknown1, ulong nameGUID, ulong descGUID, string name, string desc, float price, float unknown2,
+            public Common(int APIversion, EventHandler handler, uint unknown1, ulong nameGUID, ulong descGUID, string name, string desc, float price, float unknown2,
                 byte[] unknown3, byte unknown4, ulong pngInstance)
+                : base(APIversion, handler)
             {
-                this.parent = parent;
                 this.unknown1 = unknown1;
                 this.nameGUID = nameGUID;
                 this.descGUID = descGUID;
@@ -119,9 +112,9 @@ namespace CatalogResource
                 this.pngInstance = pngInstance;
             }
 
-            public Common(CatalogResource parent, Common basis)
+            public Common(int APIversion, EventHandler handler, Common basis)
+                : base(APIversion, handler)
             {
-                this.parent = parent;
                 this.unknown1 = basis.unknown1;
                 this.nameGUID = basis.nameGUID;
                 this.descGUID = basis.descGUID;
@@ -169,38 +162,26 @@ namespace CatalogResource
             }
             #endregion
 
-            #region ICloneableWithParent Members
-
-            public object Clone(object newParent) { return new Common(newParent as CatalogResource, this); }
-
-            #endregion
-
-            #region ICloneable Members
-
-            public object Clone() { return Clone(parent); }
-
-            #endregion
-
-            #region AApiVersionedFields
+            #region AHandlerElement
             public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
-
             public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
+            public override AHandlerElement Clone(EventHandler handler) { return new Common(requestedApiVersion, handler, this); }
             #endregion
 
             #region Content Fields
-            public uint Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; parent.OnResourceChanged(this, new EventArgs()); } } }
+            public uint Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; handler(this, new EventArgs()); } } }
 
-            public ulong NameGUID { get { return nameGUID; } set { if (nameGUID == value) { nameGUID = value; parent.OnResourceChanged(this, new EventArgs()); } } }
+            public ulong NameGUID { get { return nameGUID; } set { if (nameGUID == value) { nameGUID = value; handler(this, new EventArgs()); } } }
 
-            public ulong DescGUID { get { return descGUID; } set { if (descGUID != value) { descGUID = value; parent.OnResourceChanged(this, new EventArgs()); } } }
+            public ulong DescGUID { get { return descGUID; } set { if (descGUID != value) { descGUID = value; handler(this, new EventArgs()); } } }
 
-            public string Name { get { return name; } set { if (name != value) { name = value; parent.OnResourceChanged(this, new EventArgs()); } } }
+            public string Name { get { return name; } set { if (name != value) { name = value; handler(this, new EventArgs()); } } }
 
-            public string Desc { get { return desc; } set { if (desc != value) { desc = value; parent.OnResourceChanged(this, new EventArgs()); } } }
+            public string Desc { get { return desc; } set { if (desc != value) { desc = value; handler(this, new EventArgs()); } } }
 
-            public float Price { get { return price; } set { if (price != value) { price = value; parent.OnResourceChanged(this, new EventArgs()); } } }
+            public float Price { get { return price; } set { if (price != value) { price = value; handler(this, new EventArgs()); } } }
 
-            public float Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; parent.OnResourceChanged(this, new EventArgs()); } } }
+            public float Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; handler(this, new EventArgs()); } } }
 
             public byte[] Unknown3
             {
@@ -213,14 +194,14 @@ namespace CatalogResource
                     if (!same)
                     {
                         unknown3 = (byte[])value.Clone();
-                        parent.OnResourceChanged(this, new EventArgs());
+                        handler(this, new EventArgs());
                     }
                 }
             }
 
-            public byte Unknown4 { get { return unknown4; } set { if (unknown4 != value) { unknown4 = value; parent.OnResourceChanged(this, new EventArgs()); } } }
+            public byte Unknown4 { get { return unknown4; } set { if (unknown4 != value) { unknown4 = value; handler(this, new EventArgs()); } } }
 
-            public ulong PngInstance { get { return pngInstance; } set { if (pngInstance != value) { pngInstance = value; parent.OnResourceChanged(this, new EventArgs()); } } }
+            public ulong PngInstance { get { return pngInstance; } set { if (pngInstance != value) { pngInstance = value; handler(this, new EventArgs()); } } }
 
             public String Value
             {
@@ -236,32 +217,32 @@ namespace CatalogResource
                 }
             }
             #endregion
+
         }
 
         #region TypeCode
-        public abstract class TypeCode : AApiVersionedFields, ICloneableWithParent,
+        public abstract class TypeCode : AHandlerElement,
             IComparable<TypeCode>, IEqualityComparer<TypeCode>, IEquatable<TypeCode>
         {
             #region Attributes
-            protected CatalogResource parent;
             protected byte[] prefix = new byte[0];
             #endregion
 
             #region Constructors
-            protected TypeCode(CatalogResource parent, byte[] pfx) { this.parent = parent; prefix = pfx == null ? null : (byte[])pfx.Clone(); }
-            protected TypeCode(CatalogResource parent, Stream s, byte[] pfx) : this(parent, pfx) { Parse(s); }
+            protected TypeCode(int APIversion, EventHandler handler, byte[] pfx):base(APIversion, handler) { prefix = pfx == null ? null : (byte[])pfx.Clone(); }
+            protected TypeCode(int APIversion, EventHandler handler, Stream s, byte[] pfx) : this(APIversion, handler, pfx) { Parse(s); }
 
-            public static TypeCode CreateTypeCode(CatalogResource cr, Stream s, byte[] prefix)
+            public static TypeCode CreateTypeCode(int APIversion, EventHandler handler, Stream s, byte[] prefix)
             {
                 switch (prefix[1])
                 {
-                    case 0x01: return new TypeCode01(cr, s, prefix);
-                    case 0x02: return new TypeCode02(cr, s, prefix);
-                    case 0x03: return new TypeCode03(cr, s, prefix);
-                    case 0x04: return new TypeCode04(cr, s, prefix);
-                    case 0x05: return new TypeCode05(cr, s, prefix);
-                    case 0x06: return new TypeCode06(cr, s, prefix);
-                    case 0x07: return new TypeCode07(cr, s, prefix);
+                    case 0x01: return new TypeCode01(APIversion, handler, s, prefix);
+                    case 0x02: return new TypeCode02(APIversion, handler, s, prefix);
+                    case 0x03: return new TypeCode03(APIversion, handler, s, prefix);
+                    case 0x04: return new TypeCode04(APIversion, handler, s, prefix);
+                    case 0x05: return new TypeCode05(APIversion, handler, s, prefix);
+                    case 0x06: return new TypeCode06(APIversion, handler, s, prefix);
+                    case 0x07: return new TypeCode07(APIversion, handler, s, prefix);
                 }
                 throw new InvalidDataException(String.Format("Unknown TypeCode 0x{0:X2} at 0x{1:X8}", prefix[1], s.Position));
             }
@@ -299,26 +280,12 @@ namespace CatalogResource
 
             #endregion
 
-            #region ICloneableWithParent Members
-
-            public virtual object Clone(object newParent) { return Clone(newParent as CatalogResource); }
-
-            public abstract object Clone(CatalogResource newParent);
-
-            #endregion
-
-            #region ICloneable Members
-
-            public virtual object Clone() { return Clone(parent); }
-
-            #endregion
-
             #region AApiVersionedFields
             public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
             #endregion
 
             #region ContentFields
-            public byte ControlCode { get { return prefix[0]; } set { if (prefix[0] != value) { prefix[0] = value; parent.OnResourceChanged(this, new EventArgs()); } } }
+            public byte ControlCode { get { return prefix[0]; } set { if (prefix[0] != value) { prefix[0] = value; handler(this, new EventArgs()); } } }
 
             public String Value
             {
@@ -345,10 +312,10 @@ namespace CatalogResource
             string unknown1 = "";
             byte unknown2;
 
-            internal TypeCode01(CatalogResource parent, Stream s, byte[] prefix) : base(parent, s, prefix) { }
+            internal TypeCode01(int APIversion, EventHandler handler, Stream s, byte[] prefix) : base(APIversion, handler, s, prefix) { }
 
-            public TypeCode01(CatalogResource parent, byte[] prefix, string unknown1)
-                : base(parent, prefix)
+            public TypeCode01(int APIversion, EventHandler handler, byte[] prefix, string unknown1)
+                : base(APIversion, handler, prefix)
             {
                 if (unknown1.Length > 0x3f)
                     throw new ArgumentException(String.Format("String length must not exceed 0x3f: 0x{0:X}", unknown1.Length));
@@ -357,8 +324,8 @@ namespace CatalogResource
                 this.unknown2 = 0;
             }
 
-            public TypeCode01(CatalogResource parent, byte[] prefix, byte unknown2)
-                : base(parent, prefix)
+            public TypeCode01(int APIversion, EventHandler handler, byte[] prefix, byte unknown2)
+                : base(APIversion, handler, prefix)
             {
                 subType = 0x40;
                 this.unknown1 = "";
@@ -399,13 +366,11 @@ namespace CatalogResource
 
             public override int GetHashCode(TypeCode obj) { return HasUnknown1 ? unknown1.GetHashCode() : HasUnknown2 ? unknown2.GetHashCode() : -1; }
 
-            public override object Clone(CatalogResource newParent)
+            public override AHandlerElement Clone(EventHandler handler)
             {
-                if (HasUnknown1) return new TypeCode01(newParent, prefix, unknown1);
-                if (HasUnknown2) return new TypeCode01(newParent, prefix, unknown2);
-                TypeCode01 tc1 = new TypeCode01(newParent, prefix, "");
-                tc1.subType = subType;
-                return tc1;
+                if (HasUnknown1) return new TypeCode01(requestedApiVersion, handler, prefix, unknown1);
+                if (HasUnknown2) return new TypeCode01(requestedApiVersion, handler, prefix, unknown2);
+                throw new InvalidOperationException();
             }
 
             public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
@@ -419,7 +384,7 @@ namespace CatalogResource
                     if (HasUnknown2) throw new InvalidOperationException("This TypeCode01 has Unknown2 - remove first");
                     subType = (byte)(value ? 0x80 : 0x00);
                     unknown1 = "";
-                    parent.OnResourceChanged(this, new EventArgs());
+                    handler(this, new EventArgs());
                 }
             }
             public bool HasUnknown2
@@ -431,7 +396,7 @@ namespace CatalogResource
                     if (HasUnknown1) throw new InvalidOperationException("This TypeCode01 has Unknown1 - remove first");
                     subType = (byte)((value ? 0x40 : 0x00) | SubType);
                     unknown2 = 0x00;
-                    parent.OnResourceChanged(this, new EventArgs());
+                    handler(this, new EventArgs());
                 }
             }
 
@@ -443,7 +408,7 @@ namespace CatalogResource
                     if (!HasUnknown1) throw new InvalidOperationException("This TypeCode01 has no Unknown1");
                     if (value.Length > 0x3f)
                         throw new ArgumentException(String.Format("String length (0x{0:X}) must not exceed 0x3F.", value.Length));
-                    if (unknown1 != value) { unknown1 = value; parent.OnResourceChanged(this, new EventArgs()); }
+                    if (unknown1 != value) { unknown1 = value; handler(this, new EventArgs()); }
                 }
             }
             public byte Unknown2
@@ -452,7 +417,7 @@ namespace CatalogResource
                 set
                 {
                     if (!HasUnknown2) throw new InvalidOperationException("This TypeCode01 has no Unknown2");
-                    if (unknown2 != value) { unknown2 = value; parent.OnResourceChanged(this, new EventArgs()); }
+                    if (unknown2 != value) { unknown2 = value; handler(this, new EventArgs()); }
                 }
             }
             public byte SubType
@@ -469,7 +434,7 @@ namespace CatalogResource
                     if ((value & 0xC0) != 0) throw new ArgumentOutOfRangeException("Maximum value for SubType is 0x3F.");
                     subType &= 0xC0;
                     subType |= value;
-                    parent.OnResourceChanged(this, new EventArgs());
+                    handler(this, new EventArgs());
                 }
             }
         }
@@ -481,9 +446,9 @@ namespace CatalogResource
             byte blue;
             byte alpha;
 
-            internal TypeCode02(CatalogResource parent, Stream s, byte[] prefix) : base(parent, s, prefix) { }
+            internal TypeCode02(int APIversion, EventHandler handler, Stream s, byte[] prefix) : base(APIversion, handler, s, prefix) { }
 
-            public TypeCode02(CatalogResource parent, byte[] prefix, byte r, byte g, byte b, byte a) : base(parent, prefix) { red = r; green = g; blue = b; alpha = a; }
+            public TypeCode02(int APIversion, EventHandler handler, byte[] prefix, byte r, byte g, byte b, byte a) : base(APIversion, handler, prefix) { red = r; green = g; blue = b; alpha = a; }
 
             protected override void Parse(Stream s)
             {
@@ -518,22 +483,22 @@ namespace CatalogResource
                 return (((tc.red << 8) + tc.green << 8) + tc.blue << 8) + tc.alpha;
             }
 
-            public override object Clone(CatalogResource newParent) { return new TypeCode02(newParent, prefix, red, green, blue, alpha); }
+            public override AHandlerElement Clone(EventHandler handler) { return new TypeCode02(requestedApiVersion, handler, prefix, red, green, blue, alpha); }
 
             public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
 
-            public byte Red { get { return red; } set { if (red != value) { red = value; parent.OnResourceChanged(this, new EventArgs()); } } }
-            public byte Green { get { return green; } set { if (green != value) { green = value; parent.OnResourceChanged(this, new EventArgs()); } } }
-            public byte Blue { get { return blue; } set { if (blue != value) { blue = value; parent.OnResourceChanged(this, new EventArgs()); } } }
-            public byte Alpha { get { return alpha; } set { if (alpha != value) { alpha = value; parent.OnResourceChanged(this, new EventArgs()); } } }
+            public byte Red { get { return red; } set { if (red != value) { red = value; handler(this, new EventArgs()); } } }
+            public byte Green { get { return green; } set { if (green != value) { green = value; handler(this, new EventArgs()); } } }
+            public byte Blue { get { return blue; } set { if (blue != value) { blue = value; handler(this, new EventArgs()); } } }
+            public byte Alpha { get { return alpha; } set { if (alpha != value) { alpha = value; handler(this, new EventArgs()); } } }
         }
 
         public class TypeCode03 : TypeCode
         {
             byte tgiIndex;
 
-            internal TypeCode03(CatalogResource parent, Stream s, byte[] prefix) : base(parent, s, prefix) { }
-            public TypeCode03(CatalogResource parent, byte[] prefix, byte tgiIndex) : base(parent, prefix) { this.tgiIndex = tgiIndex; }
+            internal TypeCode03(int APIversion, EventHandler handler, Stream s, byte[] prefix) : base(APIversion, handler, s, prefix) { }
+            public TypeCode03(int APIversion, EventHandler handler, byte[] prefix, byte tgiIndex) : base(APIversion, handler, prefix) { this.tgiIndex = tgiIndex; }
 
             protected override void Parse(Stream s) { tgiIndex = (new BinaryReader(s)).ReadByte(); }
 
@@ -558,19 +523,19 @@ namespace CatalogResource
                 return tgiIndex.GetHashCode();
             }
 
-            public override object Clone(CatalogResource newParent) { return new TypeCode03(newParent, prefix, tgiIndex); }
+            public override AHandlerElement Clone(EventHandler handler) { return new TypeCode03(requestedApiVersion, handler, prefix, tgiIndex); }
 
             public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
 
-            public byte TGIIndex { get { return tgiIndex; } set { if (tgiIndex != value) { tgiIndex = value; parent.OnResourceChanged(this, new EventArgs()); } } }
+            public byte TGIIndex { get { return tgiIndex; } set { if (tgiIndex != value) { tgiIndex = value; handler(this, new EventArgs()); } } }
         }
 
         public class TypeCode04 : TypeCode
         {
             float unknown1;
 
-            internal TypeCode04(CatalogResource cr, Stream s, byte[] prefix) : base(cr, s, prefix) { }
-            public TypeCode04(CatalogResource cr, byte[] prefix, float unknown1) : base(cr, prefix) { this.unknown1 = unknown1; }
+            internal TypeCode04(int APIversion, EventHandler handler, Stream s, byte[] prefix) : base(APIversion, handler, s, prefix) { }
+            public TypeCode04(int APIversion, EventHandler handler, byte[] prefix, float unknown1) : base(APIversion, handler, prefix) { this.unknown1 = unknown1; }
 
             protected override void Parse(Stream s) { unknown1 = (new BinaryReader(s)).ReadSingle(); }
 
@@ -595,11 +560,11 @@ namespace CatalogResource
                 return unknown1.GetHashCode();
             }
 
-            public override object Clone(CatalogResource newParent) { return new TypeCode04(newParent, prefix, unknown1); }
+            public override AHandlerElement Clone(EventHandler handler) { return new TypeCode04(requestedApiVersion, handler, prefix, unknown1); }
 
             public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
 
-            public float Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; parent.OnResourceChanged(this, new EventArgs()); } } }
+            public float Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; handler(this, new EventArgs()); } } }
         }
 
         public class TypeCode05 : TypeCode
@@ -607,8 +572,8 @@ namespace CatalogResource
             float unknown1;
             float unknown2;
 
-            internal TypeCode05(CatalogResource parent, Stream s, byte[] prefix) : base(parent, s, prefix) { }
-            public TypeCode05(CatalogResource parent, byte[] prefix, float unknown1, float unknown2) : base(parent, prefix) { this.unknown1 = unknown1; this.unknown2 = unknown2; }
+            internal TypeCode05(int APIversion, EventHandler handler, Stream s, byte[] prefix) : base(APIversion, handler, s, prefix) { }
+            public TypeCode05(int APIversion, EventHandler handler, byte[] prefix, float unknown1, float unknown2) : base(APIversion, handler, prefix) { this.unknown1 = unknown1; this.unknown2 = unknown2; }
 
             protected override void Parse(Stream s)
             {
@@ -639,12 +604,12 @@ namespace CatalogResource
                 return tc.unknown1.GetHashCode() ^ tc.unknown2.GetHashCode();
             }
 
-            public override object Clone(CatalogResource newParent) { return new TypeCode05(newParent, prefix, unknown1, unknown2); }
+            public override AHandlerElement Clone(EventHandler handler) { return new TypeCode05(requestedApiVersion, handler, prefix, unknown1, unknown2); }
 
             public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
 
-            public float Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; parent.OnResourceChanged(this, new EventArgs()); } } }
-            public float Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; parent.OnResourceChanged(this, new EventArgs()); } } }
+            public float Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; handler(this, new EventArgs()); } } }
+            public float Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; handler(this, new EventArgs()); } } }
         }
 
         public class TypeCode06 : TypeCode
@@ -653,9 +618,9 @@ namespace CatalogResource
             float unknown2;
             float unknown3;
 
-            internal TypeCode06(CatalogResource parent, Stream s, byte[] prefix) : base(parent, s, prefix) { }
-            public TypeCode06(CatalogResource parent, byte[] prefix, float unknown1, float unknown2, float unknown3)
-                : base(parent, prefix)
+            internal TypeCode06(int APIversion, EventHandler handler, Stream s, byte[] prefix) : base(APIversion, handler, s, prefix) { }
+            public TypeCode06(int APIversion, EventHandler handler, byte[] prefix, float unknown1, float unknown2, float unknown3)
+                : base(APIversion, handler, prefix)
             {
                 this.unknown1 = unknown1;
                 this.unknown2 = unknown2;
@@ -693,21 +658,21 @@ namespace CatalogResource
                 return tc.unknown1.GetHashCode() ^ tc.unknown2.GetHashCode() ^ tc.unknown3.GetHashCode();
             }
 
-            public override object Clone(CatalogResource newParent) { return new TypeCode06(newParent, prefix, unknown1, unknown2, unknown3); }
+            public override AHandlerElement Clone(EventHandler handler) { return new TypeCode06(requestedApiVersion, handler, prefix, unknown1, unknown2, unknown3); }
 
             public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
 
-            public float Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; parent.OnResourceChanged(this, new EventArgs()); } } }
-            public float Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; parent.OnResourceChanged(this, new EventArgs()); } } }
-            public float Unknown3 { get { return unknown3; } set { if (unknown3 != value) { unknown3 = value; parent.OnResourceChanged(this, new EventArgs()); } } }
+            public float Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; handler(this, new EventArgs()); } } }
+            public float Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; handler(this, new EventArgs()); } } }
+            public float Unknown3 { get { return unknown3; } set { if (unknown3 != value) { unknown3 = value; handler(this, new EventArgs()); } } }
         }
 
         public class TypeCode07 : TypeCode
         {
             byte unknown1;
 
-            internal TypeCode07(CatalogResource parent, Stream s, byte[] prefix) : base(parent, s, prefix) { }
-            public TypeCode07(CatalogResource parent, byte[] prefix, byte unknown1) : base(parent, prefix) { this.unknown1 = unknown1; }
+            internal TypeCode07(int APIversion, EventHandler handler, Stream s, byte[] prefix) : base(APIversion, handler, s, prefix) { }
+            public TypeCode07(int APIversion, EventHandler handler, byte[] prefix, byte unknown1) : base(APIversion, handler, prefix) { this.unknown1 = unknown1; }
 
             protected override void Parse(Stream s) { unknown1 = (new BinaryReader(s)).ReadByte(); }
 
@@ -731,11 +696,11 @@ namespace CatalogResource
                 return unknown1.GetHashCode();
             }
 
-            public override object Clone(CatalogResource newParent) { return new TypeCode07(newParent, prefix, unknown1); }
+            public override AHandlerElement Clone(EventHandler handler) { return new TypeCode07(requestedApiVersion, handler, prefix, unknown1); }
 
             public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
 
-            public byte Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; parent.OnResourceChanged(this, new EventArgs()); } } }
+            public byte Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; handler(this, new EventArgs()); } } }
         }
 
         public class TypeCode2F : TypeCode
@@ -743,8 +708,8 @@ namespace CatalogResource
             byte unknown1;
             uint unknown2;
 
-            internal TypeCode2F(CatalogResource parent, Stream s) : base(parent, s, null) { }
-            public TypeCode2F(CatalogResource parent, byte unknown1, uint unknown2) : base(parent, null) { this.unknown1 = unknown1; this.unknown2 = unknown2; }
+            internal TypeCode2F(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler, s, null) { }
+            public TypeCode2F(int APIversion, EventHandler handler, byte unknown1, uint unknown2) : base(APIversion, handler, null) { this.unknown1 = unknown1; this.unknown2 = unknown2; }
 
             protected override void Parse(Stream s)
             {
@@ -775,19 +740,19 @@ namespace CatalogResource
                 return unknown1.GetHashCode() ^ unknown2.GetHashCode();
             }
 
-            public override object Clone(CatalogResource newParent) { return new TypeCode2F(newParent, unknown1, unknown2); }
+            public override AHandlerElement Clone(EventHandler handler) { return new TypeCode2F(requestedApiVersion, handler, unknown1, unknown2); }
 
             public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
 
-            public byte Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; parent.OnResourceChanged(this, new EventArgs()); } } }
-            public uint Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; parent.OnResourceChanged(this, new EventArgs()); } } }
+            public byte Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; handler(this, new EventArgs()); } } }
+            public uint Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; handler(this, new EventArgs()); } } }
         }
 
         public class TypeCode40 : TypeCode
         {
             int length;
-            internal TypeCode40(CatalogResource parent, Stream s) : base(parent, s, null) { }
-            private TypeCode40(CatalogResource parent, int length) : base(parent, null) { this.length = length; }
+            internal TypeCode40(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler, s, null) { }
+            private TypeCode40(int APIversion, EventHandler handler, int length) : base(APIversion, handler, null) { this.length = length; }
 
             protected override void Parse(Stream s)
             {
@@ -816,41 +781,37 @@ namespace CatalogResource
                 return length.GetHashCode();
             }
 
-            public override object Clone(CatalogResource newParent) { return new TypeCode40(newParent, length); }
+            public override AHandlerElement Clone(EventHandler handler) { return new TypeCode40(requestedApiVersion, handler, length); }
 
             public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
 
-            public int Length { get { return length; } set { if (length != value) { length = value; parent.OnResourceChanged(this, new EventArgs()); } } }
+            public int Length { get { return length; } set { if (length != value) { length = value; handler(this, new EventArgs()); } } }
         }
 
-        public class TypeCodeList : AResource.DependentList<TypeCode, CatalogResource>
+        public class TypeCodeList : AResource.DependentList<TypeCode>
         {
             #region Constructors
-            public TypeCodeList(CatalogResource parent) : base(parent) { }
-            public TypeCodeList(CatalogResource parent, IList<TypeCode> ltc) : base(parent, ltc) { }
-            public TypeCodeList(CatalogResource parent, Stream s) : base(parent, s) { }
+            public TypeCodeList(EventHandler handler) : base(handler) { }
+            public TypeCodeList(EventHandler handler, IList<TypeCode> ltc) : base(handler, ltc) { }
+            public TypeCodeList(EventHandler handler, Stream s) : base(handler, s) { }
             #endregion
 
             #region Data I/O
-            protected override TypeCode CreateElement(CatalogResource parent, Stream s) { throw new NotImplementedException(); }
-            protected override TypeCode CreateElement(CatalogResource parent, Stream s, out bool inc)
+            protected override TypeCode CreateElement(Stream s) { throw new NotImplementedException(); }
+            protected override TypeCode CreateElement(Stream s, out bool inc)
             {
                 BinaryReader r = new BinaryReader(s);
                 byte controlCode = r.ReadByte();
                 switch (controlCode)
                 {
-                    case 0x40: inc = false; return new TypeCode40(parent, s);
-                    case 0x2F: inc = true; return new TypeCode2F(parent, s);
-                    default: inc = true; return TypeCode.CreateTypeCode(parent, s, new byte[] { controlCode, r.ReadByte() });
+                    case 0x40: inc = false; return new TypeCode40(0, handler, s);
+                    case 0x2F: inc = true; return new TypeCode2F(0, handler, s);
+                    default: inc = true; return TypeCode.CreateTypeCode(0, handler, s, new byte[] { controlCode, r.ReadByte() });
                 }
             }
 
             protected override void WriteCount(Stream s, uint count) { foreach (TypeCode tc in this) if (tc is TypeCode40) count--; (new BinaryWriter(s)).Write(count); }
             protected override void WriteElement(Stream s, TypeCode element) { element.UnParse(s); }
-            #endregion
-
-            #region ADependentList
-            public override object Clone(CatalogResource newParent) { return new TypeCodeList(newParent, this); }
             #endregion
 
             #region Content Fields
@@ -859,11 +820,10 @@ namespace CatalogResource
         }
         #endregion
 
-        public class MaterialBlock : AApiVersionedFields, ICloneableWithParent,
+        public class MaterialBlock : AHandlerElement,
             IComparable<MaterialBlock>, IEqualityComparer<MaterialBlock>, IEquatable<MaterialBlock>
         {
             #region Attributes
-            CatalogResource parent = null;
             byte xmlindex;
             TypeCode01 unknown1 = null;
             TypeCode01 unknown2 = null;
@@ -872,26 +832,29 @@ namespace CatalogResource
             #endregion
 
             #region Constructors
-            internal MaterialBlock(CatalogResource parent, Stream s) { this.parent = parent; Parse(s); }
+            internal MaterialBlock(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
 
-            public MaterialBlock(CatalogResource parent, MaterialBlock basis)
+            public MaterialBlock(int APIversion, EventHandler handler, MaterialBlock basis)
+                : base(APIversion, handler)
             {
-                this.parent = basis.parent;
+                this.handler = basis.handler;
                 this.xmlindex = basis.xmlindex;
-                this.unknown1 = (TypeCode01)basis.unknown1.Clone(parent);
-                this.unknown2 = (TypeCode01)basis.unknown2.Clone(parent);
-                tcList = new TypeCodeList(parent, basis.tcList);
-                mbList = new MaterialBlockList(parent, basis.mbList);
+                this.unknown1 = (TypeCode01)basis.unknown1.Clone(handler);
+                this.unknown2 = (TypeCode01)basis.unknown2.Clone(handler);
+                tcList = new TypeCodeList(handler, basis.tcList);
+                mbList = new MaterialBlockList(handler, basis.mbList);
             }
 
-            public MaterialBlock(CatalogResource parent, byte xmlindex, TypeCode01 unknown1, TypeCode01 unknown2, IList<TypeCode> ltc, IList<MaterialBlock> lmb)
+            public MaterialBlock(int APIversion, EventHandler handler, byte xmlindex, TypeCode01 unknown1, TypeCode01 unknown2,
+                IList<TypeCode> ltc, IList<MaterialBlock> lmb)
+                : base(APIversion, handler)
             {
-                this.parent = parent;
+                this.handler = handler;
                 this.xmlindex = xmlindex;
-                this.unknown1 = (TypeCode01)unknown1.Clone(parent);
-                this.unknown2 = (TypeCode01)unknown2.Clone(parent);
-                tcList = new TypeCodeList(parent, ltc);
-                mbList = new MaterialBlockList(parent, lmb);
+                this.unknown1 = (TypeCode01)unknown1.Clone(handler);
+                this.unknown2 = (TypeCode01)unknown2.Clone(handler);
+                tcList = new TypeCodeList(handler, ltc);
+                mbList = new MaterialBlockList(handler, lmb);
             }
             #endregion
 
@@ -899,10 +862,10 @@ namespace CatalogResource
             protected void Parse(Stream s)
             {
                 this.xmlindex = (new BinaryReader(s)).ReadByte();
-                this.unknown1 = new TypeCode01(parent, s, null);
-                this.unknown2 = new TypeCode01(parent, s, null);
-                this.tcList = new TypeCodeList(parent, s);
-                this.mbList = new MaterialBlockList(parent, s);
+                this.unknown1 = new TypeCode01(requestedApiVersion, handler, s, null);
+                this.unknown2 = new TypeCode01(requestedApiVersion, handler, s, null);
+                this.tcList = new TypeCodeList(handler, s);
+                this.mbList = new MaterialBlockList(handler, s);
             }
 
             public void UnParse(Stream s)
@@ -953,30 +916,26 @@ namespace CatalogResource
 
             #endregion
 
-            #region ICloneableWithParent Members
-
-            public object Clone(object newParent) { return new MaterialBlock(newParent as CatalogResource, this); }
-
-            #endregion
-
             #region ICloneable Members
 
-            public object Clone() { return Clone(parent); }
+            public object Clone() { return new MaterialBlock(requestedApiVersion, handler, this); }
 
             #endregion
 
-            #region AApiVersionedFields
+            #region AHandlerElement
             public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
 
             public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
+
+            public override AHandlerElement Clone(EventHandler handler) { return new MaterialBlock(requestedApiVersion, handler, this); }
             #endregion
 
             #region Content Fields
-            public byte XMLIndex { get { return xmlindex; } set { if (xmlindex != value) { xmlindex = value; parent.OnResourceChanged(this, new EventArgs()); } } }
-            public TypeCode01 Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; parent.OnResourceChanged(this, new EventArgs()); } } }
-            public TypeCode01 Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; parent.OnResourceChanged(this, new EventArgs()); } } }
-            public IList<TypeCode> TypeCodes { get { return tcList; } set { if (tcList != (value as TypeCodeList)) { tcList = new TypeCodeList(parent, value); parent.OnResourceChanged(this, new EventArgs()); } } }
-            public IList<MaterialBlock> MaterialBlocks { get { return mbList; } set { if (mbList != (value as MaterialBlockList)) { mbList = new MaterialBlockList(parent, value); parent.OnResourceChanged(this, new EventArgs()); } } }
+            public byte XMLIndex { get { return xmlindex; } set { if (xmlindex != value) { xmlindex = value; handler(this, new EventArgs()); } } }
+            public TypeCode01 Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; handler(this, new EventArgs()); } } }
+            public TypeCode01 Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; handler(this, new EventArgs()); } } }
+            public IList<TypeCode> TypeCodes { get { return tcList; } set { if (tcList != (value as TypeCodeList)) { tcList = new TypeCodeList(handler, value); handler(this, new EventArgs()); } } }
+            public IList<MaterialBlock> MaterialBlocks { get { return mbList; } set { if (mbList != (value as MaterialBlockList)) { mbList = new MaterialBlockList(handler, value); handler(this, new EventArgs()); } } }
 
             public String Value
             {
@@ -1000,21 +959,17 @@ namespace CatalogResource
             #endregion
         }
 
-        public class MaterialBlockList : AResource.DependentList<MaterialBlock, CatalogResource>
+        public class MaterialBlockList : AResource.DependentList<MaterialBlock>
         {
             #region Constructors
-            public MaterialBlockList(CatalogResource parent) : base(parent) { }
-            public MaterialBlockList(CatalogResource parent, IList<MaterialBlock> lmb) : base(parent, lmb) { }
-            internal MaterialBlockList(CatalogResource parent, Stream s) : base(parent, s) { }
+            public MaterialBlockList(EventHandler handler) : base(handler) { }
+            public MaterialBlockList(EventHandler handler, IList<MaterialBlock> lmb) : base(handler, lmb) { }
+            internal MaterialBlockList(EventHandler handler, Stream s) : base(handler, s) { }
             #endregion
 
             #region Data I/O
-            protected override MaterialBlock CreateElement(CatalogResource parent, Stream s) { return new MaterialBlock(parent, s); }
+            protected override MaterialBlock CreateElement(Stream s) { return new MaterialBlock(0, handler, s); }
             protected override void WriteElement(Stream s, MaterialBlock element) { element.UnParse(s); }
-            #endregion
-
-            #region ADependentList
-            public override object Clone(CatalogResource newParent) { return new MaterialBlockList(newParent, this); }
             #endregion
 
             #region Content Fields
@@ -1022,39 +977,39 @@ namespace CatalogResource
             #endregion
         }
 
-        public class Material : AApiVersionedFields, ICloneableWithParent,
+        public class Material : AHandlerElement,
             IComparable<Material>, IEqualityComparer<Material>, IEquatable<Material>
         {
             #region Attributes
-            CatalogResource parent = null;
             byte materialType;
             uint unknown1;
             ushort unknown2;
             MaterialBlock mb = null;
-            TGIBlockList<CatalogResource> list = null;
+            TGIBlockList list = null;
             uint unknown3;
             #endregion
 
             #region Constructors
-            internal Material(CatalogResource parent, Stream s) { this.parent = parent; Parse(s); }
-            public Material(CatalogResource parent, Material basis)
+            internal Material(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
+            public Material(int APIversion, EventHandler handler, Material basis)
+                : base(APIversion, handler)
             {
-                this.parent = basis.parent;
                 this.materialType = basis.materialType;
                 this.unknown1 = basis.unknown1;
                 this.unknown2 = basis.unknown2;
-                this.mb = (MaterialBlock)basis.mb.Clone(parent);
-                this.list = new TGIBlockList<CatalogResource>(parent, basis.list);
+                this.mb = (MaterialBlock)basis.mb.Clone(handler);
+                this.list = new TGIBlockList(handler, basis.list);
                 this.unknown3 = basis.unknown3;
             }
-            public Material(CatalogResource parent, byte materialType, uint unknown1, ushort unknown2, MaterialBlock mb, IList<TGIBlock<CatalogResource>> ltgib, uint unknown3)
+            public Material(int APIversion, EventHandler handler, byte materialType, uint unknown1, ushort unknown2,
+                MaterialBlock mb, IList<TGIBlock> ltgib, uint unknown3)
+                : base(APIversion, handler)
             {
-                this.parent = parent;
                 this.materialType = materialType;
                 this.unknown1 = unknown1;
                 this.unknown2 = unknown2;
-                this.mb = (MaterialBlock)mb.Clone(parent);
-                this.list = new TGIBlockList<CatalogResource>(parent, ltgib);
+                this.mb = (MaterialBlock)mb.Clone(handler);
+                this.list = new TGIBlockList(handler, ltgib);
                 this.unknown3 = unknown3;
             }
             #endregion
@@ -1071,9 +1026,9 @@ namespace CatalogResource
                 long tgiPosn = r.ReadUInt32() + s.Position;
                 long tgiSize = r.ReadUInt32();
 
-                mb = new MaterialBlock(parent, s);
+                mb = new MaterialBlock(requestedApiVersion, handler, s);
 
-                list = new TGIBlockList<CatalogResource>(parent, s, tgiPosn, tgiSize);
+                list = new TGIBlockList(handler, s, tgiPosn, tgiSize);
 
                 if (checking) if (oset != s.Position)
                         throw new InvalidDataException(String.Format("Position of final DWORD read: 0x{0:X8}, actual: 0x{1:X8}",
@@ -1140,42 +1095,38 @@ namespace CatalogResource
 
             #endregion
 
-            #region ICloneableWithParent Members
-
-            public virtual object Clone(object newParent) { return new Material(newParent as CatalogResource, this); }
-
-            #endregion
-
             #region ICloneable Members
 
-            public object Clone() { return Clone(parent); }
+            public object Clone() { return new Material(requestedApiVersion, handler, this); }
 
             #endregion
 
-            #region AApiVersionedFields
+            #region AHandlerElement
             public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
 
             public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
+
+            public override AHandlerElement Clone(EventHandler handler) { return new Material(requestedApiVersion, handler, this); }
             #endregion
 
             #region Content Fields
-            public byte MaterialType { get { return materialType; } set { if (materialType != value) { materialType = value; parent.OnResourceChanged(this, new EventArgs()); } } }
-            public uint Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; parent.OnResourceChanged(this, new EventArgs()); } } }
-            public ushort Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; parent.OnResourceChanged(this, new EventArgs()); } } }
-            public MaterialBlock MaterialBlock { get { return mb; } set { if (mb != value) { mb = value; parent.OnResourceChanged(this, new EventArgs()); } } }
-            public IList<TGIBlock<CatalogResource>> TGIBlocks
+            public byte MaterialType { get { return materialType; } set { if (materialType != value) { materialType = value; handler(this, new EventArgs()); } } }
+            public uint Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; handler(this, new EventArgs()); } } }
+            public ushort Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; handler(this, new EventArgs()); } } }
+            public MaterialBlock MaterialBlock { get { return mb; } set { if (mb != value) { mb = value; handler(this, new EventArgs()); } } }
+            public IList<TGIBlock> TGIBlocks
             {
                 get { return list; }
                 set
                 {
-                    if (list != (value as TGIBlockList<CatalogResource>))
+                    if (list != (value as TGIBlockList))
                     {
-                        list = new TGIBlockList<CatalogResource>(parent, value);
-                        parent.OnResourceChanged(this, new EventArgs());
+                        list = new TGIBlockList(handler, value);
+                        handler(this, new EventArgs());
                     }
                 }
             }
-            public uint Unknown3 { get { return unknown3; } set { if (unknown3 != value) { unknown3 = value; parent.OnResourceChanged(this, new EventArgs()); } } }
+            public uint Unknown3 { get { return unknown3; } set { if (unknown3 != value) { unknown3 = value; handler(this, new EventArgs()); } } }
 
             public String Value
             {
@@ -1189,7 +1140,7 @@ namespace CatalogResource
                         string h = String.Format("\n---------\n---------\n{0}: {1}\n---------\n", tv.Type.Name, f);
                         string t = "---------\n";
                         if (typeof(MaterialBlock).IsAssignableFrom(tv.Type)) s += h + (tv.Value as MaterialBlock).Value + t;
-                        else if (typeof(IList<TGIBlock<CatalogResource>>).IsAssignableFrom(tv.Type)) s += h + (tv.Value as TGIBlockList<CatalogResource>).Value + t;
+                        else if (typeof(IList<TGIBlock>).IsAssignableFrom(tv.Type)) s += h + (tv.Value as TGIBlockList).Value + t;
                         else s += string.Format("{0}: {1}\n", f, "" + tv);
                     }
                     return s;
@@ -1198,21 +1149,17 @@ namespace CatalogResource
             #endregion
         }
 
-        public class MaterialList : AResource.DependentList<Material, CatalogResource>
+        public class MaterialList : AResource.DependentList<Material>
         {
             #region Constructors
-            internal MaterialList(CatalogResource parent) : base(parent) { }
-            internal MaterialList(CatalogResource parent, Stream s) : base(parent, s) { }
-            public MaterialList(CatalogResource parent, IList<Material> lme) : base(parent, lme) { }
+            internal MaterialList(EventHandler handler) : base(handler) { }
+            internal MaterialList(EventHandler handler, Stream s) : base(handler, s) { }
+            public MaterialList(EventHandler handler, IList<Material> lme) : base(handler, lme) { }
             #endregion
 
             #region Data I/O
-            protected override Material CreateElement(CatalogResource parent, Stream s) { return new Material(parent, s); }
+            protected override Material CreateElement(Stream s) { return new Material(0, handler, s); }
             protected override void WriteElement(Stream s, Material element) { element.UnParse(s); }
-            #endregion
-
-            #region ADependentList
-            public override object Clone(CatalogResource newParent) { return new MaterialList(newParent, this); }
             #endregion
 
             #region Content Fields
@@ -1222,7 +1169,7 @@ namespace CatalogResource
         #endregion
 
         #region Content Fields
-        public Common CommonBlock { get { return common; } set { if (common != value) { common = new Common(this, value); OnResourceChanged(this, new EventArgs()); } } }
+        public Common CommonBlock { get { return common; } set { if (common != value) { common = new Common(requestedApiVersion, OnResourceChanged, value); OnResourceChanged(this, new EventArgs()); } } }
         
         public virtual String Value
         {
@@ -1237,7 +1184,7 @@ namespace CatalogResource
                     string t = "---------\n";
                     if (typeof(IList<Material>).IsAssignableFrom(tv.Type)) s += h + (tv.Value as MaterialList).Value + t;
                     else if (typeof(IList<MaterialBlock>).IsAssignableFrom(tv.Type)) s += h + (tv.Value as MaterialBlockList).Value + t;
-                    else if (typeof(IList<TGIBlock<CatalogResource>>).IsAssignableFrom(tv.Type)) s += h + (tv.Value as TGIBlockList<CatalogResource>).Value + t;
+                    else if (typeof(IList<TGIBlock>).IsAssignableFrom(tv.Type)) s += h + (tv.Value as TGIBlockList).Value + t;
                     else if (typeof(Common).IsAssignableFrom(tv.Type)) s += h + (tv.Value as Common).Value + t;
                     else if (typeof(TypeCode).IsAssignableFrom(tv.Type)) s += h + (tv.Value as TypeCode).Value + t;
                     else if (typeof(IList<ObjectCatalogResource.MTDoor>).IsAssignableFrom(tv.Type)) s += h + (tv.Value as ObjectCatalogResource.MTDoorList).Value + t;
@@ -1252,34 +1199,34 @@ namespace CatalogResource
     /// <summary>
     /// A CatalogResource wrapper that contains a TGIBlockList
     /// </summary>
-    public abstract class CatalogResourceTGIBlockList : CatalogResource, IList<AResource.TGIBlock<CatalogResource>>
+    public abstract class CatalogResourceTGIBlockList : CatalogResource, IList<AResource.TGIBlock>
     {
         #region Attributes
-        protected TGIBlockList<CatalogResource> list = null;
+        protected TGIBlockList list = null;
         #endregion
 
         #region Constructors
         public CatalogResourceTGIBlockList(int APIversion, Stream s) : base(APIversion, s) { }
-        public CatalogResourceTGIBlockList(int APIversion, Stream unused, IList<CatalogResource.TGIBlock<CatalogResource>> ltgib) : base(APIversion, null) { this.list = new TGIBlockList<CatalogResource>(this, ltgib); }
+        public CatalogResourceTGIBlockList(int APIversion, Stream unused, IList<TGIBlock> ltgib) : base(APIversion, null) { this.list = new TGIBlockList(OnResourceChanged, ltgib); }
         #endregion
 
         #region Data I/O
         protected void UnParse(Stream s, long pos)
         {
-            if (list == null) list = new TGIBlockList<CatalogResource>(this);
+            if (list == null) list = new TGIBlockList(OnResourceChanged);
             list.UnParse(s, pos);
         }
         #endregion
 
-        #region IList<TGIBlock<CatalogResource>> Members
+        #region IList<TGIBlock> Members
 
-        public int IndexOf(CatalogResource.TGIBlock<CatalogResource> item) { return list.IndexOf(item); }
+        public int IndexOf(TGIBlock item) { return list.IndexOf(item); }
 
-        public void Insert(int index, CatalogResource.TGIBlock<CatalogResource> item) { list.Insert(index, item); OnResourceChanged(this, new EventArgs()); }
+        public void Insert(int index, TGIBlock item) { list.Insert(index, item); OnResourceChanged(this, new EventArgs()); }
 
         public void RemoveAt(int index) { list.RemoveAt(index); OnResourceChanged(this, new EventArgs()); }
 
-        public CatalogResource.TGIBlock<CatalogResource> this[int index]
+        public TGIBlock this[int index]
         {
             get { return list[index]; }
             set { if (list[index] != value) { list[index] = value; OnResourceChanged(this, new EventArgs()); } }
@@ -1289,19 +1236,19 @@ namespace CatalogResource
 
         #region ICollection<TGIBlock> Members
 
-        public void Add(CatalogResource.TGIBlock<CatalogResource> item) { list.Add(item); OnResourceChanged(this, new EventArgs()); }
+        public void Add(TGIBlock item) { list.Add(item); OnResourceChanged(this, new EventArgs()); }
 
         public void Clear() { list.Clear(); OnResourceChanged(this, new EventArgs()); }
 
-        public bool Contains(CatalogResource.TGIBlock<CatalogResource> item) { return list.Contains(item); }
+        public bool Contains(TGIBlock item) { return list.Contains(item); }
 
-        public void CopyTo(CatalogResource.TGIBlock<CatalogResource>[] array, int arrayIndex) { list.CopyTo(array, arrayIndex); }
+        public void CopyTo(TGIBlock[] array, int arrayIndex) { list.CopyTo(array, arrayIndex); }
 
         public int Count { get { return list.Count; } }
 
         public bool IsReadOnly { get { return false; } }
 
-        public bool Remove(CatalogResource.TGIBlock<CatalogResource> item)
+        public bool Remove(TGIBlock item)
         {
             bool res = list.Remove(item);
             if (res) OnResourceChanged(this, new EventArgs());
@@ -1312,7 +1259,7 @@ namespace CatalogResource
 
         #region IEnumerable<TGIBlock> Members
 
-        public IEnumerator<CatalogResource.TGIBlock<CatalogResource>> GetEnumerator() { return list.GetEnumerator(); }
+        public IEnumerator<TGIBlock> GetEnumerator() { return list.GetEnumerator(); }
 
         #endregion
 
@@ -1323,14 +1270,14 @@ namespace CatalogResource
         #endregion
 
         #region Content Fields
-        public IList<TGIBlock<CatalogResource>> TGIBlocks
+        public IList<TGIBlock> TGIBlocks
         {
             get { return list; }
             set
             {
-                if (list != value as TGIBlockList<CatalogResource>)
+                if (list != value as TGIBlockList)
                 {
-                    list = new TGIBlockList<CatalogResource>(this, value);
+                    list = new TGIBlockList(OnResourceChanged, value);
                     OnResourceChanged(this, new EventArgs());
                 }
             }

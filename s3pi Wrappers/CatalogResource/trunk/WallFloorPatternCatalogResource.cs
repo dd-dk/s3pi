@@ -48,8 +48,8 @@ namespace CatalogResource
             : base(APIversion, null, basis)
         {
             this.unknown1 = basis.unknown1;
-            this.materialList = new WallFloorPatternMaterialList(this, basis.materialList);
-            this.common = new Common(this, basis.common);
+            this.materialList = new WallFloorPatternMaterialList(OnResourceChanged, basis.materialList);
+            this.common = new Common(requestedApiVersion, OnResourceChanged, basis.common);
             this.unknown2 = basis.unknown2;
             this.unknown2 = basis.unknown2;
             this.unknown3 = basis.unknown3;
@@ -66,12 +66,12 @@ namespace CatalogResource
         public WallFloorPatternCatalogResource(int APIversion, uint unknown1, IList<WallFloorPatternMaterial> materialList, Common common,
             uint unknown2, byte unknown3, uint unknown4, byte unknown5, byte unknown6, uint unknown7, uint unknown8,
             uint index1, uint unknown9, string unknown10, byte[] unknown11,
-            TGIBlockList<CatalogResource> ltgib)
+            TGIBlockList ltgib)
             : base(APIversion, null, ltgib)
         {
             this.unknown1 = unknown1;
-            this.materialList = new WallFloorPatternMaterialList(this, materialList);
-            this.common = new Common(this, common);
+            this.materialList = new WallFloorPatternMaterialList(OnResourceChanged, materialList);
+            this.common = new Common(requestedApiVersion, OnResourceChanged, common);
             this.unknown2 = unknown2;
             this.unknown3 = unknown3;
             this.unknown4 = unknown4;
@@ -97,8 +97,8 @@ namespace CatalogResource
             this.unknown1 = r.ReadUInt32();
             tgiPosn = r.ReadUInt32() + s.Position;
             tgiSize = r.ReadUInt32();
-            this.materialList = new WallFloorPatternMaterialList(this, s);
-            this.common = new Common(this, s);
+            this.materialList = new WallFloorPatternMaterialList(OnResourceChanged, s);
+            this.common = new Common(requestedApiVersion, OnResourceChanged, s);
             this.unknown2 = r.ReadUInt32();
             this.unknown3 = r.ReadByte();
             this.unknown4 = r.ReadUInt32();
@@ -114,7 +114,7 @@ namespace CatalogResource
             if (checking) if (unknown11.Length != 8)
                     throw new InvalidDataException(String.Format("unknown11: read {0} bytes; expected 8 at 0x{1:X8}.", unknown11.Length, s.Position));
 
-            list = new TGIBlockList<CatalogResource>(this, s, tgiPosn, tgiSize);
+            list = new TGIBlockList(OnResourceChanged, s, tgiPosn, tgiSize);
         }
 
         protected override Stream UnParse()
@@ -128,7 +128,7 @@ namespace CatalogResource
             pos = s.Position;
             w.Write((uint)0); // tgiOffset
             w.Write((uint)0); // tgiSize
-            if (materialList == null) materialList = new WallFloorPatternMaterialList(this);
+            if (materialList == null) materialList = new WallFloorPatternMaterialList(OnResourceChanged);
             materialList.UnParse(s);
             common.UnParse(s);
             w.Write(unknown2);
@@ -152,12 +152,6 @@ namespace CatalogResource
         }
         #endregion
 
-        #region ICloneable Members
-
-        public override object Clone() { return new WallFloorPatternCatalogResource(requestedApiVersion, null, this); }
-
-        #endregion
-
         #region Sub-classes
         public class WallFloorPatternMaterial : Material,
             IComparable<WallFloorPatternMaterial>, IEqualityComparer<WallFloorPatternMaterial>, IEquatable<WallFloorPatternMaterial>
@@ -168,11 +162,12 @@ namespace CatalogResource
             #endregion
 
             #region Constructors
-            internal WallFloorPatternMaterial(WallFloorPatternCatalogResource parent, Stream s) : base(parent, s) { this.parent = parent; }
-            public WallFloorPatternMaterial(WallFloorPatternCatalogResource parent, WallFloorPatternMaterial basis) : base(parent, basis) { this.parent = parent; this.unknown4 = basis.unknown4; }
-            public WallFloorPatternMaterial(WallFloorPatternCatalogResource parent, byte materialType, uint unknown1, ushort unknown2,
-                MaterialBlock mb, IList<TGIBlock<CatalogResource>> ltgib, uint unknown3, uint unknown4)
-                : base(parent, materialType, unknown1, unknown2, mb, ltgib, unknown3) { this.parent = parent; this.unknown4 = unknown4; }
+            internal WallFloorPatternMaterial(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler, s) { }
+            public WallFloorPatternMaterial(int APIversion, EventHandler handler, WallFloorPatternMaterial basis)
+                : base(APIversion, handler, basis) { this.unknown4 = basis.unknown4; }
+            public WallFloorPatternMaterial(int APIversion, EventHandler handler, byte materialType, uint unknown1, ushort unknown2,
+                MaterialBlock mb, IList<TGIBlock> ltgib, uint unknown3, uint unknown4)
+                : base(APIversion, handler, materialType, unknown1, unknown2, mb, ltgib, unknown3) { this.unknown4 = unknown4; }
             #endregion
 
             #region Data I/O
@@ -203,36 +198,26 @@ namespace CatalogResource
 
             #endregion
 
-            #region ICloneableWithParent Members
-
-            public override object Clone(object newParent) { return new WallFloorPatternMaterial(newParent as WallFloorPatternCatalogResource, this); }
-
-            #endregion
-
             #region AApiVersionedFields
             public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
             #endregion
 
             #region Content Fields
-            public uint Unknown4 { get { return unknown4; } set { if (unknown4 != value) { unknown4 = value; parent.OnResourceChanged(this, new EventArgs()); } } }
+            public uint Unknown4 { get { return unknown4; } set { if (unknown4 != value) { unknown4 = value; handler(this, new EventArgs()); } } }
             #endregion
         }
 
-        public class WallFloorPatternMaterialList : AResource.DependentList<WallFloorPatternMaterial, WallFloorPatternCatalogResource>
+        public class WallFloorPatternMaterialList : AResource.DependentList<WallFloorPatternMaterial>
         {
             #region Constructors
-            internal WallFloorPatternMaterialList(WallFloorPatternCatalogResource parent) : base(parent) { }
-            internal WallFloorPatternMaterialList(WallFloorPatternCatalogResource parent, Stream s) : base(parent, s) { }
-            public WallFloorPatternMaterialList(WallFloorPatternCatalogResource parent, IList<WallFloorPatternMaterial> lme) : base(parent, lme) { }
+            internal WallFloorPatternMaterialList(EventHandler handler) : base(handler) { }
+            internal WallFloorPatternMaterialList(EventHandler handler, Stream s) : base(handler, s) { }
+            public WallFloorPatternMaterialList(EventHandler handler, IList<WallFloorPatternMaterial> lme) : base(handler, lme) { }
             #endregion
 
             #region Data I/O
-            protected override WallFloorPatternMaterial CreateElement(WallFloorPatternCatalogResource parent, Stream s) { return new WallFloorPatternMaterial(parent, s); }
+            protected override WallFloorPatternMaterial CreateElement(Stream s) { return new WallFloorPatternMaterial(0, handler, s); }
             protected override void WriteElement(Stream s, WallFloorPatternMaterial element) { element.UnParse(s); }
-            #endregion
-
-            #region ADependentList
-            public override object Clone(WallFloorPatternCatalogResource newParent) { return new WallFloorPatternMaterialList(newParent, this); }
             #endregion
 
             #region Content Fields
@@ -243,7 +228,7 @@ namespace CatalogResource
 
         #region Content Fields
         public uint Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; OnResourceChanged(this, new EventArgs()); } } }
-        public IList<WallFloorPatternMaterial> Materials { get { return materialList; } set { if (materialList != value) { materialList = value == null ? null : new WallFloorPatternMaterialList(this, value); } OnResourceChanged(this, new EventArgs()); } }
+        public IList<WallFloorPatternMaterial> Materials { get { return materialList; } set { if (materialList != value) { materialList = value == null ? null : new WallFloorPatternMaterialList(OnResourceChanged, value); } OnResourceChanged(this, new EventArgs()); } }
         public uint Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; OnResourceChanged(this, new EventArgs()); } } }
         public byte Unknown3 { get { return unknown3; } set { if (unknown3 != value) { unknown3 = value; OnResourceChanged(this, new EventArgs()); } } }
         public uint Unknown4 { get { return unknown4; } set { if (unknown4 != value) { unknown4 = value; OnResourceChanged(this, new EventArgs()); } } }
@@ -285,7 +270,7 @@ namespace CatalogResource
                     string t = "---------\n";
                     if (typeof(IList<WallFloorPatternMaterial>).IsAssignableFrom(tv.Type)) s += h + (tv.Value as WallFloorPatternMaterialList).Value + t;
                     else if (typeof(IList<MaterialBlock>).IsAssignableFrom(tv.Type)) s += h + (tv.Value as MaterialBlockList).Value + t;
-                    else if (typeof(IList<TGIBlock<CatalogResource>>).IsAssignableFrom(tv.Type)) s += h + (tv.Value as TGIBlockList<CatalogResource>).Value + t;
+                    else if (typeof(IList<TGIBlock>).IsAssignableFrom(tv.Type)) s += h + (tv.Value as TGIBlockList).Value + t;
                     else if (typeof(Common).IsAssignableFrom(tv.Type)) s += h + (tv.Value as Common).Value + t;
                     else if (typeof(TypeCode).IsAssignableFrom(tv.Type)) s += h + (tv.Value as TypeCode).Value + t;
                     else if (typeof(IList<ObjectCatalogResource.MTDoor>).IsAssignableFrom(tv.Type)) s += h + (tv.Value as ObjectCatalogResource.MTDoorList).Value + t;

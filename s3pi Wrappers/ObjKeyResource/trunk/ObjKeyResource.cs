@@ -39,15 +39,15 @@ namespace ObjKeyResource
         ComponentList components;
         KeyList keys;
         byte unknown1;
-        TGIBlockList<ObjKeyResource> tgiBlocks;
+        TGIBlockList tgiBlocks;
         #endregion
 
         #region Constructors
         public ObjKeyResource(int APIversion, Stream s) : base(APIversion, s)
         {
-            components = new ComponentList(this);
-            keys = new KeyList(this);
-            tgiBlocks = new TGIBlockList<ObjKeyResource>(this);
+            components = new ComponentList(OnResourceChanged);
+            keys = new KeyList(OnResourceChanged);
+            tgiBlocks = new TGIBlockList(OnResourceChanged);
 
             if (s == null) s = UnParse();
             s.Position = 0;
@@ -65,11 +65,11 @@ namespace ObjKeyResource
             tgiPosn = r.ReadUInt32() + s.Position;
             tgiSize = r.ReadUInt32();
 
-            components = new ComponentList(this, s);
-            keys = new KeyList(this, s);
+            components = new ComponentList(OnResourceChanged, s);
+            keys = new KeyList(OnResourceChanged, s);
             unknown1 = r.ReadByte();
 
-            tgiBlocks = new TGIBlockList<ObjKeyResource>(this, s, tgiPosn, tgiSize);
+            tgiBlocks = new TGIBlockList(OnResourceChanged, s, tgiPosn, tgiSize);
         }
 
         Stream UnParse()
@@ -135,24 +135,20 @@ namespace ObjKeyResource
             VisualStateComponent = 0x50b3d17c,
         }
 
-        public class ComponentList : AResource.DependentList<uint, ObjKeyResource>
+        public class ComponentList : AResource.DependentList<uint>
         {
             #region Constructors
-            public ComponentList(ObjKeyResource parent) : base(parent, 255) { }
-            public ComponentList(ObjKeyResource parent, IList<uint> luint) : base(parent, 255, luint) { }
-            internal ComponentList(ObjKeyResource parent, Stream s) : base(parent, 255) { Parse(s); }
+            public ComponentList(EventHandler handler) : base(handler, 255) { }
+            public ComponentList(EventHandler handler, IList<uint> luint) : base(handler, 255, luint) { }
+            internal ComponentList(EventHandler handler, Stream s) : base(handler, 255) { Parse(s); }
             #endregion
 
             #region Data I/O
             protected override uint ReadCount(Stream s) { return (new BinaryReader(s)).ReadByte(); }
-            protected override uint CreateElement(ObjKeyResource parent, Stream s) { return (new BinaryReader(s)).ReadUInt32(); }
+            protected override uint CreateElement(Stream s) { return (new BinaryReader(s)).ReadUInt32(); }
 
             protected override void WriteCount(Stream s, uint count) { (new BinaryWriter(s)).Write((byte)count); }
             protected override void WriteElement(Stream s, uint element) { (new BinaryWriter(s)).Write(element); }
-            #endregion
-
-            #region ADependentList
-            public override object Clone(ObjKeyResource newParent) { return new ComponentList(newParent, this); }
             #endregion
 
             #region Content Fields
@@ -282,24 +278,20 @@ namespace ObjKeyResource
             #endregion
         }
 
-        public class KeyList : AResource.DependentList<Key, ObjKeyResource>
+        public class KeyList : AResource.DependentList<Key>
         {
             #region Constructors
-            public KeyList(ObjKeyResource parent) : base(parent, 255) { }
-            public KeyList(ObjKeyResource parent, IList<Key> luint) : base(parent, 255, luint) { }
-            internal KeyList(ObjKeyResource parent, Stream s) : base(parent, 255) { Parse(s); }
+            public KeyList(EventHandler handler) : base(handler, 255) { }
+            public KeyList(EventHandler handler, IList<Key> luint) : base(handler, 255, luint) { }
+            internal KeyList(EventHandler handler, Stream s) : base(handler, 255) { Parse(s); }
             #endregion
 
             #region Data I/O
             protected override uint ReadCount(Stream s) { return (new BinaryReader(s)).ReadByte(); }
-            protected override Key CreateElement(ObjKeyResource parent, Stream s) { return new Key(s); }
+            protected override Key CreateElement(Stream s) { return new Key(s); }
 
             protected override void WriteCount(Stream s, uint count) { (new BinaryWriter(s)).Write((byte)count); }
             protected override void WriteElement(Stream s, Key element) { element.UnParse(s); }
-            #endregion
-
-            #region ADependentList
-            public override object Clone(ObjKeyResource newParent) { return new KeyList(newParent, this); }
             #endregion
 
             #region Content Fields
@@ -312,10 +304,10 @@ namespace ObjKeyResource
 
         #region Content Fields
         public uint Format { get { return format; } set { if (format != value) { format = value; OnResourceChanged(this, new EventArgs()); } } }
-        public ComponentList Components { get { return components; } set { if (components != value) { components = new ComponentList(this, value); OnResourceChanged(this, new EventArgs()); } } }
-        public KeyList Keys { get { return keys; } set { if (keys != value) { keys = new KeyList(this, value); OnResourceChanged(this, new EventArgs()); } } }
+        public ComponentList Components { get { return components; } set { if (components != value) { components = new ComponentList(OnResourceChanged, value); OnResourceChanged(this, new EventArgs()); } } }
+        public KeyList Keys { get { return keys; } set { if (keys != value) { keys = new KeyList(OnResourceChanged, value); OnResourceChanged(this, new EventArgs()); } } }
         public byte Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; OnResourceChanged(this, new EventArgs()); } } }
-        public TGIBlockList<ObjKeyResource> TGIBlocks { get { return tgiBlocks; } set { if (tgiBlocks != value) { tgiBlocks = new TGIBlockList<ObjKeyResource>(this, value); OnResourceChanged(this, new EventArgs()); } } }
+        public TGIBlockList TGIBlocks { get { return tgiBlocks; } set { if (tgiBlocks != value) { tgiBlocks = new TGIBlockList(OnResourceChanged, value); OnResourceChanged(this, new EventArgs()); } } }
 
         public string Value
         {
