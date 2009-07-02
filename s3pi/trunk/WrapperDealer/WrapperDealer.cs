@@ -39,20 +39,7 @@ namespace s3pi.WrapperDealer
         /// <returns></returns>
         public static IResource CreateNewResource(int APIversion, string resourceType)
         {
-            return WrapperForType(resourceType, new object[] { APIversion, null });
-        }
-
-
-        /// <summary>
-        /// Retrieve a resource from a package, readying the appropriate wrapper or the default wrapper
-        /// </summary>
-        /// <param name="APIversion">API version of request</param>
-        /// <param name="pkg">Package containing <typeparamref name="IResourceCode"/> <paramref name="rie"/></param>
-        /// <param name="rie">Identifies resource to be returned</param>
-        /// <returns>A resource from the package</returns>
-        public static IResource GetResource(int APIversion, IPackage pkg, IResourceIndexEntry rie, bool AlwaysDefault)
-        {
-            return WrapperForType(AlwaysDefault ? "*" : rie["ResourceType"], new object[] { APIversion, (pkg as APackage).GetResource(rie) });
+            return WrapperForType(resourceType, APIversion, null);
         }
 
 
@@ -65,16 +52,26 @@ namespace s3pi.WrapperDealer
         /// <returns>A resource from the package</returns>
         public static IResource GetResource(int APIversion, IPackage pkg, IResourceIndexEntry rie) { return GetResource(APIversion, pkg, rie, false); }
 
+
+        /// <summary>
+        /// Retrieve a resource from a package, readying the appropriate wrapper or the default wrapper
+        /// </summary>
+        /// <param name="APIversion">API version of request</param>
+        /// <param name="pkg">Package containing <typeparamref name="IResourceCode"/> <paramref name="rie"/></param>
+        /// <param name="rie">Identifies resource to be returned</param>
+        /// <returns>A resource from the package</returns>
+        public static IResource GetResource(int APIversion, IPackage pkg, IResourceIndexEntry rie, bool AlwaysDefault)
+        {
+            return WrapperForType(AlwaysDefault ? "*" : rie["ResourceType"], APIversion, (pkg as APackage).GetResource(rie));
+        }
+
         #region Implementation
         static List<KeyValuePair<string, Type>> typeMap = null;
-        static Dictionary<Type, Assembly> assemblyMap = null;
 
         static WrapperDealer()
         {
             string folder = Path.GetDirectoryName(typeof(WrapperDealer).Assembly.Location);
-            //string folder = (string)Microsoft.Win32.Registry.LocalMachine.GetValue(@"Software\s3pi\s3pi\InstallDir", null);
             typeMap = new List<KeyValuePair<string, Type>>();
-            assemblyMap = new Dictionary<Type, Assembly>();
             foreach (string path in Directory.GetFiles(folder, "*.dll"))
             {
                 try
@@ -92,8 +89,6 @@ namespace s3pi.WrapperDealer
 
                         foreach (Type k in arh.Keys)
                         {
-                            if (assemblyMap.ContainsKey(k)) continue;
-                            assemblyMap.Add(k, dotNetDll);
                             foreach (string s in arh[k])
                                 typeMap.Add(new KeyValuePair<string, Type>(s, k));
                         }
@@ -103,17 +98,18 @@ namespace s3pi.WrapperDealer
             }
         }
 
-        static IResource WrapperForType(string type, object[] parms)
+        static IResource WrapperForType(string type, int APIversion, Stream s)
         {
             Type t = null;
-            foreach (KeyValuePair<string, Type> kvp in typeMap) if (kvp.Key == "*") { t = kvp.Value; break; }
-            if (Settings.Settings.Checking) if (t == null)
-                    throw new InvalidOperationException("Could not find Default Resource handler");
-
             foreach (KeyValuePair<string, Type> kvp in typeMap) if (kvp.Key == type) { t = kvp.Value; break; }
-            Assembly a = assemblyMap[t];
 
-            return (IResource)a.CreateInstance(t.FullName, false, BindingFlags.CreateInstance, null, parms, null, null);
+            if (type == null)
+                foreach (KeyValuePair<string, Type> kvp in typeMap) if (kvp.Key == "*") { t = kvp.Value; break; }
+
+            if (Settings.Settings.Checking) if (t == null)
+                    throw new InvalidOperationException("Could not find a resource handler");
+
+            return (IResource)t.GetConstructor(new Type[] { typeof(int), typeof(Stream), }).Invoke(new object[] { APIversion, s });
         }
         #endregion
     }
