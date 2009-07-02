@@ -294,4 +294,14 @@ namespace s3pi.Interfaces
             return true;
         }
     }
+
+    /// <summary>
+    /// This class is a useful extension to AApiVersionedFields where a change handler is required
+    /// </summary>
+    public abstract class AHandlerElement : AApiVersionedFields
+    {
+        protected EventHandler handler;
+        public AHandlerElement(int APIversion, EventHandler handler) { requestedApiVersion = APIversion; this.handler = handler; }
+        public abstract AHandlerElement Clone(EventHandler handler);
+    }
 }

@@ -120,13 +120,6 @@ namespace s3pi.Interfaces
             #endregion
         }
 
-        public abstract class AHandlerElement : AApiVersionedFields
-        {
-            protected EventHandler handler;
-            public AHandlerElement(int APIversion, EventHandler handler) { requestedApiVersion = APIversion; this.handler = handler; }
-            public abstract AHandlerElement Clone(EventHandler handler);
-        }
-
         public class TGIBlock : AHandlerElement, IComparable<TGIBlock>, IEqualityComparer<TGIBlock>, IEquatable<TGIBlock>
         {
             #region Attributes
