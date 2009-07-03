@@ -334,6 +334,11 @@ namespace s3pi.GenericRCOLResource
             get { if (modular == 0) throw new InvalidOperationException(); return ftptIndex; }
             set { if (modular == 0) throw new InvalidOperationException(); if (ftptIndex != value) { ftptIndex = value; OnElementChanged(); } }
         }
+        public AResource.TGIBlockList TGIBlocks
+        {
+            get { return tgiBlockList; }
+            set { if (tgiBlockList != value) { tgiBlockList = new AResource.TGIBlockList(handler, value); OnElementChanged(); } }
+        }
 
         public string Value
         {
@@ -343,7 +348,7 @@ namespace s3pi.GenericRCOLResource
                 s += "Tag: 0x" + tag.ToString("X8");
                 s += "\nVersion: 0x" + version.ToString("X8");
 
-                s += "\n--\nEntry List:\n";
+                s += "\n--\nEntry List:";
                 for (int i = 0; i < entryList.Count; i++)
                     s += "\n[" + i + "]: " + entryList[i].Value;
 
@@ -353,6 +358,8 @@ namespace s3pi.GenericRCOLResource
                 s += "\nModular: " + modular;
                 if (Modular)
                     s += "\n" + "FTPTIndex: 0x" + ftptIndex.ToString("X8");
+
+                s += "\n--TGI Blocks:\n" + tgiBlockList.Value + "--";
                 return s;
             }
         }
