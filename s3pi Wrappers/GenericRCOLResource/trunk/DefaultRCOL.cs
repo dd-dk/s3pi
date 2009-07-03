@@ -41,5 +41,16 @@ namespace s3pi.GenericRCOLResource
         public override uint ResourceType { get { return 0xffffffff; } }
 
         public override System.IO.Stream UnParse() { MemoryStream ms = new MemoryStream(); ms.Write(data, 0, data.Length); return ms; }
+
+        public string Value
+        {
+            get
+            {
+                string s = "";
+                s += "Tag: " + FOURCC(BitConverter.ToUInt32(data, 0));
+                s += "\nLength: " + data.Length;
+                return s;
+            }
+        }
     }
 }

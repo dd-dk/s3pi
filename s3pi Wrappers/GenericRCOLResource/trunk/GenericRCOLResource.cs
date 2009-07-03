@@ -265,19 +265,17 @@ namespace s3pi.GenericRCOLResource
                 s += "\nRCOL Blocks:";
                 for (int i = 0; i < blockList.Count; i++)
                 {
-                    if (blockList[i].Value.Tag.Equals("*"))
-                        s += "\n--- " + i + ": " + blockList[i].Key + " (unknown type) ---";
-                    else
-                    {
-                        s += "\n--- " + i + ": " + blockList[i].Key + " - " + blockList[i].Value.Tag + " ---";
-                        if (AApiVersionedFields.GetContentFields(0, blockList[i].Value.GetType()).Contains("Value"))
-                            s += "\n" + blockList[i].Value["Value"];
-                        else foreach (string field in AApiVersionedFields.GetContentFields(0, blockList[i].Value.GetType()))
+                    string t;
+                    if (blockList[i].Value.Tag.Equals("*")) t = "";
+                    else t = " - " + blockList[i].Value.Tag;
+                    s += "\n--- " + i + ": " + blockList[i].Key + t + " ---";
+                    if (AApiVersionedFields.GetContentFields(0, blockList[i].Value.GetType()).Contains("Value"))
+                        s += "\n" + blockList[i].Value["Value"];
+                    else foreach (string field in AApiVersionedFields.GetContentFields(0, blockList[i].Value.GetType()))
                         {
                             if (!(new List<string>(new string[] { "ResourceType", "Tag", "Value", "Stream", "AsBytes", })).Contains(field))
                                 s += "\n  " + field + ": " + blockList[i].Value[field];
                         }
-                    }
                     s += "\n----";
                 }
                 return s;
