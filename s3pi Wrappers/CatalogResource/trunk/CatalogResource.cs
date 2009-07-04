@@ -228,7 +228,7 @@ namespace CatalogResource
             #endregion
 
             #region Constructors
-            protected TypeCode(int APIversion, EventHandler handler, byte[] pfx):base(APIversion, handler) { prefix = pfx == null ? null : (byte[])pfx.Clone(); }
+            protected TypeCode(int APIversion, EventHandler handler, byte[] pfx) : base(APIversion, handler) { prefix = pfx == null ? null : (byte[])pfx.Clone(); }
             protected TypeCode(int APIversion, EventHandler handler, Stream s, byte[] pfx) : this(APIversion, handler, pfx) { Parse(s); }
 
             public static TypeCode CreateTypeCode(int APIversion, EventHandler handler, Stream s, byte[] prefix)
@@ -763,7 +763,7 @@ namespace CatalogResource
             internal override void UnParse(Stream s)
             {
                 BinaryWriter w = new BinaryWriter(s);
-                for (int i = 0; i < length; i++) w.Write(' ');
+                for (int i = 0; i < length; i++) w.Write((byte)0x40);
             }
 
             public override int CompareTo(TypeCode other)
@@ -1059,7 +1059,7 @@ namespace CatalogResource
 
                 pos = s.Position;
                 s.Position = pOset;
-                w.Write((uint)(pos - pOset));
+                w.Write((uint)(pos - pOset - sizeof(uint)));
 
                 s.Position = pos;
                 w.Write(unknown3);
@@ -1110,7 +1110,7 @@ namespace CatalogResource
 
             #region Content Fields
             public byte MaterialType { get { return materialType; } set { if (materialType != value) { materialType = value; OnElementChanged(); } } }
-            public uint Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; OnElementChanged(); } } }
+            public uint Unknown1 { get { return unknown1; } set { if (materialType == 1) throw new InvalidOperationException(); if (unknown1 != value) { unknown1 = value; OnElementChanged(); } } }
             public ushort Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; OnElementChanged(); } } }
             public MaterialBlock MaterialBlock { get { return mb; } set { if (mb != value) { mb = value; OnElementChanged(); } } }
             public IList<TGIBlock> TGIBlocks
