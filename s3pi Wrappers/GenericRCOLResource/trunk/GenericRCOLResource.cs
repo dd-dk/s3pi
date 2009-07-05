@@ -28,7 +28,7 @@ namespace s3pi.GenericRCOLResource
     /// <summary>
     /// A resource wrapper that understands generic RCOL resources
     /// </summary>
-    public class GenericRCOLResource : AResource, IList<KeyValuePair<AResource.TGIBlock, ARCOLBlock>>
+    public class GenericRCOLResource : AResource, IList<GenericRCOLResource.ChunkEntry>
     {
         static bool checking = s3pi.Settings.Settings.Checking;
         const Int32 recommendedApiVersion = 1;
@@ -36,7 +36,7 @@ namespace s3pi.GenericRCOLResource
         uint version;
         uint dataType;
         uint unused;
-        List<KeyValuePair<TGIBlock, ARCOLBlock>> blockList;
+        List<ChunkEntry> blockList;
         CountedTGIBlockList resources;
 
         #region Constructors
@@ -66,7 +66,7 @@ namespace s3pi.GenericRCOLResource
             RCOLIndexEntry[] index = new RCOLIndexEntry[countChunks];
             for (int i = 0; i < countChunks; i++) { index[i].Position = r.ReadUInt32(); index[i].Length = r.ReadInt32(); }
 
-            blockList = new List<KeyValuePair<AResource.TGIBlock, ARCOLBlock>>();
+            blockList = new List<GenericRCOLResource.ChunkEntry>();
             for (int i = 0; i < countChunks; i++)
             {
                 s.Position = index[i].Position;
@@ -75,7 +75,7 @@ namespace s3pi.GenericRCOLResource
                 ms.Write(data, 0, data.Length);
                 ms.Position = 0;
 
-                blockList.Add(new KeyValuePair<AResource.TGIBlock, ARCOLBlock>(
+                blockList.Add(new GenericRCOLResource.ChunkEntry(requestedApiVersion, OnResourceChanged,
                     chunks[i], GenericRCOLResourceHandler.RCOLDealer(requestedApiVersion, OnResourceChanged, chunks[i].ResourceType, ms)));
             }
         }
@@ -83,7 +83,7 @@ namespace s3pi.GenericRCOLResource
         Stream UnParse()
         {
             long rcolIndexPos;
-            
+
             MemoryStream ms = new MemoryStream();
             BinaryWriter w = new BinaryWriter(ms);
 
@@ -92,9 +92,9 @@ namespace s3pi.GenericRCOLResource
             w.Write(unused);
             if (resources == null) resources = new CountedTGIBlockList(OnResourceChanged, "ITG");
             w.Write(resources.Count);
-            if (blockList == null) blockList = new List<KeyValuePair<AResource.TGIBlock, ARCOLBlock>>();
+            if (blockList == null) blockList = new List<GenericRCOLResource.ChunkEntry>();
             w.Write(blockList.Count);
-            foreach (var kvp in blockList) kvp.Key.UnParse(ms);
+            foreach (ChunkEntry ce in blockList) ce.TGIBlock.UnParse(ms);
             resources.UnParse(ms);
 
             rcolIndexPos = ms.Position;
@@ -102,9 +102,9 @@ namespace s3pi.GenericRCOLResource
             for (int i = 0; i < blockList.Count; i++) { w.Write((uint)0); w.Write((uint)0); } // Pad for the index
 
             int j = 0;
-            foreach (var kvp in blockList)
+            foreach (ChunkEntry ce in blockList)
             {
-                byte[] data = kvp.Value.AsBytes;
+                byte[] data = ce.RCOLBlock.AsBytes;
                 index[j].Position = (uint)ms.Position;
                 index[j].Length = data.Length;
                 w.Write(data);
@@ -150,27 +150,62 @@ namespace s3pi.GenericRCOLResource
             public uint Position;
             public int Length;
         }
+
+        public class ChunkEntry : AHandlerElement
+        {
+        const Int32 recommendedApiVersion = 1;
+            AResource.TGIBlock tgiBlock;
+            ARCOLBlock rcolBlock;
+            public ChunkEntry(int APIversion, EventHandler handler, AResource.TGIBlock tgiBlock, ARCOLBlock rcolBlock)
+                : base(APIversion, handler) { this.tgiBlock = tgiBlock; this.rcolBlock = rcolBlock; }
+
+            #region AHandlerElement Members
+            public override AHandlerElement Clone(EventHandler handler) { return new ChunkEntry(requestedApiVersion, handler, this.tgiBlock, this.rcolBlock); }
+
+            public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
+
+            public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
+            #endregion
+
+            public AResource.TGIBlock TGIBlock { get { return tgiBlock; } set { if (tgiBlock != value) { tgiBlock = new TGIBlock(0, handler, value); OnElementChanged(); } } }
+            public ARCOLBlock RCOLBlock { get { return rcolBlock; } set { if (rcolBlock != value) { rcolBlock = (ARCOLBlock)rcolBlock.Clone(handler); OnElementChanged(); } } }
+            
+            public string Value
+            {
+                get
+                {
+                    string s = "";
+                    s += "--- " + tgiBlock + ((rcolBlock.Equals("*")) ? "" : " - " + rcolBlock.Tag) + " ---";
+                    if (AApiVersionedFields.GetContentFields(0, rcolBlock.GetType()).Contains("Value"))
+                        s += "\n" + rcolBlock["Value"];
+                    else foreach (string field in AApiVersionedFields.GetContentFields(0, rcolBlock.GetType()))
+                        {
+                            if (!(new List<string>(new string[] { "ResourceType", "Tag", "Value", "Stream", "AsBytes", })).Contains(field))
+                                s += "\n  " + field + ": " + rcolBlock[field];
+                        }
+                    s += "\n----";
+                    return s;
+                }
+            }
+        }
+
         #endregion
 
-        #region IList<KeyValuePair<TGIBlock,ARCOLBlock>> Members
+        #region IList<GenericRCOLResource.ChunkEntry> Members
 
-        public int IndexOf(KeyValuePair<AResource.TGIBlock, ARCOLBlock> item) { return blockList.IndexOf(item); }
+        public int IndexOf(GenericRCOLResource.ChunkEntry item) { return blockList.IndexOf(item); }
 
-        public void Insert(int index, KeyValuePair<AResource.TGIBlock, ARCOLBlock> item)
+        public void Insert(int index, GenericRCOLResource.ChunkEntry item)
         {
-            if (item.Key.ResourceType != item.Value.ResourceType)
+            if (item.TGIBlock.ResourceType != item.RCOLBlock.ResourceType)
                 throw new ArgumentException();
             blockList.Insert(index, item);
             OnResourceChanged(this, EventArgs.Empty);
         }
 
-        public void RemoveAt(int index)
-        {
-            blockList.RemoveAt(index);
-            OnResourceChanged(this, EventArgs.Empty);
-        }
+        public void RemoveAt(int index) { blockList.RemoveAt(index); OnResourceChanged(this, EventArgs.Empty); }
 
-        public KeyValuePair<AResource.TGIBlock, ARCOLBlock> this[int index]
+        public GenericRCOLResource.ChunkEntry this[int index]
         {
             get
             {
@@ -178,69 +213,49 @@ namespace s3pi.GenericRCOLResource
             }
             set
             {
-                KeyValuePair<AResource.TGIBlock, ARCOLBlock> item =
-                    new KeyValuePair<TGIBlock, ARCOLBlock>(new TGIBlock(requestedApiVersion, OnResourceChanged, value.Key),
-                        (ARCOLBlock)value.Value.Clone(OnResourceChanged));
-                throw new NotImplementedException();
+                if (value.TGIBlock.ResourceType != value.RCOLBlock.ResourceType)
+                    throw new ArgumentException();
+                blockList[index] = new ChunkEntry(requestedApiVersion, OnResourceChanged,
+                    new TGIBlock(requestedApiVersion, OnResourceChanged, value.TGIBlock), (ARCOLBlock)value.RCOLBlock.Clone(OnResourceChanged));
+                OnResourceChanged(this, EventArgs.Empty);
             }
         }
 
         #endregion
 
-        #region ICollection<KeyValuePair<TGIBlock,ARCOLBlock>> Members
+        #region ICollection<GenericRCOLResource.ChunkEntry> Members
 
-        public void Add(KeyValuePair<AResource.TGIBlock, ARCOLBlock> item)
+        public void Add(GenericRCOLResource.ChunkEntry item)
         {
-            throw new NotImplementedException();
+            if (item.TGIBlock.ResourceType != item.RCOLBlock.ResourceType)
+                throw new ArgumentException();
+            blockList.Add(item);
+            OnResourceChanged(this, EventArgs.Empty);
         }
 
-        public void Clear()
-        {
-            throw new NotImplementedException();
-        }
+        public void Clear() { blockList.Clear(); OnResourceChanged(this, EventArgs.Empty); }
 
-        public bool Contains(KeyValuePair<AResource.TGIBlock, ARCOLBlock> item)
-        {
-            throw new NotImplementedException();
-        }
+        public bool Contains(GenericRCOLResource.ChunkEntry item) { return blockList.Contains(item); }
 
-        public void CopyTo(KeyValuePair<AResource.TGIBlock, ARCOLBlock>[] array, int arrayIndex)
-        {
-            throw new NotImplementedException();
-        }
+        public void CopyTo(GenericRCOLResource.ChunkEntry[] array, int arrayIndex) { blockList.CopyTo(array, arrayIndex); }
 
-        public int Count
-        {
-            get { throw new NotImplementedException(); }
-        }
+        public int Count { get { return blockList.Count; } }
 
-        public bool IsReadOnly
-        {
-            get { throw new NotImplementedException(); }
-        }
+        public bool IsReadOnly { get { return false; } }
 
-        public bool Remove(KeyValuePair<AResource.TGIBlock, ARCOLBlock> item)
-        {
-            throw new NotImplementedException();
-        }
+        public bool Remove(GenericRCOLResource.ChunkEntry item) { try { return blockList.Remove(item); } finally { OnResourceChanged(this, EventArgs.Empty); } }
 
         #endregion
 
-        #region IEnumerable<KeyValuePair<TGIBlock,ARCOLBlock>> Members
+        #region IEnumerable<GenericRCOLResource.ChunkEntry> Members
 
-        public IEnumerator<KeyValuePair<AResource.TGIBlock, ARCOLBlock>> GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
+        public IEnumerator<GenericRCOLResource.ChunkEntry> GetEnumerator() { return blockList.GetEnumerator(); }
 
         #endregion
 
         #region IEnumerable Members
 
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return blockList.GetEnumerator(); }
 
         #endregion
 
@@ -248,7 +263,7 @@ namespace s3pi.GenericRCOLResource
         public uint Version { get { return version; } set { if (version != value) { version = value; OnResourceChanged(this, EventArgs.Empty); } } }
         public uint DataType { get { return dataType; } set { if (dataType != value) { dataType = value; OnResourceChanged(this, EventArgs.Empty); } } }
         public uint Unused { get { return unused; } set { if (unused != value) { unused = value; OnResourceChanged(this, EventArgs.Empty); } } }
-        public CountedTGIBlockList Resources { get; set; }
+        public CountedTGIBlockList Resources { get { return resources; } set { if (resources != value) { resources = new CountedTGIBlockList(OnResourceChanged, value); OnResourceChanged(this, EventArgs.Empty); } } }
 
         public string Value
         {
@@ -264,20 +279,7 @@ namespace s3pi.GenericRCOLResource
                 s += "\n----";
                 s += "\nRCOL Blocks:";
                 for (int i = 0; i < blockList.Count; i++)
-                {
-                    string t;
-                    if (blockList[i].Value.Tag.Equals("*")) t = "";
-                    else t = " - " + blockList[i].Value.Tag;
-                    s += "\n--- " + i + ": " + blockList[i].Key + t + " ---";
-                    if (AApiVersionedFields.GetContentFields(0, blockList[i].Value.GetType()).Contains("Value"))
-                        s += "\n" + blockList[i].Value["Value"];
-                    else foreach (string field in AApiVersionedFields.GetContentFields(0, blockList[i].Value.GetType()))
-                        {
-                            if (!(new List<string>(new string[] { "ResourceType", "Tag", "Value", "Stream", "AsBytes", })).Contains(field))
-                                s += "\n  " + field + ": " + blockList[i].Value[field];
-                        }
-                    s += "\n----";
-                }
+                    s += "[" + i + "] " + blockList[i].Value;
                 return s;
             }
         }
