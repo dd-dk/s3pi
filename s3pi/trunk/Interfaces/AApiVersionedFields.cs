@@ -269,7 +269,7 @@ namespace s3pi.Interfaces
         public static string FOURCC(UInt64 i)
         {
             string s = "";
-            for (int j = 7; j >= 0; j--) { char c = (char)((i >> (j * 8)) & 0xff); if (s.Length > 0 || c != 0) s += c; }
+            for (int j = 7; j >= 0; j--) { char c = (char)((i >> (j * 8)) & 0xff); if (s.Length > 0 || c != 0) s = c + s; }
             return s;
         }
 
