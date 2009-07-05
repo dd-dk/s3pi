@@ -156,40 +156,30 @@ namespace ObjKeyResource
             #endregion
         }
 
-        public struct Key : IComparable<Key>, IEqualityComparer<Key>, IEquatable<Key>
+        public class Key : AHandlerElement, IComparable<Key>, IEqualityComparer<Key>, IEquatable<Key>
         {
+            const int recommendedApiVersion = 1;
+
             #region Attributes
-            public readonly string key;
-            public readonly byte controlCode;
-            public readonly bool hasCcString;
-            public readonly string ccString;
-            public readonly bool hasCcIndex;
-            public readonly int ccIndex;
+            string key;
+            byte controlCode;
+            bool hasCcString;
+            string ccString;
+            bool hasCcIndex;
+            int ccIndex;
             #endregion
 
             #region Constructors
-            internal Key(Stream s)
-            {
-                BinaryReader r = new BinaryReader(s);
-                key = new string(r.ReadChars(r.ReadInt32()));
-                controlCode = r.ReadByte();
-                switch (controlCode)
-                {
-                    case 0x00:
-                    case 0x03: hasCcString = true; hasCcIndex = false; ccString = new string(r.ReadChars(r.ReadInt32())); ccIndex = -1; break;
-                    case 0x01:
-                    case 0x02: hasCcString = false; hasCcIndex = true; ccString = null; ccIndex = r.ReadInt32(); break;
-                    default:
-                        if (checking) throw new InvalidDataException(String.Format("Unknown control code 0x{0:X2} at position 0x{1:X8}", controlCode, s.Position));
-                        hasCcString = false; hasCcIndex = false; ccString = null; ccIndex = -1;
-                        break;
-                }
-            }
+            internal Key(int APIversion, EventHandler handler, Stream s)
+                : base(APIversion, handler) { Parse(s); }
 
-            public Key(string key, byte controlCode, string ccString) : this(key, controlCode, true, ccString, false, -1) { }
-            public Key(string key, byte controlCode, int ccIndex) : this(key, controlCode, false, null, true, ccIndex) { }
+            public Key(int APIversion, EventHandler handler, string key, byte controlCode, string ccString)
+                : this(APIversion, handler, key, controlCode, true, ccString, false, -1) { }
+            public Key(int APIversion, EventHandler handler, string key, byte controlCode, int ccIndex)
+                : this(APIversion, handler, key, controlCode, false, null, true, ccIndex) { }
 
-            private Key(string key, byte controlCode, bool hasCcString, string ccString, bool hasCcIndex, int ccIndex)
+            private Key(int APIversion, EventHandler handler, string key, byte controlCode, bool hasCcString, string ccString, bool hasCcIndex, int ccIndex)
+                : base(APIversion, handler)
             {
                 this.key = key;
                 this.controlCode = controlCode;
@@ -217,6 +207,24 @@ namespace ObjKeyResource
             #endregion
 
             #region Data I/O
+            void Parse(Stream s)
+            {
+                BinaryReader r = new BinaryReader(s);
+                key = new string(r.ReadChars(r.ReadInt32()));
+                controlCode = r.ReadByte();
+                switch (controlCode)
+                {
+                    case 0x00:
+                    case 0x03: hasCcString = true; hasCcIndex = false; ccString = new string(r.ReadChars(r.ReadInt32())); ccIndex = -1; break;
+                    case 0x01:
+                    case 0x02: hasCcString = false; hasCcIndex = true; ccString = null; ccIndex = r.ReadInt32(); break;
+                    default:
+                        if (checking) throw new InvalidDataException(String.Format("Unknown control code 0x{0:X2} at position 0x{1:X8}", controlCode, s.Position));
+                        hasCcString = false; hasCcIndex = false; ccString = null; ccIndex = -1;
+                        break;
+                }
+            }
+
             internal void UnParse(Stream s)
             {
                 BinaryWriter w = new BinaryWriter(s);
@@ -230,6 +238,14 @@ namespace ObjKeyResource
                 }
                 if (hasCcIndex) w.Write(ccIndex);
             }
+            #endregion
+
+            #region AHandlerElement Members
+            public override AHandlerElement Clone(EventHandler handler) { return new Key(requestedApiVersion, handler, key, controlCode, hasCcString, ccString, hasCcIndex, ccIndex); }
+
+            public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
+
+            public override List<string> ContentFields { get { return AApiVersionedFields.GetContentFields(requestedApiVersion, this.GetType()); } }
             #endregion
 
             #region IComparable<Key> Members
@@ -260,6 +276,37 @@ namespace ObjKeyResource
             #endregion
 
             #region Content Fields
+            public string EntryName { get { return key; } set { if (key != value) { key = value; OnElementChanged(); } } }
+            public byte ControlCode
+            {
+                get { return controlCode; }
+                set
+                {
+                    if (controlCode == value) return;
+                    switch (value)
+                    {
+                        case 0x00:
+                        case 0x03:
+                            hasCcString = true; hasCcIndex = false;
+                            ccString = ""; ccIndex = -1;
+                            break;
+                        case 0x01:
+                        case 0x02:
+                            hasCcString = false; hasCcIndex = true;
+                            ccString = null; ccIndex = 0;
+                            break;
+                        default:
+                            throw new ArgumentException(String.Format("Unknown control code 0x{0:X2}", controlCode));
+                    }
+                    controlCode = value;
+                    OnElementChanged();
+                }
+            }
+            public bool HasCcString { get { return hasCcString; } set { } }
+            public string CcString { get { return ccString; } set { if (!hasCcString) throw new InvalidOperationException(); if (ccString != value) { ccString = value; OnElementChanged(); } } }
+            public bool HasCcIndex { get { return hasCcIndex; } set { } }
+            public int CcIndex { get { return ccIndex; } set { if (!hasCcIndex) throw new InvalidOperationException(); if (ccIndex != value) { ccIndex = value; OnElementChanged(); } } }
+
             public string Value
             {
                 get
@@ -288,7 +335,7 @@ namespace ObjKeyResource
 
             #region Data I/O
             protected override uint ReadCount(Stream s) { return (new BinaryReader(s)).ReadByte(); }
-            protected override Key CreateElement(Stream s) { return new Key(s); }
+            protected override Key CreateElement(Stream s) { return new Key(0, handler, s); }
 
             protected override void WriteCount(Stream s, uint count) { (new BinaryWriter(s)).Write((byte)count); }
             protected override void WriteElement(Stream s, Key element) { element.UnParse(s); }
