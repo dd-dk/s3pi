@@ -198,6 +198,7 @@ namespace ObjKeyResource
                             break;
                         case 0x01:
                         case 0x02:
+                        case 0x04:
                             if (hasCcString || !hasCcIndex) throw new ArgumentException(String.Format("controlCode 0x{0:X2} requires an index", controlCode));
                             break;
                         default:
@@ -217,7 +218,8 @@ namespace ObjKeyResource
                     case 0x00:
                     case 0x03: hasCcString = true; hasCcIndex = false; ccString = new string(r.ReadChars(r.ReadInt32())); ccIndex = -1; break;
                     case 0x01:
-                    case 0x02: hasCcString = false; hasCcIndex = true; ccString = null; ccIndex = r.ReadInt32(); break;
+                    case 0x02:
+                    case 0x04: hasCcString = false; hasCcIndex = true; ccString = null; ccIndex = r.ReadInt32(); break;
                     default:
                         if (checking) throw new InvalidDataException(String.Format("Unknown control code 0x{0:X2} at position 0x{1:X8}", controlCode, s.Position));
                         hasCcString = false; hasCcIndex = false; ccString = null; ccIndex = -1;
@@ -292,6 +294,7 @@ namespace ObjKeyResource
                             break;
                         case 0x01:
                         case 0x02:
+                        case 0x04:
                             hasCcString = false; hasCcIndex = true;
                             ccString = null; ccIndex = 0;
                             break;
