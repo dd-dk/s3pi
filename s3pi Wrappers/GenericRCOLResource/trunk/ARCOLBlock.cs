@@ -96,10 +96,7 @@ namespace s3pi.Interfaces
 
         #region IEquatable<ARCOLBlock> Members
 
-        public bool Equals(ARCOLBlock other)
-        {
-            throw new NotImplementedException();
-        }
+        public virtual bool Equals(ARCOLBlock other) { return ArrayCompare(this.AsBytes, other.AsBytes); }
 
         #endregion
     }
