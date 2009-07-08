@@ -95,6 +95,10 @@
       <Project>{660E9B93-FECD-4C76-893C-F9E63ADD708E}</Project>
       <Name>ScriptResource</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\s3pi Wrappers\StblResource\StblResource.csproj">
+      <Project>{672D72EC-89DA-4EF3-88CC-BEEC5BA478B2}</Project>
+      <Name>StblResource</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\s3pi Wrappers\TextResource\TextResource.csproj">
       <Project>{C55762F3-6EEF-4E65-8A9A-CC6022ACAB79}</Project>
       <Name>TextResource</Name>
