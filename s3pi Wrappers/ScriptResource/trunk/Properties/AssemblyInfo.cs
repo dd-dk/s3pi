@@ -5,12 +5,16 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("ScriptResource")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("s3pi Script Resource wrapper")]
+[assembly: AssemblyDescription("Wrapper for signed assembly resources.")]
+#if DEBUG
+[assembly: AssemblyConfiguration("[DEBUG]")]
+#else
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("The Dwarfen Realm")]
-[assembly: AssemblyProduct("ScriptResource")]
-[assembly: AssemblyCopyright("Copyright © The Dwarfen Realm 2009")]
+#endif
+[assembly: AssemblyCompany("Peter L Jones")]
+[assembly: AssemblyProduct("s3pi")]
+[assembly: AssemblyCopyright("Copyright (C) 2009  Peter L Jones.  Released under GPL 3.  See gpl-3.0.txt")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
