@@ -159,6 +159,7 @@ namespace StblResource
         public ushort Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; OnResourceChanged(this, EventArgs.Empty); } } }
         public ushort Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; OnResourceChanged(this, EventArgs.Empty); } } }
         public uint Unknown3 { get { return unknown3; } set { if (unknown3 != value) { unknown3 = value; OnResourceChanged(this, EventArgs.Empty); } } }
+
         public string Value
         {
             get
@@ -168,7 +169,7 @@ namespace StblResource
                 s += "\nUnknown2: 0x" + unknown2.ToString("X4");
                 s += "\nUnknown3: 0x" + unknown3.ToString("X8");
                 foreach (var kvp in entries)
-                    s += String.Format("\nKey: 0x{0:X8} = Value: '{1}'", kvp.Key, kvp.Value);
+                    s += String.Format("\nKey: 0x{0:X16} = Value: '{1}'", kvp.Key, kvp.Value);
                 return s;
             }
         }
