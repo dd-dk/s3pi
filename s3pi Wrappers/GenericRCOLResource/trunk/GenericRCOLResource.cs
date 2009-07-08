@@ -153,7 +153,7 @@ namespace s3pi.GenericRCOLResource
 
         public class ChunkEntry : AHandlerElement
         {
-        const Int32 recommendedApiVersion = 1;
+            const Int32 recommendedApiVersion = 1;
             AResource.TGIBlock tgiBlock;
             ARCOLBlock rcolBlock;
             public ChunkEntry(int APIversion, EventHandler handler, AResource.TGIBlock tgiBlock, ARCOLBlock rcolBlock)
@@ -169,7 +169,7 @@ namespace s3pi.GenericRCOLResource
 
             public AResource.TGIBlock TGIBlock { get { return tgiBlock; } set { if (tgiBlock != value) { tgiBlock = new TGIBlock(0, handler, value); OnElementChanged(); } } }
             public ARCOLBlock RCOLBlock { get { return rcolBlock; } set { if (rcolBlock != value) { rcolBlock = (ARCOLBlock)rcolBlock.Clone(handler); OnElementChanged(); } } }
-            
+
             public string Value
             {
                 get
