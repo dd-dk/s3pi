@@ -41,7 +41,7 @@ namespace StblResource
         Dictionary<ulong, string> entries;
         #endregion
 
-        public StblResource(int APIversion, Stream s) : base(APIversion, s) { if (stream == null) { stream = UnParse(); dirty = true; } stream.Position = 0; Parse(s); }
+        public StblResource(int APIversion, Stream s) : base(APIversion, s) { if (stream == null) { stream = UnParse(); dirty = true; } stream.Position = 0; Parse(stream); }
 
         #region Data I/O
         void Parse(Stream s)
@@ -81,7 +81,7 @@ namespace StblResource
             BinaryWriter w = new BinaryWriter(ms);
             BinaryWriter w2 = new BinaryWriter(ms, System.Text.Encoding.Unicode);
 
-            w.Write(FOURCC("STBL"));
+            w.Write((uint)FOURCC("STBL"));
             w.Write((byte)0x02);
 
             w.Write(unknown1);
