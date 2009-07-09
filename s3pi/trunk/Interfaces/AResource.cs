@@ -97,7 +97,7 @@ namespace s3pi.Interfaces
 
             // Add stream-based constructors and support
             protected DependentList(EventHandler handler, Stream s) : this(handler, -1, s) { }
-            protected DependentList(EventHandler handler, long size, Stream s) : base(handler, size) { Parse(s); }
+            protected DependentList(EventHandler handler, long size, Stream s) : base(null, size) { Parse(s); this.handler = handler; }
             #endregion
 
             #region Data I/O
@@ -246,26 +246,29 @@ namespace s3pi.Interfaces
             string order = "TGI";
 
             #region Constructors
-            public CountedTGIBlockList(EventHandler handler) : base(handler) { }
-            public CountedTGIBlockList(EventHandler handler, string order) : base(handler) { this.order = order; }
-            public CountedTGIBlockList(EventHandler handler, TGIBlock.Order order) : this(handler, "" + order) { }
-            public CountedTGIBlockList(EventHandler handler, long max) : base(handler, max) { }
-            public CountedTGIBlockList(EventHandler handler, long max, string order) : base(handler, max) { this.order = order; }
+            public CountedTGIBlockList(EventHandler handler) : this(handler, -1, "TGI") { }
+            public CountedTGIBlockList(EventHandler handler, IList<TGIBlock> lme) : this(handler, -1, "TGI", lme) { }
+            public CountedTGIBlockList(EventHandler handler, uint count, Stream s) : this(handler, -1, "TGI", count, s) { }
+
+            public CountedTGIBlockList(EventHandler handler, TGIBlock.Order order) : this(handler, -1, order) { }
+            public CountedTGIBlockList(EventHandler handler, TGIBlock.Order order, IList<TGIBlock> lme) : this(handler, -1, order, lme) { }
+            public CountedTGIBlockList(EventHandler handler, TGIBlock.Order order, uint count, Stream s) : this(handler, -1, order, count, s) { }
+
+            public CountedTGIBlockList(EventHandler handler, string order) : this(handler, -1, order) { }
+            public CountedTGIBlockList(EventHandler handler, string order, IList<TGIBlock> lme) : this(handler, -1, order, lme) { }
+            public CountedTGIBlockList(EventHandler handler, string order, uint count, Stream s) : this(handler, -1, order, count, s) { }
+
+            public CountedTGIBlockList(EventHandler handler, long max) : this(handler, max, "TGI") { }
+            public CountedTGIBlockList(EventHandler handler, long max, IList<TGIBlock> lme) : this(handler, max, "TGI", lme) { }
+            public CountedTGIBlockList(EventHandler handler, long max, uint count, Stream s) : this(handler, max, "TGI", count, s) { }
+
             public CountedTGIBlockList(EventHandler handler, long max, TGIBlock.Order order) : this(handler, max, "" + order) { }
-
-            public CountedTGIBlockList(EventHandler handler, IList<TGIBlock> lme) : base(handler, lme) { }
-            public CountedTGIBlockList(EventHandler handler, string order, IList<TGIBlock> lme) : base(handler, lme) { this.order = order; }
-            public CountedTGIBlockList(EventHandler handler, TGIBlock.Order order, IList<TGIBlock> lme) : this(handler, "" + order, lme) { }
-            public CountedTGIBlockList(EventHandler handler, long max, IList<TGIBlock> lme) : base(handler, max, lme) { }
-            public CountedTGIBlockList(EventHandler handler, long max, string order, IList<TGIBlock> lme) : base(handler, max, lme) { this.order = order; }
             public CountedTGIBlockList(EventHandler handler, long max, TGIBlock.Order order, IList<TGIBlock> lme) : this(handler, max, "" + order, lme) { }
-
-            public CountedTGIBlockList(EventHandler handler, uint count, Stream s) : base(handler) { this.origCount = count; Parse(s); }
-            public CountedTGIBlockList(EventHandler handler, string order, uint count, Stream s) : this(handler, order) { this.origCount = count; Parse(s); }
-            public CountedTGIBlockList(EventHandler handler, TGIBlock.Order order, uint count, Stream s) : this(handler, "" + order, count, s) { }
-            public CountedTGIBlockList(EventHandler handler, long max, uint count, Stream s) : base(handler, max) { this.origCount = count; Parse(s); }
-            public CountedTGIBlockList(EventHandler handler, long max, string order, uint count, Stream s) : this(handler, max, order) { this.origCount = count; Parse(s); }
             public CountedTGIBlockList(EventHandler handler, long max, TGIBlock.Order order, uint count, Stream s) : this(handler, max, "" + order, count, s) { }
+
+            public CountedTGIBlockList(EventHandler handler, long max, string order) : base(handler, max) { this.order = order; }
+            public CountedTGIBlockList(EventHandler handler, long max, string order, IList<TGIBlock> lme) : base(handler, max, lme) { this.order = order; }
+            public CountedTGIBlockList(EventHandler handler, long max, string order, uint count, Stream s) : this(null, max, order) { this.origCount = count; Parse(s); this.handler = handler; }
             #endregion
 
             #region Data I/O
@@ -290,7 +293,7 @@ namespace s3pi.Interfaces
             #region Constructors
             public TGIBlockList(EventHandler handler) : base(handler) { }
             public TGIBlockList(EventHandler handler, IList<TGIBlock> lme) : base(handler, lme) { }
-            public TGIBlockList(EventHandler handler, Stream s, long tgiPosn, long tgiSize) : base(handler) { Parse(s, tgiPosn, tgiSize); }
+            public TGIBlockList(EventHandler handler, Stream s, long tgiPosn, long tgiSize) : base(null) { Parse(s, tgiPosn, tgiSize); this.handler = handler; }
             #endregion
 
             #region Data I/O
