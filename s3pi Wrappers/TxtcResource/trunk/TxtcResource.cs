@@ -45,7 +45,7 @@ namespace TxtcResource
         CountedTGIBlockList tgiBlocks;
         #endregion
 
-        public TxtcResource(int APIversion, Stream s) : base(APIversion, s) { if (stream == null) { stream = UnParse(); dirty = true; } stream.Position = 0; Parse(s); }
+        public TxtcResource(int APIversion, Stream s) : base(APIversion, s) { if (stream == null) { stream = UnParse(); dirty = true; } stream.Position = 0; Parse(stream); }
 
         #region Data I/O
         void Parse(Stream s)
@@ -63,7 +63,7 @@ namespace TxtcResource
             if (version >= 8)
                 unknown4 = r.ReadByte();
             entries = new EntryBlockList(OnResourceChanged, count, s);
-            tgiBlocks = new CountedTGIBlockList(OnResourceChanged, 255, r.ReadByte(), s);
+            tgiBlocks = new CountedTGIBlockList(OnResourceChanged, 255, "IGT", r.ReadByte(), s);
         }
 
         Stream UnParse()
@@ -87,7 +87,7 @@ namespace TxtcResource
             if (version >= 8)
                 w.Write(unknown4);
             entries.UnParse(ms);
-            if (tgiBlocks == null) tgiBlocks = new CountedTGIBlockList(OnResourceChanged, 255);
+            if (tgiBlocks == null) tgiBlocks = new CountedTGIBlockList(OnResourceChanged, 255, "IGT");
             w.Write((byte)tgiBlocks.Count);
             long tgiPosn = ms.Position;
             tgiBlocks.UnParse(ms);
@@ -586,7 +586,7 @@ namespace TxtcResource
         {
             uint blockCount;
             public EntryBlockList(EventHandler handler) : base(handler) { }
-            public EntryBlockList(EventHandler handler, uint blockCount, Stream s) : base(handler) { this.blockCount = blockCount; Parse(s); }
+            public EntryBlockList(EventHandler handler, uint blockCount, Stream s) : base(null) { this.blockCount = blockCount; Parse(s); this.handler = handler; }
             public EntryBlockList(EventHandler handler, IList<EntryBlock> leb) : base(handler, leb) { }
 
             protected override uint ReadCount(Stream s) { return blockCount; }
@@ -638,7 +638,7 @@ namespace TxtcResource
         public byte Unknown3 { get { return unknown3; } set { if (unknown3 != value) { unknown3 = value; OnResourceChanged(this, EventArgs.Empty); } } }
         public byte Unknown4 { get { return unknown4; } set { if (unknown4 != value) { unknown4 = value; OnResourceChanged(this, EventArgs.Empty); } } }
         public EntryBlockList Entries { get { return entries; } set { if (entries != value) { entries = new EntryBlockList(OnResourceChanged, value); OnResourceChanged(this, EventArgs.Empty); } } }
-        public CountedTGIBlockList TGIBlocks { get { return tgiBlocks; } set { if (tgiBlocks != value) { tgiBlocks = new CountedTGIBlockList(OnResourceChanged, value); OnResourceChanged(this, EventArgs.Empty); } } }
+        public CountedTGIBlockList TGIBlocks { get { return tgiBlocks; } set { if (tgiBlocks != value) { tgiBlocks = new CountedTGIBlockList(OnResourceChanged, "IGT", value); OnResourceChanged(this, EventArgs.Empty); } } }
 
         public string Value
         {
