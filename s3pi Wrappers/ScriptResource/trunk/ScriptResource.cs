@@ -155,6 +155,7 @@ namespace ScriptResource
                 if (dirty)
                 {
                     stream = UnParse();
+                    stream.Position = 0;
                     dirty = false;
                 }
                 return stream;

@@ -45,6 +45,7 @@ namespace NameMapResource
                 if (dirty)
                 {
                     stream = UnParse();
+                    stream.Position = 0;
                     dirty = false;
                 }
                 return stream;
@@ -65,13 +66,7 @@ namespace NameMapResource
         /// </summary>
         /// <param name="APIversion">Requested API version</param>
         /// <param name="s">Data stream to use, or null to create from scratch</param>
-        public NameMapResource(int APIversion, Stream s)
-            : base(APIversion, s)
-        {
-            if (stream == null) stream = UnParse();
-            stream.Position = 0;
-            Parse(stream);
-        }
+        public NameMapResource(int APIversion, Stream s) : base(APIversion, s) { if (stream == null) { stream = UnParse(); dirty = true; } stream.Position = 0; Parse(stream); }
 
         void Parse(Stream s)
         {

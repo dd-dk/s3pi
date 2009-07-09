@@ -40,13 +40,7 @@ namespace s3pi.GenericRCOLResource
         CountedTGIBlockList resources;
 
         #region Constructors
-        public GenericRCOLResource(int APIversion, Stream s)
-            : base(APIversion, s)
-        {
-            if (stream == null) { stream = UnParse(); dirty = true; }
-            stream.Position = 0;
-            Parse(stream);
-        }
+        public GenericRCOLResource(int APIversion, Stream s) : base(APIversion, s) { if (stream == null) { stream = UnParse(); dirty = true; } stream.Position = 0; Parse(stream); }
         #endregion
 
         #region Data I/O
@@ -129,6 +123,7 @@ namespace s3pi.GenericRCOLResource
                 if (dirty)
                 {
                     stream = UnParse();
+                    stream.Position = 0;
                     dirty = false;
                 }
                 return stream;

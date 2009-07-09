@@ -107,6 +107,7 @@ namespace ObjKeyResource
                 if (dirty)
                 {
                     stream = UnParse();
+                    stream.Position = 0;
                     dirty = false;
                 }
                 return stream;
@@ -140,7 +141,7 @@ namespace ObjKeyResource
             #region Constructors
             public ComponentList(EventHandler handler) : base(handler, 255) { }
             public ComponentList(EventHandler handler, IList<uint> luint) : base(handler, 255, luint) { }
-            internal ComponentList(EventHandler handler, Stream s) : base(handler, 255) { Parse(s); }
+            internal ComponentList(EventHandler handler, Stream s) : base(null, 255, s) { }
             #endregion
 
             #region Data I/O
@@ -333,7 +334,7 @@ namespace ObjKeyResource
             #region Constructors
             public KeyList(EventHandler handler) : base(handler, 255) { }
             public KeyList(EventHandler handler, IList<Key> luint) : base(handler, 255, luint) { }
-            internal KeyList(EventHandler handler, Stream s) : base(handler, 255) { Parse(s); }
+            internal KeyList(EventHandler handler, Stream s) : base(handler, 255, s) { }
             #endregion
 
             #region Data I/O
