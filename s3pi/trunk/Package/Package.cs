@@ -55,12 +55,19 @@ namespace s3pi.Package
             string tmpfile = Path.GetTempFileName();
             SaveAs(tmpfile);
 
+
+            // Lock the header while we save to prevent other processes saving concurrently
+            (packageStream as FileStream).Lock(0, header.Length);
+
             packageStream.Position = 0;
             BinaryReader r = new BinaryReader(new FileStream(tmpfile, FileMode.Open));
             BinaryWriter w = new BinaryWriter(packageStream);
             w.Write(r.ReadBytes((int)r.BaseStream.Length));
             packageStream.SetLength(packageStream.Position);
             w.Flush();
+
+            (packageStream as FileStream).Unlock(0, header.Length);
+
 
             packageStream.Position = 0;
             header = (new BinaryReader(packageStream)).ReadBytes(header.Length);
@@ -173,7 +180,7 @@ namespace s3pi.Package
         /// <returns>IPackage reference to an existing package on disk</returns>
         public static new IPackage OpenPackage(int APIversion, string PackagePath)
         {
-            return new Package(APIversion, new FileStream(PackagePath, FileMode.Open));
+            return new Package(APIversion, new FileStream(PackagePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite));
         }
 
         /// <summary>
@@ -434,7 +441,7 @@ namespace s3pi.Package
             bw.Write(major);
             bw.Write(minor);
             setIndexsize(bw, (new PackageIndex()).Size);
-            setAlways3(bw);
+            setIndexversion(bw);
             setIndexposition(bw, header.Length);
         }
 
@@ -462,7 +469,7 @@ namespace s3pi.Package
 
         void setIndexcount(BinaryWriter w, int c) { w.BaseStream.Position = 36; w.Write(c); }
         void setIndexsize(BinaryWriter w, int c) { w.BaseStream.Position = 44; w.Write(c); }
-        void setAlways3(BinaryWriter w) { w.BaseStream.Position = 60; w.Write(3); }
+        void setIndexversion(BinaryWriter w) { w.BaseStream.Position = 60; w.Write(3); }
         void setIndexposition(BinaryWriter w, int c) { w.BaseStream.Position = 64; w.Write(c); }
 
         void CheckHeader()
