@@ -31,6 +31,7 @@ namespace StblResource
     {
         const int recommendedApiVersion = 1;
         public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
+        public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
 
         static bool checking = s3pi.Settings.Settings.Checking;
 
@@ -100,6 +101,25 @@ namespace StblResource
             }
 
             return ms;
+        }
+        #endregion
+
+        #region IResource Members
+        /// <summary>
+        /// The resource content as a Stream
+        /// </summary>
+        public override Stream Stream
+        {
+            get
+            {
+                if (dirty)
+                {
+                    stream = UnParse();
+                    stream.Position = 0;
+                    dirty = false;
+                }
+                return stream;
+            }
         }
         #endregion
 
