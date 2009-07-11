@@ -192,12 +192,19 @@ namespace s3pi.Interfaces
         /// <returns>IPackage reference to an empty package</returns>
         public static IPackage NewPackage(int APIversion) { throw new NotImplementedException(); }
         /// <summary>
-        /// Open an existing package by filename
+        /// Open an existing package by filename, read only
         /// </summary>
         /// <param name="APIversion">(unused)</param>
         /// <param name="packagePath">Fully qualified filename of the package</param>
         /// <returns>IPackage reference to an existing package on disk</returns>
         public static IPackage OpenPackage(int APIversion, string packagePath) { throw new NotImplementedException(); }
+        /// <summary>
+        /// Open an existing package by filename, optionally readwrite
+        /// </summary>
+        /// <param name="APIversion">(unused)</param>
+        /// <param name="packagePath">Fully qualified filename of the package</param>
+        /// <returns>IPackage reference to an existing package on disk</returns>
+        public static IPackage OpenPackage(int APIversion, string packagePath, bool readwrite) { throw new NotImplementedException(); }
         /// <summary>
         /// Releases any internal references associated with the given package
         /// </summary>

@@ -51,13 +51,16 @@ namespace s3pi.Package
         {
             if (checking) if (packageStream == null)
                     throw new InvalidOperationException("Package has no stream to save to");
+            if (!packageStream.CanWrite)
+                throw new InvalidOperationException("Package is read-only");
 
             string tmpfile = Path.GetTempFileName();
             SaveAs(tmpfile);
 
 
             // Lock the header while we save to prevent other processes saving concurrently
-            (packageStream as FileStream).Lock(0, header.Length);
+            FileStream fs = packageStream as FileStream; // if it's not a file, it's probably safe not to lock it...
+            if (fs != null) fs.Lock(0, header.Length);
 
             packageStream.Position = 0;
             BinaryReader r = new BinaryReader(new FileStream(tmpfile, FileMode.Open));
@@ -66,7 +69,7 @@ namespace s3pi.Package
             packageStream.SetLength(packageStream.Position);
             w.Flush();
 
-            (packageStream as FileStream).Unlock(0, header.Length);
+            if (fs != null) fs.Unlock(0, header.Length);
 
 
             packageStream.Position = 0;
@@ -173,14 +176,21 @@ namespace s3pi.Package
         }
 
         /// <summary>
-        /// Open an existing package by filename
+        /// Open an existing package by filename, read only
         /// </summary>
         /// <param name="APIversion">(unused)</param>
         /// <param name="packagePath">Fully qualified filename of the package</param>
         /// <returns>IPackage reference to an existing package on disk</returns>
-        public static new IPackage OpenPackage(int APIversion, string PackagePath)
+        public static new IPackage OpenPackage(int APIversion, string packagePath) { return OpenPackage(APIversion, packagePath, false); }
+        /// <summary>
+        /// Open an existing package by filename, optionally readwrite
+        /// </summary>
+        /// <param name="APIversion">(unused)</param>
+        /// <param name="packagePath">Fully qualified filename of the package</param>
+        /// <returns>IPackage reference to an existing package on disk</returns>
+        public static new IPackage OpenPackage(int APIversion, string PackagePath, bool readwrite)
         {
-            return new Package(APIversion, new FileStream(PackagePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite));
+            return new Package(APIversion, new FileStream(PackagePath, FileMode.Open, readwrite ? FileAccess.ReadWrite : FileAccess.Read, FileShare.ReadWrite));
         }
 
         /// <summary>
