@@ -46,11 +46,14 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ADependentList.cs" />
     <Compile Include="ArgumentLengthException.cs" />
     <Compile Include="AHandlerList.cs" />
+    <Compile Include="FNVHash.cs" />
     <Compile Include="Properties\AssemblyVersion.cs" />
     <Compile Include="Boolset.cs" />
     <Compile Include="ICloneableWithParent.cs" />
