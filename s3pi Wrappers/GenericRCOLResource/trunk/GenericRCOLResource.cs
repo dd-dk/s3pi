@@ -28,7 +28,7 @@ namespace s3pi.GenericRCOLResource
     /// <summary>
     /// A resource wrapper that understands generic RCOL resources
     /// </summary>
-    public class GenericRCOLResource : AResource, IList<GenericRCOLResource.ChunkEntry>
+    public class GenericRCOLResource : AResource
     {
         static bool checking = s3pi.Settings.Settings.Checking;
         const Int32 recommendedApiVersion = 1;
@@ -36,7 +36,7 @@ namespace s3pi.GenericRCOLResource
         uint version;
         uint dataType;
         uint unused;
-        List<ChunkEntry> blockList;
+        ChunkEntryList blockList;
         CountedTGIBlockList resources;
 
         #region Constructors
@@ -60,7 +60,7 @@ namespace s3pi.GenericRCOLResource
             RCOLIndexEntry[] index = new RCOLIndexEntry[countChunks];
             for (int i = 0; i < countChunks; i++) { index[i].Position = r.ReadUInt32(); index[i].Length = r.ReadInt32(); }
 
-            blockList = new List<GenericRCOLResource.ChunkEntry>();
+            blockList = new ChunkEntryList(OnResourceChanged);
             for (int i = 0; i < countChunks; i++)
             {
                 s.Position = index[i].Position;
@@ -86,7 +86,7 @@ namespace s3pi.GenericRCOLResource
             w.Write(unused);
             if (resources == null) resources = new CountedTGIBlockList(OnResourceChanged, "ITG");
             w.Write(resources.Count);
-            if (blockList == null) blockList = new List<GenericRCOLResource.ChunkEntry>();
+            if (blockList == null) blockList = new ChunkEntryList(OnResourceChanged);
             w.Write(blockList.Count);
             foreach (ChunkEntry ce in blockList) ce.TGIBlock.UnParse(ms);
             resources.UnParse(ms);
@@ -146,7 +146,7 @@ namespace s3pi.GenericRCOLResource
             public int Length;
         }
 
-        public class ChunkEntry : AHandlerElement
+        public class ChunkEntry : AHandlerElement, IEquatable<ChunkEntry>
         {
             const Int32 recommendedApiVersion = 1;
             AResource.TGIBlock tgiBlock;
@@ -160,6 +160,12 @@ namespace s3pi.GenericRCOLResource
             public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
 
             public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
+            #endregion
+
+            #region IEquatable<ChunkEntry> Members
+
+            public bool Equals(ChunkEntry other) { return tgiBlock == other.tgiBlock && rcolBlock == other.rcolBlock; }
+
             #endregion
 
             public AResource.TGIBlock TGIBlock { get { return tgiBlock; } set { if (tgiBlock != value) { tgiBlock = new TGIBlock(0, handler, value); OnElementChanged(); } } }
@@ -184,73 +190,14 @@ namespace s3pi.GenericRCOLResource
             }
         }
 
-        #endregion
-
-        #region IList<GenericRCOLResource.ChunkEntry> Members
-
-        public int IndexOf(GenericRCOLResource.ChunkEntry item) { return blockList.IndexOf(item); }
-
-        public void Insert(int index, GenericRCOLResource.ChunkEntry item)
+        public class ChunkEntryList : DependentList<ChunkEntry>
         {
-            if (item.TGIBlock.ResourceType != item.RCOLBlock.ResourceType)
-                throw new ArgumentException();
-            blockList.Insert(index, item);
-            OnResourceChanged(this, EventArgs.Empty);
+            public ChunkEntryList(EventHandler handler) : base(handler) { }
+            public ChunkEntryList(EventHandler handler, IList<ChunkEntry> ice) : base(handler, ice) { }
+
+            protected override ChunkEntry CreateElement(Stream s) { throw new NotImplementedException(); }
+            protected override void WriteElement(Stream s, ChunkEntry element) { throw new NotImplementedException(); }
         }
-
-        public void RemoveAt(int index) { blockList.RemoveAt(index); OnResourceChanged(this, EventArgs.Empty); }
-
-        public GenericRCOLResource.ChunkEntry this[int index]
-        {
-            get
-            {
-                return blockList[index];
-            }
-            set
-            {
-                if (value.TGIBlock.ResourceType != value.RCOLBlock.ResourceType)
-                    throw new ArgumentException();
-                blockList[index] = new ChunkEntry(requestedApiVersion, OnResourceChanged,
-                    new TGIBlock(requestedApiVersion, OnResourceChanged, value.TGIBlock), (ARCOLBlock)value.RCOLBlock.Clone(OnResourceChanged));
-                OnResourceChanged(this, EventArgs.Empty);
-            }
-        }
-
-        #endregion
-
-        #region ICollection<GenericRCOLResource.ChunkEntry> Members
-
-        public void Add(GenericRCOLResource.ChunkEntry item)
-        {
-            if (item.TGIBlock.ResourceType != item.RCOLBlock.ResourceType)
-                throw new ArgumentException();
-            blockList.Add(item);
-            OnResourceChanged(this, EventArgs.Empty);
-        }
-
-        public void Clear() { blockList.Clear(); OnResourceChanged(this, EventArgs.Empty); }
-
-        public bool Contains(GenericRCOLResource.ChunkEntry item) { return blockList.Contains(item); }
-
-        public void CopyTo(GenericRCOLResource.ChunkEntry[] array, int arrayIndex) { blockList.CopyTo(array, arrayIndex); }
-
-        public int Count { get { return blockList.Count; } }
-
-        public bool IsReadOnly { get { return false; } }
-
-        public bool Remove(GenericRCOLResource.ChunkEntry item) { try { return blockList.Remove(item); } finally { OnResourceChanged(this, EventArgs.Empty); } }
-
-        #endregion
-
-        #region IEnumerable<GenericRCOLResource.ChunkEntry> Members
-
-        public IEnumerator<GenericRCOLResource.ChunkEntry> GetEnumerator() { return blockList.GetEnumerator(); }
-
-        #endregion
-
-        #region IEnumerable Members
-
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return blockList.GetEnumerator(); }
 
         #endregion
 
@@ -259,6 +206,7 @@ namespace s3pi.GenericRCOLResource
         public uint DataType { get { return dataType; } set { if (dataType != value) { dataType = value; OnResourceChanged(this, EventArgs.Empty); } } }
         public uint Unused { get { return unused; } set { if (unused != value) { unused = value; OnResourceChanged(this, EventArgs.Empty); } } }
         public CountedTGIBlockList Resources { get { return resources; } set { if (resources != value) { resources = new CountedTGIBlockList(OnResourceChanged, value); OnResourceChanged(this, EventArgs.Empty); } } }
+        public ChunkEntryList ChunkEntries { get { return blockList; } set { if (blockList != value) { blockList = new ChunkEntryList(OnResourceChanged, value); OnResourceChanged(this, EventArgs.Empty); } } }
 
         public string Value
         {
