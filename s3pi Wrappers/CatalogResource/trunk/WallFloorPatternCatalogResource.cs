@@ -92,7 +92,7 @@ namespace CatalogResource
         {
             long tgiPosn, tgiSize;
             BinaryReader r = new BinaryReader(s);
-            //BinaryReader rr = new BinaryReader(s, System.Text.Encoding.BigEndianUnicode);
+            BinaryReader r2 = new BinaryReader(s, System.Text.Encoding.BigEndianUnicode);
 
             this.unknown1 = r.ReadUInt32();
             tgiPosn = r.ReadUInt32() + s.Position;
@@ -108,8 +108,7 @@ namespace CatalogResource
             this.unknown8 = r.ReadUInt32();
             this.vpxy_index1 = r.ReadUInt32();
             this.unknown9 = r.ReadUInt32();
-            //this.unknown10 = rr.ReadString();
-            this.unknown10 = r.ReadString();
+            this.unknown10 = r2.ReadString();
             this.unknown11 = r.ReadBytes(8);
             if (checking) if (unknown11.Length != 8)
                     throw new InvalidDataException(String.Format("unknown11: read {0} bytes; expected 8 at 0x{1:X8}.", unknown11.Length, s.Position));
@@ -122,7 +121,6 @@ namespace CatalogResource
             long pos;
             MemoryStream s = new MemoryStream();
             BinaryWriter w = new BinaryWriter(s);
-            //BinaryWriter ww = new BinaryWriter(s, System.Text.Encoding.BigEndianUnicode);
 
             w.Write(unknown1);
             pos = s.Position;
@@ -140,8 +138,7 @@ namespace CatalogResource
             w.Write(unknown8);
             w.Write(vpxy_index1);
             w.Write(unknown9);
-            //ww.Write(unknown10);
-            Write7BitStr(s, unknown10);
+            Write7BitStr(s, unknown10, System.Text.Encoding.BigEndianUnicode);
             w.Write(unknown11);
 
             base.UnParse(s, pos);

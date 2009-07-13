@@ -132,11 +132,15 @@ namespace CatalogResource
             void Parse(Stream s)
             {
                 BinaryReader r = new BinaryReader(s);
+                BinaryReader r2 = new BinaryReader(s, System.Text.Encoding.BigEndianUnicode);
+
                 unknown1 = r.ReadUInt32();
                 nameGUID = r.ReadUInt64();
                 descGUID = r.ReadUInt64();
-                name = r.ReadString();
-                desc = r.ReadString();
+                name = r2.ReadString();
+                //name = System.Text.Encoding.BigEndianUnicode.GetString(r.ReadBytes(r.ReadByte()));
+                desc = r2.ReadString();
+                //desc = System.Text.Encoding.BigEndianUnicode.GetString(r.ReadBytes(r.ReadByte()));
                 price = r.ReadSingle();
                 unknown2 = r.ReadSingle();
                 unknown3 = r.ReadBytes(4);
@@ -152,8 +156,12 @@ namespace CatalogResource
                 w.Write(unknown1);
                 w.Write(nameGUID);
                 w.Write(descGUID);
-                Write7BitStr(s, name);
-                Write7BitStr(s, desc);
+                Write7BitStr(s, name, System.Text.Encoding.BigEndianUnicode);
+                //w.Write((byte)(name.Length * 2));
+                //w.Write(System.Text.Encoding.BigEndianUnicode.GetBytes(name));
+                Write7BitStr(s, desc, System.Text.Encoding.BigEndianUnicode);
+                //w.Write((byte)(desc.Length * 2));
+                //w.Write(System.Text.Encoding.BigEndianUnicode.GetBytes(desc));
                 w.Write(price);
                 w.Write(unknown2);
                 w.Write(unknown3);
@@ -171,7 +179,7 @@ namespace CatalogResource
             #region Content Fields
             public uint Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; OnElementChanged(); } } }
 
-            public ulong NameGUID { get { return nameGUID; } set { if (nameGUID == value) { nameGUID = value; OnElementChanged(); } } }
+            public ulong NameGUID { get { return nameGUID; } set { if (nameGUID != value) { nameGUID = value; OnElementChanged(); } } }
 
             public ulong DescGUID { get { return descGUID; } set { if (descGUID != value) { descGUID = value; OnElementChanged(); } } }
 

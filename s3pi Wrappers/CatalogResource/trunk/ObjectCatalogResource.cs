@@ -163,6 +163,7 @@ namespace CatalogResource
         {
             long tgiPosn, tgiSize;
             BinaryReader r = new BinaryReader(s);
+            BinaryReader r2 = new BinaryReader(s, System.Text.Encoding.BigEndianUnicode);
 
             this.unknown1 = r.ReadUInt32();
             tgiPosn = r.ReadUInt32() + s.Position;
@@ -194,8 +195,10 @@ namespace CatalogResource
             this.buildCategoryFlags = r.ReadUInt32();
             this.sinkDDSIndex = r.ReadUInt32();
             this.unknown14 = r.ReadUInt32();
-            this.materialGrouping1 = r.ReadString();
-            this.materialGrouping2 = r.ReadString();
+            //this.materialGrouping1 = System.Text.Encoding.BigEndianUnicode.GetString(r.ReadBytes(r.ReadByte()));
+            this.materialGrouping1 = r2.ReadString();
+            //this.materialGrouping2 = System.Text.Encoding.BigEndianUnicode.GetString(r.ReadBytes(r.ReadByte()));
+            this.materialGrouping2 = r2.ReadString();
             for (int i = 0; i < this.unknown15.Length; i++) unknown15[i] = r.ReadUInt32();
             this.nullTGIIndex = r.ReadUInt32();
 
@@ -241,8 +244,12 @@ namespace CatalogResource
             w.Write((uint)buildCategoryFlags);
             w.Write(sinkDDSIndex);
             w.Write(unknown14);
-            Write7BitStr(s, materialGrouping1);
-            Write7BitStr(s, materialGrouping2);
+            //w.Write((byte)(materialGrouping1.Length * 2));
+            //w.Write(System.Text.Encoding.BigEndianUnicode.GetBytes(materialGrouping1));
+            Write7BitStr(s, materialGrouping1, System.Text.Encoding.BigEndianUnicode);
+            //w.Write((byte)(materialGrouping2.Length * 2));
+            //w.Write(System.Text.Encoding.BigEndianUnicode.GetBytes(materialGrouping2));
+            Write7BitStr(s, materialGrouping2, System.Text.Encoding.BigEndianUnicode);
             for (int i = 0; i < this.unknown15.Length; i++) w.Write(unknown15[i]);
             w.Write(nullTGIIndex);
 
