@@ -171,10 +171,12 @@ namespace s3pi.Package
             else { len = 3; }
 
             bw.Write((ushort)(0xFB10 | (len == 8 ? 0x81 : len == 6 ? 0x01 : len == 4 ? 0x80 : 0x00)));
-            byte[] reallength=BitConverter.GetBytes(data.LongLength);
+            byte[] reallength = BitConverter.GetBytes(data.LongLength);
             for (int i = len; i > 0; i--) bw.Write(reallength[i - 1]);
 
-            for (int i = 0; i < data.Length; i += Enchunk(data, i, bw)) { }
+            int pos = 0;
+            for (; data.Length - pos >= 4; pos += Enchunk(bw, data, pos)) { }
+            WriteChunk(bw, data, pos, data.Length - pos, -1, 0);//EOF mark
 
             bw.Flush();
             ms.Position = 0;
@@ -182,10 +184,10 @@ namespace s3pi.Package
             return (ms.Length < data.Length) ? (new BinaryReader(ms)).ReadBytes((int)ms.Length) : data;
         }
 
-        public static int Enchunk(byte[] buffer, int pos, BinaryWriter bw)
+        public static int Enchunk(BinaryWriter bw, byte[] buffer, int pos)
         {
-            if (buffer.Length - pos < 4)
-                return WriteChunk(bw, buffer, pos, buffer.Length - pos, -1, 0);//EOF!
+            //if (buffer.Length - pos < 4)
+            //    return WriteChunk(bw, buffer, pos, buffer.Length - pos, -1, 0);//EOF!
 
             if (buffer.Length - pos < 8)
                 return WriteChunk(bw, buffer, pos, (buffer.Length - pos) & ~0x03, -1, 0);//too near EOF!
