@@ -195,7 +195,7 @@ namespace s3pi.GenericRCOLResource
             public ChunkEntryList(EventHandler handler) : base(handler) { }
             public ChunkEntryList(EventHandler handler, IList<ChunkEntry> ice) : base(handler, ice) { }
 
-            protected override ChunkEntry CreateElement(Stream s) { throw new NotImplementedException(); }
+            protected override ChunkEntry CreateElement(EventHandler handler, Stream s) { throw new NotImplementedException(); }
             protected override void WriteElement(Stream s, ChunkEntry element) { throw new NotImplementedException(); }
         }
 

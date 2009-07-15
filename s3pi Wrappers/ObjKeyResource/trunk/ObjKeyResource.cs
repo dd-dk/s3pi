@@ -146,7 +146,7 @@ namespace ObjKeyResource
 
             #region Data I/O
             protected override uint ReadCount(Stream s) { return (new BinaryReader(s)).ReadByte(); }
-            protected override uint CreateElement(Stream s) { return (new BinaryReader(s)).ReadUInt32(); }
+            protected override uint CreateElement(EventHandler handler, Stream s) { return (new BinaryReader(s)).ReadUInt32(); }
 
             protected override void WriteCount(Stream s, uint count) { (new BinaryWriter(s)).Write((byte)count); }
             protected override void WriteElement(Stream s, uint element) { (new BinaryWriter(s)).Write(element); }
@@ -339,7 +339,7 @@ namespace ObjKeyResource
 
             #region Data I/O
             protected override uint ReadCount(Stream s) { return (new BinaryReader(s)).ReadByte(); }
-            protected override Key CreateElement(Stream s) { return new Key(0, handler, s); }
+            protected override Key CreateElement(EventHandler handler, Stream s) { return new Key(0, handler, s); }
 
             protected override void WriteCount(Stream s, uint count) { (new BinaryWriter(s)).Write((byte)count); }
             protected override void WriteElement(Stream s, Key element) { element.UnParse(s); }

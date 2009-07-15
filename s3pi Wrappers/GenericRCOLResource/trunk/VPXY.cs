@@ -281,7 +281,7 @@ namespace s3pi.GenericRCOLResource
             protected override uint ReadCount(Stream s) { return (new BinaryReader(s)).ReadByte(); }
             protected override void WriteCount(Stream s, uint count) { (new BinaryWriter(s)).Write((byte)count); }
 
-            protected override UInt32 CreateElement(Stream s) { return (new BinaryReader(s)).ReadUInt32(); }
+            protected override UInt32 CreateElement(EventHandler handler, Stream s) { return (new BinaryReader(s)).ReadUInt32(); }
 
             protected override void WriteElement(Stream s, UInt32 element) { (new BinaryWriter(s)).Write(element); }
             #endregion
@@ -299,7 +299,7 @@ namespace s3pi.GenericRCOLResource
             protected override uint ReadCount(Stream s) { return (new BinaryReader(s)).ReadByte(); }
             protected override void WriteCount(Stream s, uint count) { (new BinaryWriter(s)).Write((byte)count); }
 
-            protected override Entry CreateElement(Stream s) { return new Entry(0, handler, s); }
+            protected override Entry CreateElement(EventHandler handler, Stream s) { return new Entry(0, handler, s); }
 
             protected override void WriteElement(Stream s, Entry element) { element.UnParse(s); }
             #endregion
