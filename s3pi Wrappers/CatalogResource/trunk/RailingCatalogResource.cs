@@ -42,7 +42,7 @@ namespace CatalogResource
         #region Constructors
         public RailingCatalogResource(int APIversion, Stream s) : base(APIversion, s) { }
         public RailingCatalogResource(int APIversion, Stream unused, RailingCatalogResource basis)
-            : base(APIversion, basis)
+            : base(APIversion, basis.list)
         {
             this.unknown1 = basis.unknown1;
             this.common = new Common(requestedApiVersion, OnResourceChanged, basis.common);

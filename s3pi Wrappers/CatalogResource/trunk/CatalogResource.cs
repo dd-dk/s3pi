@@ -1206,7 +1206,7 @@ namespace CatalogResource
     /// <summary>
     /// A CatalogResource wrapper that contains a TGIBlockList
     /// </summary>
-    public abstract class CatalogResourceTGIBlockList : CatalogResource, IList<AResource.TGIBlock>
+    public abstract class CatalogResourceTGIBlockList : CatalogResource
     {
         #region Attributes
         protected TGIBlockList list = null;
@@ -1214,7 +1214,7 @@ namespace CatalogResource
 
         #region Constructors
         public CatalogResourceTGIBlockList(int APIversion, Stream s) : base(APIversion, s) { }
-        public CatalogResourceTGIBlockList(int APIversion, IList<TGIBlock> ltgib) : base(APIversion, null) { this.list = new TGIBlockList(OnResourceChanged, ltgib); }
+        public CatalogResourceTGIBlockList(int APIversion, TGIBlockList tgibl) : base(APIversion, null) { this.list = new TGIBlockList(OnResourceChanged, tgibl); }
         #endregion
 
         #region Data I/O
@@ -1225,70 +1225,8 @@ namespace CatalogResource
         }
         #endregion
 
-        #region IList<TGIBlock> Members
-
-        public int IndexOf(TGIBlock item) { return list.IndexOf(item); }
-
-        public void Insert(int index, TGIBlock item) { list.Insert(index, item); OnResourceChanged(this, new EventArgs()); }
-
-        public void RemoveAt(int index) { list.RemoveAt(index); OnResourceChanged(this, new EventArgs()); }
-
-        public TGIBlock this[int index]
-        {
-            get { return list[index]; }
-            set { if (list[index] != value) { list[index] = value; OnResourceChanged(this, new EventArgs()); } }
-        }
-
-        #endregion
-
-        #region ICollection<TGIBlock> Members
-
-        public void Add(TGIBlock item) { list.Add(item); OnResourceChanged(this, new EventArgs()); }
-
-        public void Clear() { list.Clear(); OnResourceChanged(this, new EventArgs()); }
-
-        public bool Contains(TGIBlock item) { return list.Contains(item); }
-
-        public void CopyTo(TGIBlock[] array, int arrayIndex) { list.CopyTo(array, arrayIndex); }
-
-        public int Count { get { return list.Count; } }
-
-        public bool IsReadOnly { get { return false; } }
-
-        public bool Remove(TGIBlock item)
-        {
-            bool res = list.Remove(item);
-            if (res) OnResourceChanged(this, new EventArgs());
-            return res;
-        }
-
-        #endregion
-
-        #region IEnumerable<TGIBlock> Members
-
-        public IEnumerator<TGIBlock> GetEnumerator() { return list.GetEnumerator(); }
-
-        #endregion
-
-        #region IEnumerable Members
-
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return list.GetEnumerator(); }
-
-        #endregion
-
         #region Content Fields
-        public IList<TGIBlock> TGIBlocks
-        {
-            get { return list; }
-            set
-            {
-                if (list != value as TGIBlockList)
-                {
-                    list = new TGIBlockList(OnResourceChanged, value);
-                    OnResourceChanged(this, new EventArgs());
-                }
-            }
-        }
+        public TGIBlockList TGIBlocks { get { return list; } set { if (list != value) { list = new TGIBlockList(OnResourceChanged, value); OnResourceChanged(this, EventArgs.Empty); } } }
         #endregion
     }
 

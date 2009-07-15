@@ -46,7 +46,7 @@ namespace CatalogResource
         #region Constructors
         public StairsCatalogResource(int APIversion, Stream s) : base(APIversion, s) { }
         public StairsCatalogResource(int APIversion, Stream unused, StairsCatalogResource basis)
-            : base(APIversion, basis)
+            : base(APIversion, basis.list)
         {
             this.unknown1 = basis.unknown1;
             this.common = new Common(requestedApiVersion, OnResourceChanged, basis.common);

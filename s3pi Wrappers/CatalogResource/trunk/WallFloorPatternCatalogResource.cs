@@ -45,7 +45,7 @@ namespace CatalogResource
         #region Constructors
         public WallFloorPatternCatalogResource(int APIversion, Stream s) : base(APIversion, s) { }
         public WallFloorPatternCatalogResource(int APIversion, Stream unused, WallFloorPatternCatalogResource basis)
-            : base(APIversion, basis)
+            : base(APIversion, basis.list)
         {
             this.unknown1 = basis.unknown1;
             this.materialList = new WallFloorPatternMaterialList(OnResourceChanged, basis.materialList);

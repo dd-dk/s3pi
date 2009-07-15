@@ -42,7 +42,7 @@ namespace CatalogResource
         #region Constructors
         public RoofPatternCatalogResource(int APIversion, Stream s) : base(APIversion, s) { }
         public RoofPatternCatalogResource(int APIversion, Stream unused, RoofPatternCatalogResource basis)
-            : base(APIversion, basis)
+            : base(APIversion, basis.list)
         {
             this.unknown1 = basis.unknown1;
             this.common = new Common(requestedApiVersion, OnResourceChanged, basis.common);

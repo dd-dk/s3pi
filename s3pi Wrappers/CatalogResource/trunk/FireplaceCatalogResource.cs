@@ -47,7 +47,7 @@ namespace CatalogResource
         #region Constructors
         public FireplaceCatalogResource(int APIversion, Stream s) : base(APIversion, s) { }
         public FireplaceCatalogResource(int APIversion, Stream unused, FireplaceCatalogResource basis)
-            : base(APIversion, basis)
+            : base(APIversion, basis.list)
         {
             this.unknown1 = basis.unknown1;
             this.common = new Common(requestedApiVersion, OnResourceChanged, basis.common);

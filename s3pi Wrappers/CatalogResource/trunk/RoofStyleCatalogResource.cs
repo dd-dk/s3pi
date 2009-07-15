@@ -44,7 +44,7 @@ namespace CatalogResource
         #region Constructors
         public RoofStyleCatalogResource(int APIversion, Stream s) : base(APIversion, s) { }
         public RoofStyleCatalogResource(int APIversion, Stream unused, RoofStyleCatalogResource basis)
-            : base(APIversion, basis)
+            : base(APIversion, basis.list)
         {
             this.unknown1 = basis.unknown1;
             this.common = new Common(requestedApiVersion, OnResourceChanged, basis.common);

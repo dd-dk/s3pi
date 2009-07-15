@@ -49,7 +49,7 @@ namespace CatalogResource
         #region Constructors
         public WallCatalogResource(int APIversion, Stream s) : base(APIversion, s) { }
         public WallCatalogResource(int APIversion, Stream unused, WallCatalogResource basis)
-            : base(APIversion, basis)
+            : base(APIversion, basis.list)
         {
             this.unknown1 = basis.unknown1;
             this.common = new Common(requestedApiVersion, OnResourceChanged, basis.common);

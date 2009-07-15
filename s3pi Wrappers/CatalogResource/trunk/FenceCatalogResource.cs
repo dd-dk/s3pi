@@ -44,7 +44,7 @@ namespace CatalogResource
         #region Constructors
         public FenceCatalogResource(int APIversion, Stream s) : base(APIversion, s) { }
         public FenceCatalogResource(int APIversion, Stream unused, FenceCatalogResource basis)
-            : base(APIversion, basis)
+            : base(APIversion, basis.list)
         {
             this.unknown1 = basis.unknown1;
             this.common = new Common(requestedApiVersion, OnResourceChanged, basis.common);
