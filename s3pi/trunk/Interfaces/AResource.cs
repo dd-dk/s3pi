@@ -97,7 +97,7 @@ namespace s3pi.Interfaces
 
             // Add stream-based constructors and support
             protected DependentList(EventHandler handler, Stream s) : this(handler, -1, s) { }
-            protected DependentList(EventHandler handler, long size, Stream s) : base(null, size) { Parse(s); this.handler = handler; }
+            protected DependentList(EventHandler handler, long size, Stream s) : base(null, size) { Parse(handler, s); this.handler = handler; }
             #endregion
 
             #region Data I/O
@@ -105,10 +105,10 @@ namespace s3pi.Interfaces
             /// Read list entries from a stream
             /// </summary>
             /// <param name="s">Stream containing list entries</param>
-            protected virtual void Parse(Stream s) { base.Clear(); bool inc = true; for (uint i = ReadCount(s); i > 0; i = (uint)(i - (inc ? 1 : 0))) base.Add(CreateElement(s, out inc)); }
+            protected virtual void Parse(EventHandler handler, Stream s) { base.Clear(); bool inc = true; for (uint i = ReadCount(s); i > 0; i = (uint)(i - (inc ? 1 : 0))) base.Add(CreateElement(handler, s, out inc)); }
             protected virtual uint ReadCount(Stream s) { return (new BinaryReader(s)).ReadUInt32(); }
-            protected abstract T CreateElement(Stream s);
-            protected virtual T CreateElement(Stream s, out bool inc) { inc = true; return CreateElement(s); }
+            protected abstract T CreateElement(EventHandler handler, Stream s);
+            protected virtual T CreateElement(EventHandler handler, Stream s, out bool inc) { inc = true; return CreateElement(handler, s); }
 
             /// <summary>
             /// Write list entries to a stream
@@ -268,15 +268,15 @@ namespace s3pi.Interfaces
 
             public CountedTGIBlockList(EventHandler handler, long max, string order) : base(handler, max) { this.order = order; }
             public CountedTGIBlockList(EventHandler handler, long max, string order, IList<TGIBlock> lme) : base(handler, max, lme) { this.order = order; }
-            public CountedTGIBlockList(EventHandler handler, long max, string order, uint count, Stream s) : this(null, max, order) { this.origCount = count; Parse(s); this.handler = handler; }
+            public CountedTGIBlockList(EventHandler handler, long max, string order, uint count, Stream s) : this(null, max, order) { this.origCount = count; Parse(handler, s); this.handler = handler; }
             #endregion
 
             #region Data I/O
-            protected override TGIBlock CreateElement(Stream s) { return new TGIBlock(0, handler, order, s); }
-            protected override void WriteElement(Stream s, TGIBlock element) { element.UnParse(s); }
-
             protected override uint ReadCount(Stream s) { return origCount; } // creator supplies
+            protected override TGIBlock CreateElement(EventHandler handler, Stream s) { return new TGIBlock(0, handler, order, s); }
+
             protected override void WriteCount(Stream s, uint count) { } // creator stores
+            protected override void WriteElement(Stream s, TGIBlock element) { element.UnParse(s); }
             #endregion
 
             #region Content Fields
@@ -293,21 +293,21 @@ namespace s3pi.Interfaces
             #region Constructors
             public TGIBlockList(EventHandler handler) : base(handler) { }
             public TGIBlockList(EventHandler handler, IList<TGIBlock> lme) : base(handler, lme) { }
-            public TGIBlockList(EventHandler handler, Stream s, long tgiPosn, long tgiSize) : base(null) { Parse(s, tgiPosn, tgiSize); this.handler = handler; }
+            public TGIBlockList(EventHandler handler, Stream s, long tgiPosn, long tgiSize) : base(null) { Parse(handler, s, tgiPosn, tgiSize); this.handler = handler; }
             #endregion
 
             #region Data I/O
-            protected override TGIBlock CreateElement(Stream s) { return new TGIBlock(0, handler, s); }
+            protected override TGIBlock CreateElement(EventHandler handler, Stream s) { return new TGIBlock(0, handler, s); }
             protected override void WriteElement(Stream s, TGIBlock element) { element.UnParse(s); }
 
-            protected void Parse(Stream s, long tgiPosn, long tgiSize)
+            protected void Parse(EventHandler handler, Stream s, long tgiPosn, long tgiSize)
             {
                 bool checking = true;
                 if (checking) if (tgiPosn != s.Position)
                         throw new InvalidDataException(String.Format("Position of TGIBlock read: 0x{0:X8}, actual: 0x{1:X8}",
                             tgiPosn, s.Position));
 
-                if (tgiSize > 0) Parse(s);
+                if (tgiSize > 0) Parse(handler, s);
 
                 if (checking) if (tgiSize != s.Position - tgiPosn)
                         throw new InvalidDataException(String.Format("Size of TGIBlock read: 0x{0:X8}, actual: 0x{1:X8}; at 0x{2:X8}",
