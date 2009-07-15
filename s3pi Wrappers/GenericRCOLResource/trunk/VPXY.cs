@@ -232,17 +232,17 @@ namespace s3pi.GenericRCOLResource
             public byte EntryType { get { return entryType; } set { if (entryType != value) { entryType = value; if (handler != null) handler(this, EventArgs.Empty); } } }
             public byte EntryID
             {
-                get { if (entryType != 0x00) throw new InvalidOperationException(); return entryID; }
+                get { return entryID; }
                 set { if (entryType != 0x00) throw new InvalidOperationException(); if (entryID != value) { entryID = value; if (handler != null) handler(this, EventArgs.Empty); } }
             }
             public UintList TGIIndexes
             {
-                get { if (entryType != 0x00) throw new InvalidOperationException(); return tgiIndexes; }
+                get { return tgiIndexes; }
                 set { if (entryType != 0x00) throw new InvalidOperationException(); if (tgiIndexes != value) { tgiIndexes = new UintList(handler, value); if (handler != null) handler(this, EventArgs.Empty); } }
             }
             public UInt32 TGIIndex
             {
-                get { if (entryType != 0x01) throw new InvalidOperationException(); return tgiIndex; }
+                get { return tgiIndex; }
                 set { if (entryType != 0x01) throw new InvalidOperationException(); if (tgiIndex != value) { tgiIndex = value; if (handler != null) handler(this, EventArgs.Empty); } }
             }
 
@@ -331,7 +331,7 @@ namespace s3pi.GenericRCOLResource
         public bool Modular { get { return modular != 0; } set { if (Modular != value) { modular = (byte)(value ? 0x01 : 0x00); OnElementChanged(); } } }
         public uint FTPTIndex
         {
-            get { if (modular == 0) throw new InvalidOperationException(); return ftptIndex; }
+            get { return ftptIndex; }
             set { if (modular == 0) throw new InvalidOperationException(); if (ftptIndex != value) { ftptIndex = value; OnElementChanged(); } }
         }
         public AResource.TGIBlockList TGIBlocks
