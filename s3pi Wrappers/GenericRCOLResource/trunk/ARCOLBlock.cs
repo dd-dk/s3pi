@@ -57,7 +57,6 @@ namespace s3pi.Interfaces
         public abstract string Tag { get; }
         public abstract uint ResourceType { get; }
         public abstract Stream UnParse();
-        public event EventHandler ResourceChanged;
         #endregion
 
         #region IResource Members
@@ -73,6 +72,7 @@ namespace s3pi.Interfaces
                     stream = UnParse();
                     dirty = false;
                 }
+                stream.Position = 0;
                 return stream;
             }
         }
@@ -92,6 +92,11 @@ namespace s3pi.Interfaces
             }
         }
 
+        /// <summary>
+        /// Raised if the resource is changed
+        /// </summary>
+        public event EventHandler ResourceChanged;
+
         #endregion
 
         #region IEquatable<ARCOLBlock> Members
@@ -99,5 +104,10 @@ namespace s3pi.Interfaces
         public virtual bool Equals(ARCOLBlock other) { return ArrayCompare(this.AsBytes, other.AsBytes); }
 
         #endregion
+
+        /// <summary>
+        /// Used to indicate the RCOL has changed
+        /// </summary>
+        protected virtual void OnRCOLChanged(object sender, EventArgs e) { dirty = true; OnElementChanged(); }
     }
 }

@@ -45,7 +45,7 @@ namespace s3pi.GenericRCOLResource
             : base(APIversion, handler, null)
         {
             version = basis.version;
-            entryList = new EntryList(handler, basis.entryList);
+            entryList = new EntryList(OnRCOLChanged, basis.entryList);
             boundingBox = (float[])basis.boundingBox;
             unused = (byte[])basis.unused.Clone();
             modular = basis.modular;
@@ -71,7 +71,7 @@ namespace s3pi.GenericRCOLResource
             long tgiPosn = r.ReadUInt32() + s.Position;
             long tgiSize = r.ReadUInt32();
 
-            entryList = new EntryList(handler, s);
+            entryList = new EntryList(OnRCOLChanged, s);
             tc02 = r.ReadByte();
             if (checking) if (tc02 != 2)
                     throw new InvalidDataException(String.Format("Invalid TC02 read: 0x{0:X2}; expected 0x02; at 0x{1:X8}", tc02, s.Position));
@@ -85,7 +85,7 @@ namespace s3pi.GenericRCOLResource
             else
                 ftptIndex = 0;
 
-            tgiBlockList = new AResource.TGIBlockList(handler, s, tgiPosn, tgiSize);
+            tgiBlockList = new AResource.TGIBlockList(OnRCOLChanged, s, tgiPosn, tgiSize);
         }
 
         public override Stream UnParse()
@@ -100,7 +100,7 @@ namespace s3pi.GenericRCOLResource
             w.Write((uint)0); // tgiOffset
             w.Write((uint)0); // tgiSize
 
-            if (entryList == null) entryList = new EntryList(handler);
+            if (entryList == null) entryList = new EntryList(OnRCOLChanged);
             entryList.UnParse(ms);
 
             w.Write(tc02);
@@ -110,7 +110,7 @@ namespace s3pi.GenericRCOLResource
             if (modular != 0)
                 w.Write(ftptIndex);
 
-            if (tgiBlockList == null) tgiBlockList = new AResource.TGIBlockList(handler);
+            if (tgiBlockList == null) tgiBlockList = new AResource.TGIBlockList(OnRCOLChanged);
             tgiBlockList.UnParse(ms, pos);
 
             return ms;
@@ -281,7 +281,7 @@ namespace s3pi.GenericRCOLResource
             protected override uint ReadCount(Stream s) { return (new BinaryReader(s)).ReadByte(); }
             protected override void WriteCount(Stream s, uint count) { (new BinaryWriter(s)).Write((byte)count); }
 
-            protected override UInt32 CreateElement(EventHandler handler, Stream s) { return (new BinaryReader(s)).ReadUInt32(); }
+            protected override UInt32 CreateElement(Stream s) { return (new BinaryReader(s)).ReadUInt32(); }
 
             protected override void WriteElement(Stream s, UInt32 element) { (new BinaryWriter(s)).Write(element); }
             #endregion
@@ -299,7 +299,7 @@ namespace s3pi.GenericRCOLResource
             protected override uint ReadCount(Stream s) { return (new BinaryReader(s)).ReadByte(); }
             protected override void WriteCount(Stream s, uint count) { (new BinaryWriter(s)).Write((byte)count); }
 
-            protected override Entry CreateElement(EventHandler handler, Stream s) { return new Entry(0, handler, s); }
+            protected override Entry CreateElement(Stream s) { return new Entry(0, elementHandler, s); }
 
             protected override void WriteElement(Stream s, Entry element) { element.UnParse(s); }
             #endregion
@@ -307,16 +307,16 @@ namespace s3pi.GenericRCOLResource
         #endregion
 
         #region Content Fields
-        public uint Version { get { return version; } set { if (version != value) { version = value; OnElementChanged(); } } }
-        public EntryList Entries { get { return entryList; } set { if (entryList != value) { entryList = new EntryList(handler, value); OnElementChanged(); } } }
-        //public byte TC02 { get { return tc02; } set { if (tc02 != value) { tc02 = value; OnResourceChanged(this, EventArgs.Empty); } } }
+        public uint Version { get { return version; } set { if (version != value) { version = value; OnRCOLChanged(this, EventArgs.Empty); } } }
+        public EntryList Entries { get { return entryList; } set { if (entryList != value) { entryList = new EntryList(handler, value); OnRCOLChanged(this, EventArgs.Empty); } } }
+        //public byte TC02 { get { return tc02; } set { if (tc02 != value) { tc02 = value; OnRCOLChanged(this, EventArgs.Empty); } } }
         public float[] BoundingBox
         {
             get { return (float[])boundingBox.Clone(); }
             set
             {
                 if (value.Length != this.boundingBox.Length) throw new ArgumentLengthException("BoundingBox", this.boundingBox.Length);
-                if (!ArrayCompare(boundingBox, value)) { boundingBox = value == null ? null : (float[])value.Clone(); OnElementChanged(); }
+                if (!ArrayCompare(boundingBox, value)) { boundingBox = value == null ? null : (float[])value.Clone(); OnRCOLChanged(this, EventArgs.Empty); }
             }
         }
         public byte[] Unused
@@ -325,19 +325,19 @@ namespace s3pi.GenericRCOLResource
             set
             {
                 if (value.Length != this.unused.Length) throw new ArgumentLengthException("Unused", this.unused.Length);
-                if (!ArrayCompare(unused, value)) { unused = value == null ? null : (byte[])value.Clone(); OnElementChanged(); }
+                if (!ArrayCompare(unused, value)) { unused = value == null ? null : (byte[])value.Clone(); OnRCOLChanged(this, EventArgs.Empty); }
             }
         }
-        public bool Modular { get { return modular != 0; } set { if (Modular != value) { modular = (byte)(value ? 0x01 : 0x00); OnElementChanged(); } } }
+        public bool Modular { get { return modular != 0; } set { if (Modular != value) { modular = (byte)(value ? 0x01 : 0x00); OnRCOLChanged(this, EventArgs.Empty); } } }
         public uint FTPTIndex
         {
             get { return ftptIndex; }
-            set { if (modular == 0) throw new InvalidOperationException(); if (ftptIndex != value) { ftptIndex = value; OnElementChanged(); } }
+            set { if (modular == 0) throw new InvalidOperationException(); if (ftptIndex != value) { ftptIndex = value; OnRCOLChanged(this, EventArgs.Empty); } }
         }
         public AResource.TGIBlockList TGIBlocks
         {
             get { return tgiBlockList; }
-            set { if (tgiBlockList != value) { tgiBlockList = new AResource.TGIBlockList(handler, value); OnElementChanged(); } }
+            set { if (tgiBlockList != value) { tgiBlockList = new AResource.TGIBlockList(handler, value); OnRCOLChanged(this, EventArgs.Empty); } }
         }
 
         public string Value
