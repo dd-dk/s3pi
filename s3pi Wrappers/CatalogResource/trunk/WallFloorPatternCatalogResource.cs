@@ -212,7 +212,7 @@ namespace CatalogResource
             #endregion
 
             #region Data I/O
-            protected override WallFloorPatternMaterial CreateElement(EventHandler handler, Stream s) { return new WallFloorPatternMaterial(0, handler, s); }
+            protected override WallFloorPatternMaterial CreateElement(Stream s) { return new WallFloorPatternMaterial(0, elementHandler, s); }
             protected override void WriteElement(Stream s, WallFloorPatternMaterial element) { element.UnParse(s); }
             #endregion
 

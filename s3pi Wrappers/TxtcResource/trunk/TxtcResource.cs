@@ -253,7 +253,7 @@ namespace TxtcResource
             public SuperBlockList(EventHandler handler, IList<SuperBlock> lsb) : base(handler, 255, lsb) { }
 
             protected override uint ReadCount(Stream s) { return (new BinaryReader(s)).ReadByte(); }
-            protected override SuperBlock CreateElement(EventHandler handler, Stream s) { return new SuperBlock(0, handler, s); }
+            protected override SuperBlock CreateElement(Stream s) { return new SuperBlock(0, elementHandler, s); }
 
             protected override void WriteCount(Stream s, uint count) { (new BinaryWriter(s)).Write((byte)count); }
             protected override void WriteElement(Stream s, SuperBlock element) { element.UnParse(s); }
@@ -556,7 +556,7 @@ namespace TxtcResource
             public EntryList(EventHandler handler, IList<Entry> le) : base(handler, le) { }
 
             protected override uint ReadCount(Stream s) { throw new InvalidOperationException(); }
-            protected override Entry CreateElement(EventHandler handler, Stream s) { throw new InvalidOperationException(); }
+            protected override Entry CreateElement(Stream s) { throw new InvalidOperationException(); }
 
             protected override void WriteCount(Stream s, uint count) { } // List owner must do this, if required
             protected override void WriteElement(Stream s, Entry element) { element.UnParse(s); }
@@ -606,11 +606,11 @@ namespace TxtcResource
         {
             uint blockCount;
             public EntryBlockList(EventHandler handler) : base(handler) { }
-            public EntryBlockList(EventHandler handler, uint blockCount, Stream s) : base(null) { this.blockCount = blockCount; Parse(handler, s); this.handler = handler; }
+            public EntryBlockList(EventHandler handler, uint blockCount, Stream s) : base(handler) { this.blockCount = blockCount; Parse(s); }
             public EntryBlockList(EventHandler handler, IList<EntryBlock> leb) : base(handler, leb) { }
 
             protected override uint ReadCount(Stream s) { return blockCount; }
-            protected override EntryBlock CreateElement(EventHandler handler, Stream s) { return new EntryBlock(0, handler, s); }
+            protected override EntryBlock CreateElement(Stream s) { return new EntryBlock(0, elementHandler, s); }
 
             protected override void WriteCount(Stream s, uint count) { } // List owner must do this
             protected override void WriteElement(Stream s, EntryBlock element) { element.UnParse(s); }

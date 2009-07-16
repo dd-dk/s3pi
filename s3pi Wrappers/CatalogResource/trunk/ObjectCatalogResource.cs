@@ -364,7 +364,7 @@ namespace CatalogResource
 
             #region Data I/O
             protected override uint ReadCount(Stream s) { return (new BinaryReader(s)).ReadByte(); }
-            protected override MTDoor CreateElement(EventHandler handler, Stream s) { return new MTDoor(0, handler, s); }
+            protected override MTDoor CreateElement(Stream s) { return new MTDoor(0, elementHandler, s); }
             protected override void WriteCount(Stream s, uint count) { (new BinaryWriter(s)).Write((byte)count); }
             protected override void WriteElement(Stream s, MTDoor element) { element.UnParse(s); }
             #endregion

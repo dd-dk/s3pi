@@ -49,13 +49,7 @@ namespace ScriptResource
         /// </summary>
         /// <param name="APIversion">Requested API version</param>
         /// <param name="s">Data stream to use, or null to create from scratch</param>
-        public ScriptResource(int APIversion, Stream s)
-            : base(APIversion, s)
-        {
-            if (stream == null) stream = UnParse();
-            stream.Position = 0;
-            Parse(stream);
-        }
+        public ScriptResource(int APIversion, Stream s) : base(APIversion, s) { if (stream == null) { stream = UnParse(); dirty = true; } stream.Position = 0; Parse(stream); }
         #endregion
 
         #region Data I/O

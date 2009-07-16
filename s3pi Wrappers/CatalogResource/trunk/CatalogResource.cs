@@ -804,8 +804,8 @@ namespace CatalogResource
             #endregion
 
             #region Data I/O
-            protected override TypeCode CreateElement(EventHandler handler, Stream s) { throw new NotImplementedException(); }
-            protected override TypeCode CreateElement(EventHandler handler, Stream s, out bool inc)
+            protected override TypeCode CreateElement(Stream s) { throw new NotImplementedException(); }
+            protected override TypeCode CreateElement(Stream s, out bool inc)
             {
                 BinaryReader r = new BinaryReader(s);
                 byte controlCode = r.ReadByte();
@@ -975,7 +975,7 @@ namespace CatalogResource
             #endregion
 
             #region Data I/O
-            protected override MaterialBlock CreateElement(EventHandler handler, Stream s) { return new MaterialBlock(0, handler, s); }
+            protected override MaterialBlock CreateElement(Stream s) { return new MaterialBlock(0, elementHandler, s); }
             protected override void WriteElement(Stream s, MaterialBlock element) { element.UnParse(s); }
             #endregion
 
@@ -1165,7 +1165,7 @@ namespace CatalogResource
             #endregion
 
             #region Data I/O
-            protected override Material CreateElement(EventHandler handler, Stream s) { return new Material(0, handler, s); }
+            protected override Material CreateElement(Stream s) { return new Material(0, elementHandler, s); }
             protected override void WriteElement(Stream s, Material element) { element.UnParse(s); }
             #endregion
 
