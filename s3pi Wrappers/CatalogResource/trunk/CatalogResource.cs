@@ -941,8 +941,8 @@ namespace CatalogResource
             public byte XMLIndex { get { return xmlindex; } set { if (xmlindex != value) { xmlindex = value; OnElementChanged(); } } }
             public TypeCode01 Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; OnElementChanged(); } } }
             public TypeCode01 Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; OnElementChanged(); } } }
-            public IList<TypeCode> TypeCodes { get { return tcList; } set { if (tcList != (value as TypeCodeList)) { tcList = new TypeCodeList(handler, value); OnElementChanged(); } } }
-            public IList<MaterialBlock> MaterialBlocks { get { return mbList; } set { if (mbList != (value as MaterialBlockList)) { mbList = new MaterialBlockList(handler, value); OnElementChanged(); } } }
+            public TypeCodeList TypeCodes { get { return tcList; } set { if (tcList != (value as TypeCodeList)) { tcList = new TypeCodeList(handler, value); OnElementChanged(); } } }
+            public MaterialBlockList MaterialBlocks { get { return mbList; } set { if (mbList != (value as MaterialBlockList)) { mbList = new MaterialBlockList(handler, value); OnElementChanged(); } } }
 
             public String Value
             {
@@ -956,8 +956,8 @@ namespace CatalogResource
                         string h = String.Format("\n---------\n---------\n{0}: {1}\n---------\n", tv.Type.Name, f);
                         string t = "---------\n";
                         if (typeof(TypeCode01).IsAssignableFrom(tv.Type)) s += h + (tv.Value as TypeCode01).Value + t;
-                        else if (typeof(IList<TypeCode>).IsAssignableFrom(tv.Type)) s += h + (tv.Value as TypeCodeList).Value + t;
-                        else if (typeof(IList<MaterialBlock>).IsAssignableFrom(tv.Type)) s += h + (tv.Value as MaterialBlockList).Value + t;
+                        else if (typeof(TypeCodeList).IsAssignableFrom(tv.Type)) s += h + (tv.Value as TypeCodeList).Value + t;
+                        else if (typeof(MaterialBlockList).IsAssignableFrom(tv.Type)) s += h + (tv.Value as MaterialBlockList).Value + t;
                         else s += string.Format("{0}: {1}\n", f, "" + tv);
                     }
                     return s;
@@ -1121,7 +1121,7 @@ namespace CatalogResource
             public uint Unknown1 { get { return unknown1; } set { if (materialType == 1) throw new InvalidOperationException(); if (unknown1 != value) { unknown1 = value; OnElementChanged(); } } }
             public ushort Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; OnElementChanged(); } } }
             public MaterialBlock MaterialBlock { get { return mb; } set { if (mb != value) { mb = value; OnElementChanged(); } } }
-            public IList<TGIBlock> TGIBlocks
+            public TGIBlockList TGIBlocks
             {
                 get { return list; }
                 set
@@ -1147,7 +1147,7 @@ namespace CatalogResource
                         string h = String.Format("\n---------\n---------\n{0}: {1}\n---------\n", tv.Type.Name, f);
                         string t = "---------\n";
                         if (typeof(MaterialBlock).IsAssignableFrom(tv.Type)) s += h + (tv.Value as MaterialBlock).Value + t;
-                        else if (typeof(IList<TGIBlock>).IsAssignableFrom(tv.Type)) s += h + (tv.Value as TGIBlockList).Value + t;
+                        else if (typeof(TGIBlockList).IsAssignableFrom(tv.Type)) s += h + (tv.Value as TGIBlockList).Value + t;
                         else s += string.Format("{0}: {1}\n", f, "" + tv);
                     }
                     return s;
@@ -1189,12 +1189,12 @@ namespace CatalogResource
                     TypedValue tv = this[f];
                     string h = String.Format("\n---------\n---------\n{0}: {1}\n---------\n", tv.Type.Name, f);
                     string t = "---------\n";
-                    if (typeof(IList<Material>).IsAssignableFrom(tv.Type)) s += h + (tv.Value as MaterialList).Value + t;
-                    else if (typeof(IList<MaterialBlock>).IsAssignableFrom(tv.Type)) s += h + (tv.Value as MaterialBlockList).Value + t;
-                    else if (typeof(IList<TGIBlock>).IsAssignableFrom(tv.Type)) s += h + (tv.Value as TGIBlockList).Value + t;
+                    if (typeof(MaterialList).IsAssignableFrom(tv.Type)) s += h + (tv.Value as MaterialList).Value + t;
+                    else if (typeof(MaterialBlockList).IsAssignableFrom(tv.Type)) s += h + (tv.Value as MaterialBlockList).Value + t;
+                    else if (typeof(TGIBlockList).IsAssignableFrom(tv.Type)) s += h + (tv.Value as TGIBlockList).Value + t;
                     else if (typeof(Common).IsAssignableFrom(tv.Type)) s += h + (tv.Value as Common).Value + t;
                     else if (typeof(TypeCode).IsAssignableFrom(tv.Type)) s += h + (tv.Value as TypeCode).Value + t;
-                    else if (typeof(IList<ObjectCatalogResource.MTDoor>).IsAssignableFrom(tv.Type)) s += h + (tv.Value as ObjectCatalogResource.MTDoorList).Value + t;
+                    else if (typeof(ObjectCatalogResource.MTDoorList).IsAssignableFrom(tv.Type)) s += h + (tv.Value as ObjectCatalogResource.MTDoorList).Value + t;
                     else s += string.Format("{0}: {1}\n", f, "" + tv);
                 }
                 return s;
@@ -1214,7 +1214,7 @@ namespace CatalogResource
 
         #region Constructors
         public CatalogResourceTGIBlockList(int APIversion, Stream s) : base(APIversion, s) { }
-        public CatalogResourceTGIBlockList(int APIversion, TGIBlockList tgibl) : base(APIversion, null) { this.list = new TGIBlockList(OnResourceChanged, tgibl); }
+        public CatalogResourceTGIBlockList(int APIversion, IList<TGIBlock> tgibl) : base(APIversion, null) { this.list = new TGIBlockList(OnResourceChanged, tgibl); }
         #endregion
 
         #region Data I/O
