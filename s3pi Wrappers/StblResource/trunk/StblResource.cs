@@ -27,7 +27,7 @@ namespace StblResource
     /// <summary>
     /// A resource wrapper that understands String Table resources
     /// </summary>
-    public class StblResource : AResource, IDictionary<ulong, string>
+    public class StblResource : AResource, IDictionary<ulong, string>, System.Collections.IDictionary
     {
         const int recommendedApiVersion = 1;
         public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
@@ -172,6 +172,36 @@ namespace StblResource
         #region IEnumerable Members
 
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { return entries.GetEnumerator(); }
+
+        #endregion
+
+        #region IDictionary Members
+
+        public void Add(object key, object value) { this.Add((ulong)key, (string)value); }
+
+        public bool Contains(object key) { return ContainsKey((ulong)key); }
+
+        System.Collections.IDictionaryEnumerator System.Collections.IDictionary.GetEnumerator() { return entries.GetEnumerator(); }
+
+        public bool IsFixedSize { get { return false; } }
+
+        System.Collections.ICollection System.Collections.IDictionary.Keys { get { return entries.Keys; } }
+
+        public void Remove(object key) { Remove((ulong)key); }
+
+        System.Collections.ICollection System.Collections.IDictionary.Values { get { return entries.Values; } }
+
+        public object this[object key] { get { return this[(ulong)key]; } set { this[(ulong)key] = (string)value; } }
+
+        #endregion
+
+        #region ICollection Members
+
+        public void CopyTo(Array array, int index) { CopyTo((KeyValuePair<ulong, string>[])array, index); }
+
+        public bool IsSynchronized { get { return false; } }
+
+        public object SyncRoot { get { return null; } }
 
         #endregion
 
