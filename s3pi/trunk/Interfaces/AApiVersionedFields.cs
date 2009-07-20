@@ -53,7 +53,7 @@ namespace s3pi.Interfaces
         /// <param name="index">The name of the field (i.e. one of the values from ContentFields)</param>
         /// <returns>The typed value of the named field</returns>
         /// <exception cref="ArgumentOutOfRangeException">Thrown when an unknown index name is requested</exception>
-        public TypedValue this[string index]
+        public virtual TypedValue this[string index]
         {
             get
             {
