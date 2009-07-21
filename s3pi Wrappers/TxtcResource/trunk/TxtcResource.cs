@@ -606,8 +606,8 @@ namespace TxtcResource
         {
             uint blockCount;
             public EntryBlockList(EventHandler handler) : base(handler) { }
-            public EntryBlockList(EventHandler handler, uint blockCount, Stream s) : base(handler) { this.blockCount = blockCount; Parse(s); }
             public EntryBlockList(EventHandler handler, IList<EntryBlock> leb) : base(handler, leb) { }
+            public EntryBlockList(EventHandler handler, uint blockCount, Stream s) : base(null) { elementHandler = handler; this.blockCount = blockCount; Parse(s); this.handler = handler; }
 
             protected override uint ReadCount(Stream s) { return blockCount; }
             protected override EntryBlock CreateElement(Stream s) { return new EntryBlock(0, elementHandler, s); }
