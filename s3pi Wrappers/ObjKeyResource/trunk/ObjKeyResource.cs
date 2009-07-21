@@ -29,8 +29,9 @@ namespace ObjKeyResource
     /// </summary>
     public class ObjKeyResource : AResource
     {
-        const Int32 recommendedApiVersion = 1;
+        const int recommendedApiVersion = 1;
         public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
+        public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
 
         static bool checking = s3pi.Settings.Settings.Checking;
 
@@ -42,18 +43,7 @@ namespace ObjKeyResource
         TGIBlockList tgiBlocks;
         #endregion
 
-        #region Constructors
-        public ObjKeyResource(int APIversion, Stream s) : base(APIversion, s)
-        {
-            components = new ComponentList(OnResourceChanged);
-            keys = new KeyList(OnResourceChanged);
-            tgiBlocks = new TGIBlockList(OnResourceChanged);
-
-            if (s == null) { s = UnParse(); dirty = true; }
-            s.Position = 0;
-            Parse(s);
-        }
-        #endregion
+        public ObjKeyResource(int APIversion, Stream s) : base(APIversion, s) { if (stream == null) { stream = UnParse(); dirty = true; } stream.Position = 0; Parse(stream); }
 
         #region Data I/O
         void Parse(Stream s)
@@ -84,10 +74,13 @@ namespace ObjKeyResource
             w.Write((uint)0);
             w.Write((uint)0);
 
+            if (components == null) components = new ComponentList(OnResourceChanged);
             components.UnParse(s);
+            if (keys == null) keys = new KeyList(OnResourceChanged);
             keys.UnParse(s);
             w.Write(unknown1);
 
+            if (tgiBlocks == null) tgiBlocks = new TGIBlockList(OnResourceChanged);
             tgiBlocks.UnParse(s, posn);
 
             s.Flush();
