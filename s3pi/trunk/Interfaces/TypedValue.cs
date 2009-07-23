@@ -79,6 +79,12 @@ namespace s3pi.Interfaces
                 if (this.Type == typeof(UInt16)) return "0x" + ((UInt16)this.Value).ToString("X4");
                 if (this.Type == typeof(sbyte)) return "0x" + ((sbyte)this.Value).ToString("X2");
                 if (this.Type == typeof(byte)) return "0x" + ((byte)this.Value).ToString("X2");
+                
+                if (typeof(Enum).IsAssignableFrom(this.Type))
+                {
+                    TypedValue etv = new TypedValue(Enum.GetUnderlyingType(this.Type), this.Value, "X");
+                    return string.Format("{0} ({1})", "" + etv, "" + this.Value);
+                }
             }
 
             if (typeof(String).IsAssignableFrom(this.Type))
