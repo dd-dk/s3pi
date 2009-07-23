@@ -86,7 +86,7 @@ namespace CatalogResource
             float price;
             float unknown2;
             byte[] unknown3 = new byte[4];
-            byte unknown4;
+            BuildBuyProductStatus buildBuyProductStatusFlags;
             ulong pngInstance;
             #endregion
 
@@ -108,7 +108,7 @@ namespace CatalogResource
                 this.unknown2 = unknown2;
                 if (unknown3.Length != this.unknown3.Length) throw new ArgumentLengthException("unknown3", this.unknown3.Length);
                 this.unknown3 = (byte[])unknown3.Clone();
-                this.unknown4 = unknown4;
+                this.buildBuyProductStatusFlags = (BuildBuyProductStatus)unknown4;
                 this.pngInstance = pngInstance;
             }
 
@@ -123,7 +123,7 @@ namespace CatalogResource
                 this.price = basis.price;
                 this.unknown2 = basis.unknown2;
                 this.unknown3 = (byte[])basis.unknown3.Clone();
-                this.unknown4 = basis.unknown4;
+                this.buildBuyProductStatusFlags = basis.buildBuyProductStatusFlags;
                 this.pngInstance = basis.pngInstance;
             }
             #endregion
@@ -146,7 +146,7 @@ namespace CatalogResource
                 unknown3 = r.ReadBytes(4);
                 if (checking) if (unknown3.Length != 4)
                         throw new InvalidDataException(String.Format("unknown3: read {0} bytes; expected 4; at 0x{1:X8}", unknown3.Length, s.Position));
-                unknown4 = r.ReadByte();
+                buildBuyProductStatusFlags = (BuildBuyProductStatus)r.ReadByte();
                 pngInstance = r.ReadUInt64();
             }
 
@@ -165,7 +165,7 @@ namespace CatalogResource
                 w.Write(price);
                 w.Write(unknown2);
                 w.Write(unknown3);
-                w.Write(unknown4);
+                w.Write((byte)buildBuyProductStatusFlags);
                 w.Write(pngInstance);
             }
             #endregion
@@ -174,6 +174,22 @@ namespace CatalogResource
             public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
             public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
             public override AHandlerElement Clone(EventHandler handler) { return new Common(requestedApiVersion, handler, this); }
+            #endregion
+
+            #region Sub-classes
+            [Flags]
+            public enum BuildBuyProductStatus : byte
+            {
+                ShowInCatalog = 0x01,
+                ProductForTesting = 0x02,
+                ProductInDevelopment = 0x04,
+                ShippingProduct = 0x08,
+
+                DebugProduct = 0x10,
+                ProductionProduct = 0x20,
+                ObjProductMadeUsingNewEntryScheme = 0x40,
+                //
+            }
             #endregion
 
             #region Content Fields
@@ -207,7 +223,7 @@ namespace CatalogResource
                 }
             }
 
-            public byte Unknown4 { get { return unknown4; } set { if (unknown4 != value) { unknown4 = value; OnElementChanged(); } } }
+            public BuildBuyProductStatus BuildBuyProductStatusFlags { get { return buildBuyProductStatusFlags; } set { if (buildBuyProductStatusFlags != value) { buildBuyProductStatusFlags = value; OnElementChanged(); } } }
 
             public ulong PngInstance { get { return pngInstance; } set { if (pngInstance != value) { pngInstance = value; OnElementChanged(); } } }
 
