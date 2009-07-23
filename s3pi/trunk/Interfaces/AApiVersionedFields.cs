@@ -57,26 +57,37 @@ namespace s3pi.Interfaces
         {
             get
             {
-                MethodInfo m = this.GetType().GetMethod("get_" + index, new Type[0]);
-                if (m == null)
-                    throw new ArgumentOutOfRangeException("index", "Unexpected value received in index: " + index);
-
-                try
+                string[] fields = index.Split('.');
+                object result = this;
+                Type t = this.GetType();
+                foreach (string f in fields)
                 {
-                    return new TypedValue(m.ReturnType, m.Invoke(this, null), "X");
+                    PropertyInfo p = t.GetProperty(f);
+                    if (p == null)
+                        throw new ArgumentOutOfRangeException("index", "Unexpected value received in index: " + index);
+                    t = p.PropertyType;
+                    result = p.GetValue(result, null);
                 }
-                catch (Exception ex)
-                {
-                    return new TypedValue(typeof(Exception), ex);
-                }
+                return new TypedValue(t, result, "X");
             }
             set
             {
-                MethodInfo m = this.GetType().GetMethod("set_" + index, new Type[] { value.Type });
-                if (m == null)
-                    throw new ArgumentOutOfRangeException("index", "Unexpected value received in index: " + index);
-
-                m.Invoke(this, new object[] { value.Value });
+                string[] fields = index.Split('.');
+                object result = this;
+                Type t = this.GetType();
+                PropertyInfo p = null;
+                for (int i = 0; i < fields.Length; i++)
+                {
+                    p = t.GetProperty(fields[i]);
+                    if (p == null)
+                        throw new ArgumentOutOfRangeException("index", "Unexpected value received in index: " + index);
+                    if (i < fields.Length - 1)
+                    {
+                        t = p.PropertyType;
+                        result = p.GetValue(result, null);
+                    }
+                }
+                p.SetValue(result, value.Value, null);
             }
         }
 
@@ -93,7 +104,7 @@ namespace s3pi.Interfaces
         {
             Type t = typeof(AApiVersionedFields);
             banlist = new List<string>();
-            foreach (MethodInfo m in t.GetMethods()) banlist.Add(m.Name);
+            foreach (PropertyInfo m in t.GetProperties()) banlist.Add(m.Name);
         }
 #if UNDEF
         static Int32 getRecommendedApiVersion(Type t)
@@ -131,18 +142,16 @@ namespace s3pi.Interfaces
         /// <returns>List of field names for the given API version</returns>
         public static List<string> GetContentFields(Int32 APIversion, Type t)
         {
-            List<string> fields = null;
+            List<string> fields = new List<string>();
 
             //Int32 recommendedApiVersion = getRecommendedApiVersion(t);
-            fields = new List<string>();
-            MethodInfo[] am = t.GetMethods();
-            foreach (MethodInfo m in am)
+            PropertyInfo[] ap = t.GetProperties();
+            foreach (PropertyInfo m in ap)
             {
-                if (!m.IsPublic || banlist.Contains(m.Name)) continue;
-                if (!m.Name.StartsWith("get_") || m.GetParameters().Length > 0) continue;
+                if (banlist.Contains(m.Name)) continue;
                 //if (!checkVersion(m, APIversion == 0 ? recommendedApiVersion : APIversion)) continue;
 
-                fields.Add(m.Name.Replace("get_", ""));
+                fields.Add(m.Name);
             }
 
             return fields;
@@ -150,18 +159,16 @@ namespace s3pi.Interfaces
 
         public static Dictionary<string, Type> GetContentFieldTypes(Int32 APIversion, Type t)
         {
-            Dictionary<string, Type> types = null;
+            Dictionary<string, Type> types = new Dictionary<string, Type>();
 
             //Int32 recommendedApiVersion = getRecommendedApiVersion(t);
-            types = new Dictionary<string, Type>();
-            MethodInfo[] am = t.GetMethods();
-            foreach (MethodInfo m in am)
+            PropertyInfo[] ap = t.GetProperties();
+            foreach (PropertyInfo m in ap)
             {
-                if (!m.IsPublic || banlist.Contains(m.Name)) continue;
-                if (!m.Name.StartsWith("get_") || m.GetParameters().Length > 0) continue;
+                if (banlist.Contains(m.Name)) continue;
                 //if (!checkVersion(m, APIversion == 0 ? recommendedApiVersion : APIversion)) continue;
 
-                types.Add(m.Name.Substring(4), m.ReturnType);
+                types.Add(m.Name, m.PropertyType);
             }
 
             return types;
