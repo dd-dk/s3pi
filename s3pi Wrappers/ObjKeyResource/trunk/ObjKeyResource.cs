@@ -109,7 +109,7 @@ namespace ObjKeyResource
         #endregion
 
         #region Sub-classes
-        enum Component : uint
+        public enum Component : uint
         {
             AnimationComponent = 0xee17c6ad,
             EffectComponent = 0x80d91e9e,
@@ -129,24 +129,49 @@ namespace ObjKeyResource
             VisualStateComponent = 0x50b3d17c,
         }
 
-        public class ComponentList : AResource.DependentList<uint>
+        public class ComponentElement : AHandlerElement, IEquatable<ComponentElement>
+        {
+            Component element;
+            public ComponentElement(int APIversion, EventHandler handler) : base(APIversion, handler) { }
+            public ComponentElement(int APIversion, EventHandler handler, uint value) : base(APIversion, handler) { element = (Component)value; }
+            public ComponentElement(int APIversion, EventHandler handler, Component element) : base(APIversion, handler) { this.element = element; }
+
+            #region AHandlerElement Members
+            public override AHandlerElement Clone(EventHandler handler) { return new ComponentElement(requestedApiVersion, handler, element); }
+
+            public override int RecommendedApiVersion { get { return 1; } }
+
+            public override List<string> ContentFields { get { return AApiVersionedFields.GetContentFields(requestedApiVersion, this.GetType()); } }
+            #endregion
+
+            #region IEquatable<ComponentElement> Members
+
+            public bool Equals(ComponentElement other) { return ((uint)element).Equals((uint)other.element); }
+
+            #endregion
+
+            public Component Element { get { return element; } set { if (element != value) { element = value; OnElementChanged(); } } }
+            public string Value { get { return "0x" + ((uint)element).ToString("X8") + " (" + (Enum.IsDefined(typeof(Component), element) ? element + "" : "undefined") + ")"; } }
+        }
+
+        public class ComponentList : AResource.DependentList<ComponentElement>
         {
             #region Constructors
             public ComponentList(EventHandler handler) : base(handler, 255) { }
-            public ComponentList(EventHandler handler, IList<uint> luint) : base(handler, 255, luint) { }
+            public ComponentList(EventHandler handler, IList<ComponentElement> luint) : base(handler, 255, luint) { }
             internal ComponentList(EventHandler handler, Stream s) : base(handler, 255, s) { }
             #endregion
 
             #region Data I/O
             protected override uint ReadCount(Stream s) { return (new BinaryReader(s)).ReadByte(); }
-            protected override uint CreateElement(Stream s) { return (new BinaryReader(s)).ReadUInt32(); }
+            protected override ComponentElement CreateElement(Stream s) { return new ComponentElement(0, elementHandler, (new BinaryReader(s)).ReadUInt32()); }
 
             protected override void WriteCount(Stream s, uint count) { (new BinaryWriter(s)).Write((byte)count); }
-            protected override void WriteElement(Stream s, uint element) { (new BinaryWriter(s)).Write(element); }
+            protected override void WriteElement(Stream s, ComponentElement element) { (new BinaryWriter(s)).Write((uint)element.Element); }
             #endregion
 
             #region Content Fields
-            public String Value { get { string s = ""; for (int i = 0; i < Count; i++) s += string.Format("0x{0:X2}: 0x{1:X8} ({2})\n", i, this[i], (Component)this[i]); return s; } }
+            public String Value { get { string s = ""; for (int i = 0; i < Count; i++) s += string.Format("0x{0:X2}: {1})\n", i, this[i].Value); return s; } }
             #endregion
         }
 
