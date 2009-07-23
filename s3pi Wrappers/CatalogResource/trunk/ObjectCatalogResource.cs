@@ -45,13 +45,13 @@ namespace CatalogResource
         byte unknown13;
         uint diagonalIndex;
         uint hash;
-        Boolset roomFlags = new Boolset((uint)0);
-        Boolset functionCategoryFlags = new Boolset((uint)0);
-        Boolset subCategoryFlags = new Boolset((ulong)0);
-        Boolset subRoomFlags = new Boolset((ulong)0);
-        Boolset buildCategoryFlags = new Boolset((uint)0);
+        RoomCategory roomCategoryFlags;
+        FunctionCategory functionCategoryFlags;
+        FunctionSubCategory functionSubCategoryFlags;
+        RoomSubCategory roomSubCategoryFlags;
+        BuildCategory buildCategoryFlags;
         uint sinkDDSIndex;
-        uint unknown14;
+        SlotPlacement slotPlacementFlags;
         string materialGrouping1 = "";
         string materialGrouping2 = "";
         uint[] unknown15 = new uint[13];
@@ -82,26 +82,24 @@ namespace CatalogResource
             this.unknown13 = basis.unknown13;
             this.diagonalIndex = basis.diagonalIndex;
             this.hash = basis.hash;
-            this.roomFlags = (uint)basis.roomFlags;
-            this.functionCategoryFlags = (uint)basis.functionCategoryFlags;
-            this.subCategoryFlags = (ulong)basis.subCategoryFlags;
-            this.subRoomFlags = (ulong)basis.subRoomFlags;
-            this.buildCategoryFlags = (uint)basis.buildCategoryFlags;
+            this.roomCategoryFlags = basis.roomCategoryFlags;
+            this.functionCategoryFlags = basis.functionCategoryFlags;
+            this.functionSubCategoryFlags = basis.functionSubCategoryFlags;
+            this.roomSubCategoryFlags = basis.roomSubCategoryFlags;
+            this.buildCategoryFlags = basis.buildCategoryFlags;
             this.sinkDDSIndex = basis.sinkDDSIndex;
-            this.unknown14 = basis.unknown14;
+            this.slotPlacementFlags = basis.slotPlacementFlags;
             this.materialGrouping1 = basis.materialGrouping1;
             this.materialGrouping2 = basis.materialGrouping2;
             this.unknown15 = (uint[])basis.unknown15.Clone();
             this.nullTGIIndex = basis.nullTGIIndex;
-
-            ApplyBoolsetChangedHandlers();
         }
         public ObjectCatalogResource(int APIversion,
             uint unknown1, IList<Material> materialList, Common common, uint unknown2, byte unknown3, uint unknown4,
             byte unknown5, byte unknown6, byte[] unknown7, uint objkIndex, uint unknown8, uint unknown9, uint unknown10,
             uint unknown11, uint unknown12, IList<MTDoor> mtDoorList, byte unknown13, uint diagonalIndex, uint hash,
-            Boolset roomFlags, Boolset functionCategoryFlags, Boolset subCategoryFlags, Boolset subRoomFlags, Boolset buildCategoryFlags,
-            uint sinkDDSIndex, uint unknown14, string materialGrouping1, string materialGrouping2, uint[] unknown15, uint nullTGIIndex,
+            uint roomFlags, uint functionCategoryFlags, ulong subFunctionFlags, ulong subRoomFlags, uint buildCategoryFlags,
+            uint sinkDDSIndex, uint slotPlacementFlags, string materialGrouping1, string materialGrouping2, uint[] unknown15, uint nullTGIIndex,
             TGIBlockList ltgib)
             : base(APIversion, ltgib)
         {
@@ -125,37 +123,19 @@ namespace CatalogResource
             this.unknown13 = unknown13;
             this.diagonalIndex = diagonalIndex;
             this.hash = hash;
-            if (roomFlags.Length != this.roomFlags.Length) throw new ArgumentLengthException("roomFlags", this.roomFlags.Length);
-            this.roomFlags = (uint)roomFlags;
-            if (functionCategoryFlags.Length != this.functionCategoryFlags.Length) throw new ArgumentLengthException("functionCategoryFlags", this.functionCategoryFlags.Length);
-            this.functionCategoryFlags = (uint)functionCategoryFlags;
-            if (subCategoryFlags.Length != this.subCategoryFlags.Length) throw new ArgumentLengthException("subCategoryFlags", this.subCategoryFlags.Length);
-            this.subCategoryFlags = (ulong)subCategoryFlags;
-            if (subRoomFlags.Length != this.subRoomFlags.Length) throw new ArgumentLengthException("subRoomFlags", this.subRoomFlags.Length);
-            this.subRoomFlags = (ulong)subRoomFlags;
-            if (buildCategoryFlags.Length != this.buildCategoryFlags.Length) throw new ArgumentLengthException("buildCategoryFlags", this.buildCategoryFlags.Length);
-            this.buildCategoryFlags = (uint)buildCategoryFlags;
+            this.roomCategoryFlags = (RoomCategory)roomFlags;
+            this.functionCategoryFlags = (FunctionCategory)functionCategoryFlags;
+            this.functionSubCategoryFlags = (FunctionSubCategory)subFunctionFlags;
+            this.roomSubCategoryFlags = (RoomSubCategory)subRoomFlags;
+            this.buildCategoryFlags = (BuildCategory)buildCategoryFlags;
             this.sinkDDSIndex = sinkDDSIndex;
-            this.unknown14 = unknown14;
+            this.slotPlacementFlags = (SlotPlacement)slotPlacementFlags;
             this.materialGrouping1 = materialGrouping1;
             this.materialGrouping2 = materialGrouping2;
             if (unknown15.Length != this.unknown15.Length) throw new ArgumentLengthException("unknown15", this.unknown15.Length);
             this.unknown15 = (uint[])unknown15.Clone();
             this.nullTGIIndex = nullTGIIndex;
-
-            ApplyBoolsetChangedHandlers();
         }
-
-        void ApplyBoolsetChangedHandlers()
-        {
-            roomFlags.BoolsetChanged += new EventHandler(BoolsetChangedHandler);
-            functionCategoryFlags.BoolsetChanged += new EventHandler(BoolsetChangedHandler);
-            subCategoryFlags.BoolsetChanged += new EventHandler(BoolsetChangedHandler);
-            subRoomFlags.BoolsetChanged += new EventHandler(BoolsetChangedHandler);
-            buildCategoryFlags.BoolsetChanged += new EventHandler(BoolsetChangedHandler);
-        }
-
-        void BoolsetChangedHandler(object sender, EventArgs e) { this.OnResourceChanged(this, e); }
         #endregion
 
         #region Data I/O
@@ -188,13 +168,13 @@ namespace CatalogResource
             this.unknown13 = r.ReadByte();
             this.diagonalIndex = r.ReadUInt32();
             this.hash = r.ReadUInt32();
-            this.roomFlags = r.ReadUInt32();
-            this.functionCategoryFlags = r.ReadUInt32();
-            this.subCategoryFlags = r.ReadUInt64();
-            this.subRoomFlags = r.ReadUInt64();
-            this.buildCategoryFlags = r.ReadUInt32();
+            this.roomCategoryFlags = (RoomCategory)r.ReadUInt32();
+            this.functionCategoryFlags = (FunctionCategory)r.ReadUInt32();
+            this.functionSubCategoryFlags = (FunctionSubCategory)r.ReadUInt64();
+            this.roomSubCategoryFlags = (RoomSubCategory)r.ReadUInt64();
+            this.buildCategoryFlags = (BuildCategory)r.ReadUInt32();
             this.sinkDDSIndex = r.ReadUInt32();
-            this.unknown14 = r.ReadUInt32();
+            this.slotPlacementFlags = (SlotPlacement)r.ReadUInt32();
             //this.materialGrouping1 = System.Text.Encoding.BigEndianUnicode.GetString(r.ReadBytes(r.ReadByte()));
             this.materialGrouping1 = r2.ReadString();
             //this.materialGrouping2 = System.Text.Encoding.BigEndianUnicode.GetString(r.ReadBytes(r.ReadByte()));
@@ -203,8 +183,6 @@ namespace CatalogResource
             this.nullTGIIndex = r.ReadUInt32();
 
             list = new TGIBlockList(OnResourceChanged, s, tgiPosn, tgiSize);
-
-            ApplyBoolsetChangedHandlers();
         }
 
         protected override Stream UnParse()
@@ -237,13 +215,13 @@ namespace CatalogResource
             w.Write(unknown13);
             w.Write(diagonalIndex);
             w.Write(hash);
-            w.Write((uint)roomFlags);
+            w.Write((uint)roomCategoryFlags);
             w.Write((uint)functionCategoryFlags);
-            w.Write((ulong)subCategoryFlags);
-            w.Write((ulong)subRoomFlags);
+            w.Write((ulong)functionSubCategoryFlags);
+            w.Write((ulong)roomSubCategoryFlags);
             w.Write((uint)buildCategoryFlags);
             w.Write(sinkDDSIndex);
-            w.Write(unknown14);
+            w.Write((uint)slotPlacementFlags);
             //w.Write((byte)(materialGrouping1.Length * 2));
             //w.Write(System.Text.Encoding.BigEndianUnicode.GetBytes(materialGrouping1));
             Write7BitStr(s, materialGrouping1, System.Text.Encoding.BigEndianUnicode);
@@ -262,6 +240,296 @@ namespace CatalogResource
         #endregion
 
         #region Sub-classes
+        [Flags]
+        public enum RoomCategory : uint
+        {
+            //
+            Living      = 0x00000002,
+            Dining      = 0x00000004,
+            Kitchen     = 0x00000008,
+
+            Nursery     = 0x00000010,
+            Bathroom    = 0x00000020,
+            Bedroom     = 0x00000040,
+            Study       = 0x00000080,
+
+            Outside     = 0x00000100,
+            Community   = 0x00000200,
+            Residential = 0x00000400,
+            Pool        = 0x00000800,
+
+            Default     = 0x80000000,
+
+            //All         = 0xFFFFFFFF,
+        }
+
+        [Flags]
+        public enum RoomSubCategory : ulong
+        {
+            //Low DWORD
+            //
+            Dishwashers = 0x00000002,
+            SmallApps   = 0x00000004,
+            Fridges     = 0x00000008,
+
+            Trash  = 0x00000010,
+            Alarms = 0x00000020,
+            Phones = 0x00000040,
+            TVs    = 0x00000080,
+
+            SmokeAlarm = 0x00000100,
+            //
+            Audio      = 0x00000400,
+            Computers  = 0x00000800,
+
+            HobbiesSkills    = 0x00001000,
+            IndoorActivities = 0x00002000,
+            LivingChairs     = 0x00004000,
+            OfficeChairs     = 0x00008000,
+
+            Stoves            = 0x00010000,
+            EatingOut         = 0x00020000,
+            OutdoorActivities = 0x00040000,
+            CeilingLights     = 0x00080000,
+
+            FloorLamps    = 0x00100000,
+            TableLamps    = 0x00200000,
+            WallLamps     = 0x00400000,
+            OutdoorLights = 0x00800000,
+
+            Showers = 0x01000000,
+            Sinks   = 0x02000000,
+            Toilets = 0x04000000,
+            Tubs    = 0x08000000,
+
+            Accents      = 0x10000000,
+            LawnDecor    = 0x20000000,
+            WallArtAdult = 0x40000000,
+            Plants       = 0x80000000,
+
+            //High DWORD
+            Mirrors     = 0x0000000100000000,
+            VideoGames  = 0x0000000200000000,
+            WallArtKids = 0x0000000400000000,
+            Bookshelves = 0x0000000800000000,
+
+            Cabinets     = 0x0000001000000000,
+            Dressers     = 0x0000002000000000,
+            DiningChairs = 0x0000004000000000,
+            Sofas        = 0x0000008000000000,
+
+            OutdoorSeating = 0x0000010000000000,
+            //
+            Beds           = 0x0000040000000000,
+            BarStools      = 0x0000080000000000,
+
+            CoffeeTables = 0x0000100000000000,
+            Counters     = 0x0000200000000000,
+            Desks        = 0x0000400000000000,
+            EndTables    = 0x0000800000000000,
+
+            DiningTables = 0x0001000000000000,
+            Furniture    = 0x0002000000000000,
+            Toys         = 0x0004000000000000,
+            Transport    = 0x0008000000000000,
+
+            Bars        = 0x0010000000000000,
+            Clocks      = 0x0020000000000000,
+            WindowDecor = 0x0040000000000000,
+            KidsDecor   = 0x0080000000000000,
+
+            MiscDecor = 0x0100000000000000,
+            Rugs      = 0x0200000000000000,
+            //
+            //
+
+            Default = 0x8000000000000000,
+        }
+
+        [Flags]
+        public enum FunctionCategory : uint
+        {
+            //
+            Appliances    = 0x00000002,
+            Electronics   = 0x00000004,
+            Entertainment = 0x00000008,
+            
+            //
+            Lighting = 0x00000020,
+            Plumbing = 0x00000040,
+            Decor    = 0x00000080,
+
+            Kids    = 0x00000100,
+            Storage = 0x00000200,
+            //
+            Comfort = 0x00000800,
+            
+            Surfaces = 0x00001000,
+            Vehicles = 0x00002000,
+            //
+            //
+ 
+            //
+            //
+            Debug   = 0x40000000,
+            Default = 0x80000000,
+        }
+
+        [Flags]
+        public enum FunctionSubCategory : ulong
+        {
+            //Low DWORD
+            //
+            MiscAppliances  = 0x00000002,
+            SmallAppliances = 0x00000004,
+            LargeAppliances = 0x00000008,
+
+            //
+            //
+            //
+            TVs = 0x00000080L,
+
+            MiscElectronics = 0x00000100,
+            //
+            Audio           = 0x00000400,
+            Computers       = 0x00000800,
+
+            HobbiesSkills = 0x00001000,
+            Sports        = 0x00002000,
+            LivingChairs  = 0x00004000,
+            //OldScience_UNUSED = 0x00008000,
+
+            //
+            Parties           = 0x00020000,
+            MiscEntertainment = 0x00040000,
+            CeilingLights     = 0x00080000,
+
+            FloorLamps    = 0x00100000,
+            TableLamps    = 0x00200000,
+            WallLamps     = 0x00400000,
+            OutdoorLights = 0x00800000,
+
+            LoungeChairs   = 0x01000000,
+            Sinks          = 0x02000000,
+            Toilets        = 0x04000000,
+            ShowersAndTubs = 0x08000000,
+
+            MiscDecor = 0x10000000,
+            //OldSculptures_UNUSED = 0x20000000,
+            WallArt   = 0x40000000,
+            Plants    = 0x80000000,
+
+            //High DWORD
+            Mirrors     = 0x0000000100000000,
+            //OldToys_UNUSED = 0x0000000200000000,
+            //
+            Bookshelves = 0x0000000800000000,
+
+            //
+            Dressers     = 0x0000002000000000,
+            DiningChairs = 0x0000004000000000,
+            Sofas        = 0x0000008000000000,
+
+            MiscComfort = 0x0000010000000000,
+            //
+            Beds        = 0x0000040000000000,
+            //
+
+            CoffeeTables = 0x0000100000000000,
+            Counters     = 0x0000200000000000,
+            Desks        = 0x0000400000000000,
+            EndTables    = 0x0000800000000000,
+
+            DiningTables = 0x0001000000000000,
+            Furniture    = 0x0002000000000000,
+            Toys         = 0x0004000000000000,
+            Cars         = 0x0008000000000000,
+
+            Bicycles    = 0x0010000000000000,
+            Cabinets    = 0x0020000000000000,
+            WindowDecor = 0x0040000000000000,
+            MiscKids    = 0x0080000000000000,
+
+            MiscLighting = 0x0100000000000000,
+            MiscPlumbing = 0x0200000000000000,
+            MiscStorage  = 0x0400000000000000,
+            MiscSurfaces = 0x0800000000000000,
+
+            MiscVehicles = 0x1000000000000000,
+            Rugs         = 0x2000000000000000,
+            //
+            Default      = 0x8000000000000000,
+        }
+
+        [Flags]
+        public enum BuildCategory : uint
+        {
+            //
+            Door   = 0x00000002,
+            Window = 0x00000004,
+            Gate   = 0x00000008,
+
+            Column     = 0x00000010,
+            RabbitHole = 0x00000020,
+            Fireplace  = 0x00000040,
+            Chimney    = 0x00000080,
+
+            Arch   = 0x00000100,
+            Flower = 0x00000200,
+            Shrub  = 0x00000400,
+            Tree   = 0x00000800,
+
+            Rug  = 0x00001000,
+            Rock = 0x00002000,
+            //
+            //
+
+            Default = 0x80000000,
+        }
+
+        [Flags]
+        public enum SlotPlacement : uint
+        {
+            //CheckFlags = 0xc3f38, 
+
+            None  = 0x01,
+            //
+            //
+            Small = 0x08,
+
+            Medium = 0x10,
+            Large  = 0x20,
+            //
+            //
+
+            Sim         = 0x0100,
+            Chair       = 0x0200,
+            CounterSink = 0x0400,
+            EndTable    = 0x0800,
+
+            Stool            = 0x1000,
+            CounterAppliance = 0x2000,
+            //
+            //
+
+            //
+            //
+            Functional = 0x40000,
+            Decorative = 0x80000,
+
+            Upgrade       = 0x1000000,
+            //MatchFlags    = 0x2000000,
+            Vertical      = 0x2000000,
+            PlacementOnly = 0x4000000,
+            //
+
+            //RotationFlags = 0x30000000,
+            CardinalRotation = 0x10000000,
+            FullRotation     = 0x20000000,
+            AlwaysUp         = 0x40000000,
+            //
+        }
+
         public class MTDoor : AHandlerElement, IEquatable<MTDoor>
         {
             #region Attributes
@@ -402,53 +670,13 @@ namespace CatalogResource
         public byte Unknown13 { get { return unknown13; } set { if (unknown13 != value) { unknown13 = value; OnResourceChanged(this, new EventArgs()); } } }
         public uint DiagonalIndex { get { return diagonalIndex; } set { if (diagonalIndex != value) { diagonalIndex = value; OnResourceChanged(this, new EventArgs()); } } }
         public uint Hash { get { return hash; } set { if (hash != value) { hash = value; OnResourceChanged(this, new EventArgs()); } } }
-        public Boolset RoomFlags
-        {
-            get { return roomFlags; }
-            set
-            {
-                if (value.Length != this.roomFlags.Length) throw new ArgumentLengthException("RoomFlags", this.roomFlags.Length);
-                if (roomFlags != value) { roomFlags = value; OnResourceChanged(this, new EventArgs()); }
-            }
-        }
-        public Boolset FunctionCategoryFlags
-        {
-            get { return functionCategoryFlags; }
-            set
-            {
-                if (value.Length != this.functionCategoryFlags.Length) throw new ArgumentLengthException("FunctionCategoryFlags", this.functionCategoryFlags.Length);
-                if (functionCategoryFlags != value) { functionCategoryFlags = value; OnResourceChanged(this, new EventArgs()); }
-            }
-        }
-        public Boolset SubCategoryFlags
-        {
-            get { return subCategoryFlags; }
-            set
-            {
-                if (value.Length != this.subCategoryFlags.Length) throw new ArgumentLengthException("SubCategoryFlags", this.subCategoryFlags.Length);
-                if (subCategoryFlags != value) { subCategoryFlags = value; OnResourceChanged(this, new EventArgs()); }
-            }
-        }
-        public Boolset SubRoomFlags
-        {
-            get { return subRoomFlags; }
-            set
-            {
-                if (value.Length != this.subRoomFlags.Length) throw new ArgumentLengthException("SubRoomFlags", this.subRoomFlags.Length);
-                if (subRoomFlags != value) { subRoomFlags = value; OnResourceChanged(this, new EventArgs()); }
-            }
-        }
-        public Boolset BuildCategoryFlags
-        {
-            get { return buildCategoryFlags; }
-            set
-            {
-                if (value.Length != this.buildCategoryFlags.Length) throw new ArgumentLengthException("BuildCategoryFlags", this.buildCategoryFlags.Length);
-                if (buildCategoryFlags != value) { buildCategoryFlags = value; OnResourceChanged(this, new EventArgs()); }
-            }
-        }
+        public RoomCategory RoomCategoryFlags { get { return roomCategoryFlags; } set { if (roomCategoryFlags != value) { roomCategoryFlags = value; OnResourceChanged(this, new EventArgs()); } } }
+        public FunctionCategory FunctionCategoryFlags { get { return functionCategoryFlags; } set { if (functionCategoryFlags != value) { functionCategoryFlags = value; OnResourceChanged(this, new EventArgs()); } } }
+        public FunctionSubCategory FunctionSubCategoryFlags { get { return functionSubCategoryFlags; } set { if (functionSubCategoryFlags != value) { functionSubCategoryFlags = value; OnResourceChanged(this, new EventArgs()); } } }
+        public RoomSubCategory RoomSubCategoryFlags { get { return roomSubCategoryFlags; } set { if (roomSubCategoryFlags != value) { roomSubCategoryFlags = value; OnResourceChanged(this, new EventArgs()); } } }
+        public BuildCategory BuildCategoryFlags { get { return buildCategoryFlags; } set { if (buildCategoryFlags != value) { buildCategoryFlags = value; OnResourceChanged(this, new EventArgs()); } } }
         public uint SinkDDSIndex { get { return sinkDDSIndex; } set { if (sinkDDSIndex != value) { sinkDDSIndex = value; OnResourceChanged(this, new EventArgs()); } } }
-        public uint Unknown14 { get { return unknown14; } set { if (unknown14 != value) { unknown14 = value; OnResourceChanged(this, new EventArgs()); } } }
+        public SlotPlacement SlotPlacementFlags { get { return slotPlacementFlags; } set { if (slotPlacementFlags != value) { slotPlacementFlags = value; OnResourceChanged(this, new EventArgs()); } } }
         public string MaterialGrouping1 { get { return materialGrouping1; } set { if (materialGrouping1 != value) { materialGrouping1 = value; OnResourceChanged(this, new EventArgs()); } } }
         public string MaterialGrouping2 { get { return materialGrouping2; } set { if (materialGrouping2 != value) { materialGrouping2 = value; OnResourceChanged(this, new EventArgs()); } } }
         public uint[] Unknown15
