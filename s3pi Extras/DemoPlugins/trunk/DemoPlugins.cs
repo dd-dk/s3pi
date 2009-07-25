@@ -189,7 +189,7 @@ namespace s3pi.DemoPlugins
             return result;
         }
 
-        public static bool Edit(IResourceIndexEntry key, IResource res, string command, bool ignoreWriteTimestamp)
+        public static bool Edit(IResourceIndexEntry key, IResource res, string command, bool wantsQuotes, bool ignoreWriteTimestamp)
         {
             string filename = Path.Combine(Path.GetTempPath(), (s3pi.Extensions.TGIN)(key as AResourceIndexEntry));
             FileStream fs = new FileStream(filename, FileMode.OpenOrCreate, FileAccess.Write);
@@ -197,7 +197,8 @@ namespace s3pi.DemoPlugins
             fs.Close();
 
             DateTime lastWriteTime = File.GetLastWriteTime(filename);
-            return Execute(res, new Cmd(), command, filename) && copyFile(filename, ignoreWriteTimestamp ? new DateTime(0) : lastWriteTime);
+            string fmt = wantsQuotes ? @"""{0}""" : "{0}";
+            return Execute(res, new Cmd(), command, String.Format(fmt, filename)) && copyFile(filename, ignoreWriteTimestamp ? new DateTime(0) : lastWriteTime);
         }
 
         DateTime pasteTo(string filename)
