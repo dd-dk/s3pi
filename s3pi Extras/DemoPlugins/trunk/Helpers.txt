@@ -25,6 +25,7 @@
 
 // Text/(pure) XML files 
 txt.Wrapper: TextResource
+// Windows notepad is in the standard Windows PATH, so you don't need to say where it is:
 txt.Editor: notepad
 txt.EditorArguments: {}
 
@@ -33,6 +34,7 @@ txt.EditorArguments: {}
 img.ResourceType: 0x2F7D0002
 ; png
 img.Wrapper: ImageResource
+// This is where GIMP installs by default:
 img.Editor: C:\Program Files\GIMP-2.0\bin\gimp-2.6.exe
 img.EditorArguments: {}
 
@@ -44,6 +46,22 @@ dds.ViewerArguments: /clipboard
 dds.Editor: C:\Program Files\GIMP-2.0\bin\gimp-2.6.exe
 dds.EditorArguments: {}
 
+
+// --
+// Here are some other examples
+// --
+
 // Could try just running it... but we won't
 ;any.Wrapper: *
 ;any.Viewer: {}
+
+// Or you might want to use Notepad on everything not handled above
+;any.Wrapper: *
+;any.Editor: notepad
+;any.EditorArguments: {}
+
+// If you have an editor that doesn't update file timestamps on save, call it like this:
+;any.ResourceType: 0xFEEDF00D
+;any.Editor: X:\Path\To\Editor.exe
+;any.EditorArguments: {}
+;any.EditorIgnoreWriteTimestamp: whatever
