@@ -191,14 +191,15 @@ namespace s3pi.DemoPlugins
 
         public static bool Edit(IResourceIndexEntry key, IResource res, string command, bool wantsQuotes, bool ignoreWriteTimestamp)
         {
-            string quote = wantsQuotes ? new string(new char[] { '"' }) : "";
             string filename = Path.Combine(Path.GetTempPath(), (s3pi.Extensions.TGIN)(key as AResourceIndexEntry));
-            FileStream fs = new FileStream(filename, FileMode.OpenOrCreate, FileAccess.Write);
-            new BinaryWriter(fs).Write(new BinaryReader(res.Stream).ReadBytes((int)res.Stream.Length));
-            fs.Close();
 
-            DateTime lastWriteTime = File.GetLastWriteTime(filename);
-            return Execute(res, new Cmd(), command, quote + filename + quote) && copyFile(filename, ignoreWriteTimestamp ? new DateTime(0) : lastWriteTime);
+            BinaryWriter bw = new BinaryWriter((new FileStream(filename, FileMode.Create, FileAccess.Write)));
+            bw.Write(res.AsBytes);
+            bw.Close();
+            DateTime lastWriteTime = ignoreWriteTimestamp ? new DateTime(0) : File.GetLastWriteTime(filename);
+
+            string quote = wantsQuotes ? new string(new char[] { '"' }) : "";
+            return Execute(res, new Cmd(), command, quote + filename + quote) && copyFile(filename, lastWriteTime);
         }
 
         DateTime pasteTo(string filename)
