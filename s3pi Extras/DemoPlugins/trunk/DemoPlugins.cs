@@ -118,6 +118,7 @@ namespace s3pi.DemoPlugins
                     if (kwd.Equals("wrapper"))
                     {
                         if ((new List<string>(demoPlugins[g]["wrapper"].ToLower().Split(' '))).Contains(wrapper)) { cmd.group = g; match = true; goto matched; }
+                        if ((new List<string>(demoPlugins[g]["wrapper"].Split(' '))).Contains("*")) { cmd.group = g; match = true; goto matched; }
                         continue;
                     }
 
@@ -126,6 +127,7 @@ namespace s3pi.DemoPlugins
                     if (keywords.Contains(kwd))
                     {
                         if ((new List<string>(demoPlugins[g][kwd].Split(' '))).Contains("" + key[kwd])) { cmd.group = g; match = true; goto matched; }
+                        if ((new List<string>(demoPlugins[g][kwd].Split(' '))).Contains("*")) { cmd.group = g; match = true; goto matched; }
                         continue;
                     }
                 }
