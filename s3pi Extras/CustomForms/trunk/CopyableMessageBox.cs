@@ -104,6 +104,7 @@ namespace System.Windows.Forms
             InitializeComponent();
         }
 
+        Label lb = new Label();
         private CopyableMessageBox(string message, string caption, CopyableMessageBoxIcon icon, IList<string> buttons, int defBtn, int cncBtn)
             : this()
         {
@@ -112,27 +113,29 @@ namespace System.Windows.Forms
 
             this.SuspendLayout();
 
-            int formWidth = 8; // screen estate used by the form border
-            int formHeight = 28; // screen estate used by the form border
-            int tbPadding = 24; // screen estate used by the text box regardless of content
-            int buttonHeight = 42; // screen estate reserved for the buttons
+
+            int formWidth = Bounds.Width - ClientSize.Width; // screen estate used by the form border
+            int formHeight = Bounds.Height - ClientSize.Height; // screen estate used by the form border
+            int tbPadding = tbMessage.Margin.Left + tbMessage.Margin.Right; // screen estate used by the text box regardless of content
+            int buttonHeight = flpButtons.Height; // screen estate reserved for the buttons
 
             int iconWidth = icon == CopyableMessageBoxIcon.None ? 0 : 80; // icon area, if icon present
             int iconHeight = icon == CopyableMessageBoxIcon.None ? 0 : 77; // icon area, if icon present
 
             // To calculate the text box size, we get an autosize label to tell us how big it should be
-            Label lb = new Label();
             lb.MaximumSize = new Size((int)(Application.OpenForms[0].Width * .8) - (formWidth + tbPadding + iconWidth),
                 (int)(Application.OpenForms[0].Height * .8) - (formHeight + buttonHeight + tbPadding));
             lb.AutoSize = true;
             lb.Text = message;
 
+            tbMessage_SizeChanged(tbMessage, null);
+
             int buttonWidth = 15 + (81 * (buttons.Count - 1)) + 75 + 15;
             int textWidth = tbPadding + lb.PreferredWidth;
             int textHeight = tbPadding + lb.PreferredHeight;
 
-            this.Size = new Size(formWidth + Math.Max(buttonWidth, iconWidth + textWidth),
-                formHeight + buttonHeight + Math.Max(iconHeight, textHeight));
+            this.ClientSize = new Size(Math.Max(buttonWidth, iconWidth + textWidth),
+                buttonHeight + Math.Max(iconHeight, textHeight));
 
 
             this.Text = caption;
@@ -199,6 +202,12 @@ namespace System.Windows.Forms
             this.DialogResult = DialogResult.OK;//To avoid it becoming Cancel
             theButton = sender as Button;
             this.Close();
+        }
+
+        private void tbMessage_SizeChanged(object sender, EventArgs e)
+        {
+            TextBox tb = sender as TextBox;
+            tbMessage.ScrollBars = ((tb.Height < lb.PreferredHeight || tb.Width < lb.PreferredWidth) ? ScrollBars.Vertical : ScrollBars.None);
         }
     }
 

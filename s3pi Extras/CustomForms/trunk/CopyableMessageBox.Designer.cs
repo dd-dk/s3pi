@@ -84,6 +84,7 @@
             this.tbMessage.Size = new System.Drawing.Size(79, 52);
             this.tbMessage.TabIndex = 0;
             this.tbMessage.Text = "Text here\r\nmore text\r\nmo\r\nre\r\ntext";
+            this.tbMessage.SizeChanged += new System.EventHandler(this.tbMessage_SizeChanged);
             // 
             // lbIcon
             // 
@@ -102,8 +103,8 @@
             // 
             // CopyableMessageBox
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             this.ClientSize = new System.Drawing.Size(183, 118);
             this.Controls.Add(this.tableLayoutPanel1);
             this.Controls.Add(this.flpButtons);
