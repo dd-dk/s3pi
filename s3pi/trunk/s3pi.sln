@@ -41,7 +41,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TextResource", "..\s3pi Wra
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GenericRCOLResource", "..\s3pi Wrappers\GenericRCOLResource\GenericRCOLResource.csproj", "{47693A2A-1F86-47CA-A170-CC0C195A53B7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CopyableMessageBox", "..\s3pi Extras\CopyableMessageBox\CopyableMessageBox.csproj", "{7314C38A-1519-4C58-998E-C88E4DA91086}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CustomForms", "..\s3pi Extras\CustomForms\CustomForms.csproj", "{7314C38A-1519-4C58-998E-C88E4DA91086}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StblResource", "..\s3pi Wrappers\StblResource\StblResource.csproj", "{672D72EC-89DA-4EF3-88CC-BEEC5BA478B2}"
 EndProject

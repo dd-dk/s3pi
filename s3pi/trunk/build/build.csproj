@@ -51,9 +51,9 @@
       <Project>{00200E76-C245-42A7-B567-5C30EDBCE977}</Project>
       <Name>CS System Classes</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\s3pi Extras\CopyableMessageBox\CopyableMessageBox.csproj">
+    <ProjectReference Include="..\..\s3pi Extras\CopyableMessageBox\CustomForms.csproj">
       <Project>{7314C38A-1519-4C58-998E-C88E4DA91086}</Project>
-      <Name>CopyableMessageBox</Name>
+      <Name>CustomForms</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\s3pi Extras\DemoPlugins\DemoPlugins.csproj">
       <Project>{D9B63641-D3BE-4120-9115-7D67B1238FBF}</Project>
