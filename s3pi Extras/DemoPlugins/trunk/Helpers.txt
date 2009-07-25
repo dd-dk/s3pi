@@ -1,20 +1,49 @@
+#
+# Comments start with "#", "//" or ";"
+#
+
+#
+# Matching is done top to bottom
+#
+
+#
+# Matching is done against "Wrapper" (matches the name of the wrapper used for the resource;
+# "DefaultResource" is the wrapper used when no other one is identified)
+# and against index entry values (e.g. "ResourceType").
+# In both cases "*" can be used to mean "any".
+#
+
+# "{}" is replaced with the filename when on Editor/Viewer or ...Arguments lines
+# "{prop}" is replaced with the selected resource's "prop" field value on ...Argument lines
+
+# Note: if you are passing a file to your editor and it does not update the write timestamp,
+# use "group.EditorIgnoreWriteTimestamp: anything_here".
+
+# To group matching criteria with their actions, prefix the criteria and actions with the same value
+# (here we use "txt", "img", "dds" and "any").
+
+
+// Text/(pure) XML files 
 txt.Wrapper: TextResource
 txt.Editor: notepad
 txt.EditorArguments: {}
 
-;; jpg
-jpg.ResourceType: 0x2F7D0002
-jpg.Wrapper: ImageResource
-jpg.Editor: C:\Program Files\GIMP-2.0\bin\gimp-2.6.exe
-jpg.EditorArguments: {}
+// Images
+; jpg
+img.ResourceType: 0x2F7D0002
+; png
+img.Wrapper: ImageResource
+img.Editor: C:\Program Files\GIMP-2.0\bin\gimp-2.6.exe
+img.EditorArguments: {}
 
-;; dds dds
+// DDS files
 dds.ResourceType: 0x00B2D882 0x8FFB80F6
 dds.Viewer: C:\Program Files\ViewDDS\ViewDDS.exe
+; ViewDDS can process data from the clipboard in the format used by s3pe:
 dds.ViewerArguments: /clipboard
 dds.Editor: C:\Program Files\GIMP-2.0\bin\gimp-2.6.exe
 dds.EditorArguments: {}
 
-;; Could try just running it... but we won't
-;unk.Wrapper: DefaultResource
-;unk.Viewer: {}
+// Could try just running it... but we won't
+;any.Wrapper: *
+;any.Viewer: {}

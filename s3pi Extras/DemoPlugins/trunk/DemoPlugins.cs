@@ -31,8 +31,10 @@ namespace s3pi.DemoPlugins
     /// </summary>
     public class DemoPlugins
     {
-        static List<string> reserved = new List<string>(new string[] {
-                "viewer", "viewerarguments", "editor", "editorarguments", "wrapper", // must be lower case
+        static List<string> reserved = new List<string>(new string[] { // must be lower case
+                "viewer", "viewerarguments",
+                "editor", "editorarguments", "editorignorewritetimestamp",
+                "wrapper",
             });
         static List<string> keywords = new List<string>();
         static Dictionary<string, Dictionary<string, string>> demoPlugins = null;
@@ -41,7 +43,7 @@ namespace s3pi.DemoPlugins
 
         public static string Config
         {
-            get { return config.Length > 0 ? config : Path.Combine(Path.GetDirectoryName(typeof(DemoPlugins).Assembly.Location), "Helpers.txt"); }
+            get { return config != null && config.Length > 0 ? config : Path.Combine(Path.GetDirectoryName(typeof(DemoPlugins).Assembly.Location), "Helpers.txt"); }
             set { if (config != value) { config = value; demoPlugins = null; } }
         }
 
@@ -90,6 +92,7 @@ namespace s3pi.DemoPlugins
             public bool hasEditor;
             public bool exportViewer;
             public bool exportEditor;
+            public bool ignoreWriteTimestamp;
         }
         Cmd cmd = new Cmd();
         public bool HasViewer { get { return cmd.hasViewer; } }
@@ -145,6 +148,8 @@ namespace s3pi.DemoPlugins
                 (demoPlugins[cmd.group]["editor"].IndexOf("{}") >= 0
                 || (demoPlugins[cmd.group].ContainsKey("editorarguments") && demoPlugins[cmd.group]["editorarguments"].IndexOf("{}") >= 0)
                 );
+            cmd.ignoreWriteTimestamp = cmd.exportEditor &&
+                (demoPlugins[cmd.group].ContainsKey("editorignorewritetimestamp"));
             if (cmd.exportViewer || cmd.exportEditor)
                 cmd.filename = Path.Combine(Path.GetTempPath(), (s3pi.Extensions.TGIN)(key as AResourceIndexEntry));
         }
@@ -157,7 +162,7 @@ namespace s3pi.DemoPlugins
             if (cmd.exportViewer && Clipboard.ContainsData(DataFormats.Serializable))
                 lastWriteTime = pasteTo(cmd.filename);
 
-            bool result = Execute(res, demoPlugins[cmd.group]["viewer"], demoPlugins[cmd.group].ContainsKey("viewerarguments") ? demoPlugins[cmd.group]["viewerarguments"] : "");
+            bool result = Execute(res, cmd, demoPlugins[cmd.group]["viewer"], demoPlugins[cmd.group].ContainsKey("viewerarguments") ? demoPlugins[cmd.group]["viewerarguments"] : "");
 
             if (File.Exists(cmd.filename))
                 File.Delete(cmd.filename);
@@ -173,15 +178,26 @@ namespace s3pi.DemoPlugins
             if (cmd.exportEditor && Clipboard.ContainsData(DataFormats.Serializable))
                 lastWriteTime = pasteTo(cmd.filename);
 
-            bool result = Execute(res, demoPlugins[cmd.group]["editor"], demoPlugins[cmd.group].ContainsKey("editorarguments") ? demoPlugins[cmd.group]["editorarguments"] : "");
+            bool result = Execute(res, cmd, demoPlugins[cmd.group]["editor"], demoPlugins[cmd.group].ContainsKey("editorarguments") ? demoPlugins[cmd.group]["editorarguments"] : "");
 
             if (result)
             {
                 if (cmd.exportEditor)
-                    result = copyFile(lastWriteTime);
+                    result = copyFile(cmd.filename, cmd.ignoreWriteTimestamp ? new DateTime(0) : lastWriteTime);
             }
 
             return result;
+        }
+
+        public static bool Edit(IResourceIndexEntry key, IResource res, string command, bool ignoreWriteTimestamp)
+        {
+            string filename = Path.Combine(Path.GetTempPath(), (s3pi.Extensions.TGIN)(key as AResourceIndexEntry));
+            FileStream fs = new FileStream(filename, FileMode.OpenOrCreate, FileAccess.Write);
+            new BinaryWriter(fs).Write(new BinaryReader(res.Stream).ReadBytes((int)res.Stream.Length));
+            fs.Close();
+
+            DateTime lastWriteTime = File.GetLastWriteTime(filename);
+            return Execute(res, new Cmd(), command, filename) && copyFile(filename, ignoreWriteTimestamp ? new DateTime(0) : lastWriteTime);
         }
 
         DateTime pasteTo(string filename)
@@ -197,15 +213,15 @@ namespace s3pi.DemoPlugins
             return new DateTime();
         }
 
-        bool copyFile(DateTime lastWriteTime)
+        static bool copyFile(string filename, DateTime lastWriteTime)
         {
-            if (File.Exists(cmd.filename))
+            if (File.Exists(filename))
                 try
                 {
-                    if (File.GetLastWriteTime(cmd.filename) != lastWriteTime)
+                    if (File.GetLastWriteTime(filename) != lastWriteTime)
                     {
                         MemoryStream ms = new MemoryStream();
-                        FileStream fs = new FileStream(cmd.filename, FileMode.Open, FileAccess.Read);
+                        FileStream fs = new FileStream(filename, FileMode.Open, FileAccess.Read);
                         (new BinaryWriter(ms)).Write((new BinaryReader(fs)).ReadBytes((int)fs.Length));
                         fs.Close();
                         Clipboard.SetData(DataFormats.Serializable, ms);
@@ -214,12 +230,12 @@ namespace s3pi.DemoPlugins
                 }
                 finally
                 {
-                    File.Delete(cmd.filename);
+                    File.Delete(filename);
                 }
             return false;
         }
 
-        bool Execute(IResource res, string command, string arguments)
+        static bool Execute(IResource res, Cmd cmd, string command, string arguments)
         {
             command = command.Replace("{}", cmd.filename);
             arguments = arguments.Replace("{}", cmd.filename);
