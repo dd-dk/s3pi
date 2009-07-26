@@ -46,6 +46,10 @@ dds.ViewerArguments: /clipboard
 dds.Editor: C:\Program Files\GIMP-2.0\bin\gimp-2.6.exe
 dds.EditorArguments: {}
 
+// String tables, using the editor supplied with s3pe
+stbl.ResourceType: 0x220557DA
+stbl.Editor: STBLResourceEditor
+
 
 // --
 // Here are some other examples
