@@ -47,6 +47,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StblResource", "..\s3pi Wra
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TxtcResource", "..\s3pi Wrappers\TxtcResource\TxtcResource.csproj", "{264DE8C9-33D0-451E-9067-8BA0CF2BFACE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModularResource", "..\s3pi Wrappers\ModularResource\ModularResource.csproj", "{4C8EEE00-88BB-4A22-BEB2-68245D98CB78}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -133,6 +135,10 @@ Global
 		{264DE8C9-33D0-451E-9067-8BA0CF2BFACE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{264DE8C9-33D0-451E-9067-8BA0CF2BFACE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{264DE8C9-33D0-451E-9067-8BA0CF2BFACE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4C8EEE00-88BB-4A22-BEB2-68245D98CB78}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C8EEE00-88BB-4A22-BEB2-68245D98CB78}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C8EEE00-88BB-4A22-BEB2-68245D98CB78}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C8EEE00-88BB-4A22-BEB2-68245D98CB78}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
