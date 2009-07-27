@@ -126,6 +126,7 @@ namespace CatalogResource
 
             w.Write(unknown1);
             w.Write(unknown2);
+            if (common == null) common = new Common(requestedApiVersion, OnResourceChanged);
             common.UnParse(s);
             w.Write(unknown3);
             w.Write(unknown4);

@@ -128,6 +128,7 @@ namespace CatalogResource
             w.Write((uint)0); // tgiSize
             if (materialList == null) materialList = new WallFloorPatternMaterialList(OnResourceChanged);
             materialList.UnParse(s);
+            if (common == null) common = new Common(requestedApiVersion, OnResourceChanged);
             common.UnParse(s);
             w.Write(unknown2);
             w.Write(unknown3);
@@ -155,21 +156,37 @@ namespace CatalogResource
         {
             #region Attributes
             uint unknown4;
+            uint unknown5;
+            uint unknown6;
             #endregion
 
             #region Constructors
             internal WallFloorPatternMaterial(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler, s) { }
             public WallFloorPatternMaterial(int APIversion, EventHandler handler, WallFloorPatternMaterial basis)
-                : base(APIversion, handler, basis) { this.unknown4 = basis.unknown4; }
+                : base(APIversion, handler, basis) { this.unknown4 = basis.unknown4; this.unknown5 = basis.unknown5; this.unknown6 = basis.unknown6; }
             public WallFloorPatternMaterial(int APIversion, EventHandler handler, byte materialType, uint unknown1, ushort unknown2,
-                MaterialBlock mb, IList<TGIBlock> ltgib, uint unknown3, uint unknown4)
-                : base(APIversion, handler, materialType, unknown1, unknown2, mb, ltgib, unknown3) { this.unknown4 = unknown4; }
+                MaterialBlock mb, IList<TGIBlock> ltgib, uint unknown3, uint unknown4, uint unknown5, uint unknown6)
+                : base(APIversion, handler, materialType, unknown1, unknown2, mb, ltgib, unknown3) { this.unknown4 = unknown4; this.unknown5 = unknown5; this.unknown6 = unknown6; }
             #endregion
 
             #region Data I/O
-            protected override void Parse(Stream s) { base.Parse(s); unknown4 = (new BinaryReader(s)).ReadUInt32(); }
+            protected override void Parse(Stream s)
+            {
+                base.Parse(s);
+                BinaryReader r = new BinaryReader(s);
+                unknown4 = r.ReadUInt32();
+                unknown5 = r.ReadUInt32();
+                unknown6 = r.ReadUInt32();
+            }
 
-            public override void UnParse(Stream s) { base.UnParse(s); (new BinaryWriter(s)).Write(unknown4); }
+            public override void UnParse(Stream s)
+            {
+                base.UnParse(s);
+                BinaryWriter w = new BinaryWriter(s);
+                w.Write(unknown4);
+                w.Write(unknown5);
+                w.Write(unknown6);
+            }
             #endregion
 
             #region IComparable<WallFloorPatternMaterial> Members
@@ -200,6 +217,8 @@ namespace CatalogResource
 
             #region Content Fields
             public uint Unknown4 { get { return unknown4; } set { if (unknown4 != value) { unknown4 = value; OnElementChanged(); } } }
+            public uint Unknown5 { get { return unknown5; } set { if (unknown5 != value) { unknown5 = value; OnElementChanged(); } } }
+            public uint Unknown6 { get { return unknown6; } set { if (unknown6 != value) { unknown6 = value; OnElementChanged(); } } }
             #endregion
         }
 

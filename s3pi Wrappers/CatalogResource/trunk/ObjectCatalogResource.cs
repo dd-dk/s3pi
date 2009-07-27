@@ -197,6 +197,7 @@ namespace CatalogResource
             w.Write((uint)0); // tgiSize
             if (materialList == null) materialList = new MaterialList(OnResourceChanged);
             materialList.UnParse(s);
+            if (common == null) common = new Common(requestedApiVersion, OnResourceChanged);
             common.UnParse(s);
             w.Write(unknown2);
             w.Write(unknown3);

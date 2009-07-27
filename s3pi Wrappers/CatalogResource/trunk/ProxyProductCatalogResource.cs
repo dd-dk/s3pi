@@ -90,6 +90,7 @@ namespace CatalogResource
             BinaryWriter w = new BinaryWriter(s);
 
             w.Write(unknown1);
+            if (common == null) common = new Common(requestedApiVersion, OnResourceChanged);
             common.UnParse(s);
             w.Write(unknown2);
             w.Write(unknown3);

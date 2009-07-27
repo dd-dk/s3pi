@@ -144,6 +144,7 @@ namespace CatalogResource
             w.Write((uint)0); // tgiOffset
             w.Write((uint)0); // tgiSize
             w.Write(unknown2);
+            if (common == null) common = new Common(requestedApiVersion, OnResourceChanged);
             common.UnParse(s);
             w.Write(unknown3);
             w.Write(unknown4);

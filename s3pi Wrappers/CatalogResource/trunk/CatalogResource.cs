@@ -39,14 +39,7 @@ namespace CatalogResource
         #endregion
 
         #region Constructors
-        protected CatalogResource(int APIversion, Stream s)
-            : base(APIversion, s)
-        {
-            common = new Common(requestedApiVersion, OnResourceChanged);
-            if (stream == null) { stream = UnParse(); dirty = true; }
-            stream.Position = 0;
-            Parse(stream);
-        }
+        protected CatalogResource(int APIversion, Stream s) : base(APIversion, s) { if (stream == null) { stream = UnParse(); dirty = true; } stream.Position = 0; Parse(stream); }
         #endregion
 
         #region Data I/O
@@ -829,7 +822,7 @@ namespace CatalogResource
                 {
                     case 0x40: inc = false; return new TypeCode40(0, handler, s);
                     case 0x2F: inc = true; return new TypeCode2F(0, handler, s);
-                    default: inc = true; return TypeCode.CreateTypeCode(0, handler, s, new byte[] { controlCode, r.ReadByte() });
+                    default: inc = true; return TypeCode.CreateTypeCode(0, elementHandler, s, new byte[] { controlCode, r.ReadByte() });
                 }
             }
 
