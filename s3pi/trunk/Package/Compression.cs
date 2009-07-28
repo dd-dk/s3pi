@@ -441,25 +441,5 @@ namespace s3pi.Package
 
             return retval;
         }
-
-        static string[] foo(MemoryStream bar, byte[] data, long srcpos, long pos)
-        {
-            MemoryStream ms = new MemoryStream((byte[])data.Clone());
-            ms.Position = srcpos;
-
-            long curpos = bar.Position;
-            bar.Position = pos;
-            Dechunk(bar, new BinaryWriter(ms));
-            long newpos1 = bar.Position;
-            bar.Position = curpos;
-
-            curpos = ms.Position;
-            ms.Position = srcpos;
-            return new string[] {
-                new string((new BinaryReader(ms)).ReadChars((int)(curpos - srcpos))),
-                (curpos-srcpos).ToString("X"),
-                curpos.ToString("X") + ", " + newpos1.ToString("X"),
-            };
-        }
     }
 }
