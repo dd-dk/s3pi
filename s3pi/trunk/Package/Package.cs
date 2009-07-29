@@ -90,9 +90,7 @@ namespace s3pi.Package
         [MaximumVersion(recommendedApiVersion)]
         public override void SaveAs(Stream s)
         {
-            BinaryReader pr = packageStream == null ? null : new BinaryReader(packageStream);
             BinaryWriter w = new BinaryWriter(s);
-            byte[] value = null;
             w.Write(header);
 
             PackageIndex newIndex = new PackageIndex((uint)((Indextype & 4) > 0 ? 4 : 0));
@@ -102,45 +100,22 @@ namespace s3pi.Package
 
                 ResourceIndexEntry newIE = (ie as ResourceIndexEntry).Clone();
                 newIndex.Add(newIE);
+                byte[] value = packedChunk(ie as ResourceIndexEntry);
+
                 newIE.Chunkoffset = (uint)s.Position;
-                if ((ie as ResourceIndexEntry).IsDirty)
+                w.Write(value);
+                w.Flush();
+
+                if (value.Length < newIE.Memsize)
                 {
-                    Stream res = GetResource(ie);
-                    BinaryReader r = new BinaryReader(res);
-
-                    res.Position = 0;
-                    value = r.ReadBytes((int)newIE.Memsize);
-                    if (checking) if (value.Length != res.Length)
-                            throw new OverflowException(String.Format("SavePackage, dirty resource - T: 0x{0:X}, G: 0x{1:X}, I: 0x{2:X}: Length expected: 0x{3:X}, read: 0x{4:X}",
-                                newIE.ResourceType, newIE.ResourceGroup, newIE.Instance, newIE.Memsize, value.Length));
-
-                    byte[] comp = newIE.Compressed != 0 ? Compression.CompressStream(value) : value;
-                    if (comp.Length < value.Length)
-                    {
-                        value = comp;
-                        newIE.Filesize = (uint)comp.Length;
-                        newIE.Memsize = (uint)res.Length;
-                        newIE.Compressed = 0xffff;
-                    }
-                    else
-                    {
-                        newIE.Filesize = newIE.Memsize = (uint)res.Length;
-                        newIE.Compressed = 0;
-                    }
+                    newIE.Compressed = 0xffff;
+                    newIE.Filesize = (uint)value.Length;
                 }
                 else
                 {
-                    if (checking) if (packageStream == null)
-                            throw new InvalidOperationException(String.Format("Clean resource with undefined \"current package\" - T: 0x{0:X}, G: 0x{1:X}, I: 0x{2:X}",
-                                ie.ResourceType, ie.ResourceGroup, ie.Instance));
-                    packageStream.Position = ie.Chunkoffset;
-                    value = pr.ReadBytes((int)ie.Filesize);
-                    if (checking) if (value.Length != (int)ie.Filesize)
-                            throw new OverflowException(String.Format("SavePackage, clean resource - T: 0x{0:X}, G: 0x{1:X}, I: 0x{2:X}: Length expected: 0x{3:X}, read: 0x{4:X}",
-                                ie.ResourceType, ie.ResourceGroup, ie.Instance, ie.Filesize, value.Length));
+                    newIE.Compressed = 0x0000;
+                    newIE.Filesize = newIE.Memsize;
                 }
-                w.Write(value);
-                w.Flush();
             }
             long indexpos = s.Position;
             newIndex.Save(w);
@@ -463,6 +438,38 @@ namespace s3pi.Package
             header = (new BinaryReader(s)).ReadBytes(header.Length);
             headerReader = new BinaryReader(new MemoryStream(header));
             if (checking) CheckHeader();
+        }
+
+        private byte[] packedChunk(ResourceIndexEntry ie)
+        {
+            byte[] chunk = null;
+            if (ie.IsDirty)
+            {
+                Stream res = GetResource(ie);
+                BinaryReader r = new BinaryReader(res);
+
+                res.Position = 0;
+                chunk = r.ReadBytes((int)ie.Memsize);
+                if (checking) if (chunk.Length != (int)ie.Memsize)
+                        throw new OverflowException(String.Format("packedChunk, dirty resource - T: 0x{0:X}, G: 0x{1:X}, I: 0x{2:X}: Length expected: 0x{3:X}, read: 0x{4:X}",
+                            ie.ResourceType, ie.ResourceGroup, ie.Instance, ie.Memsize, chunk.Length));
+
+                byte[] comp = ie.Compressed != 0 ? Compression.CompressStream(chunk) : chunk;
+                if (comp.Length < chunk.Length)
+                    chunk = comp;
+            }
+            else
+            {
+                if (checking) if (packageStream == null)
+                        throw new InvalidOperationException(String.Format("Clean resource with undefined \"current package\" - T: 0x{0:X}, G: 0x{1:X}, I: 0x{2:X}",
+                            ie.ResourceType, ie.ResourceGroup, ie.Instance));
+                packageStream.Position = ie.Chunkoffset;
+                chunk = (new BinaryReader(packageStream)).ReadBytes((int)ie.Filesize);
+                if (checking) if (chunk.Length != (int)ie.Filesize)
+                        throw new OverflowException(String.Format("packedChunk, clean resource - T: 0x{0:X}, G: 0x{1:X}, I: 0x{2:X}: Length expected: 0x{3:X}, read: 0x{4:X}",
+                            ie.ResourceType, ie.ResourceGroup, ie.Instance, ie.Filesize, chunk.Length));
+            }
+            return chunk;
         }
         #endregion
 
