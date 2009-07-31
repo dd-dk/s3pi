@@ -87,6 +87,7 @@ namespace ModularResource
             w.Write(unknown7);
             w.Write(unknown8);
             w.Write(unknown9);
+            if (tgiBlocks == null) tgiBlocks = new TGIBlockList(OnResourceChanged);
             tgiBlocks.UnParse(ms, pos);
 
             return ms;
