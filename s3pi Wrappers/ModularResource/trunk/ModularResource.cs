@@ -131,7 +131,7 @@ namespace ModularResource
                 string t = "---------\n";
                 string s = "";
                 s += "Unknown1: 0x" + unknown1.ToString("X4");
-                s += "Unknown2: 0x" + unknown2.ToString("X4");
+                s += "\nUnknown2: 0x" + unknown2.ToString("X4");
                 s += String.Format(h, "TGIIndexList", "TGIIndexes") + tgiIndexes.Value + t;
                 s += String.Format(h, "TGIBlockList", "TGIBlocks") + tgiBlocks.Value + t;
                 return s;
