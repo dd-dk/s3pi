@@ -35,13 +35,7 @@ namespace ModularResource
         #region Attributes
         ushort unknown1;
         ushort unknown2;
-        ushort unknown3;
-        byte[] unknown4 = new byte[4];
-        uint unknown5;
-        uint unknown6;
-        uint unknown7;
-        uint unknown8;
-        uint unknown9;
+        TGIIndexList tgiIndexes;
         TGIBlockList tgiBlocks;
         #endregion
 
@@ -57,15 +51,7 @@ namespace ModularResource
             tgiPosn = r.ReadUInt32() + s.Position;
             tgiSize = r.ReadUInt32();
             unknown2 = r.ReadUInt16();
-            unknown3 = r.ReadUInt16();
-            unknown4 = r.ReadBytes(4);
-            if (checking) if (unknown4.Length != 4)
-                    throw new InvalidDataException(String.Format("Expected four bytes; read {0}; position 0x{1:X8}", unknown4.Length, s.Position));
-            unknown5 = r.ReadUInt32();
-            unknown6 = r.ReadUInt32();
-            unknown7 = r.ReadUInt32();
-            unknown8 = r.ReadUInt32();
-            unknown9 = r.ReadUInt32();
+            tgiIndexes = new TGIIndexList(OnResourceChanged, s);
             tgiBlocks = new TGIBlockList(OnResourceChanged, s, tgiPosn, tgiSize);
         }
 
@@ -80,13 +66,8 @@ namespace ModularResource
             w.Write((uint)0);//tgiOffset
             w.Write((uint)0);//tgiSize
             w.Write(unknown2);
-            w.Write(unknown3);
-            w.Write(unknown4);
-            w.Write(unknown5);
-            w.Write(unknown6);
-            w.Write(unknown7);
-            w.Write(unknown8);
-            w.Write(unknown9);
+            if (tgiIndexes == null) tgiIndexes = new TGIIndexList(OnResourceChanged);
+            tgiIndexes.UnParse(ms);
             if (tgiBlocks == null) tgiBlocks = new TGIBlockList(OnResourceChanged);
             tgiBlocks.UnParse(ms, pos);
 
@@ -113,32 +94,46 @@ namespace ModularResource
         }
         #endregion
 
+        #region Sub-classes
+        public class TGIIndexList : AResource.DependentList<uint>
+        {
+            #region Constructors
+            public TGIIndexList(EventHandler handler) : base(handler, ushort.MaxValue) { }
+            public TGIIndexList(EventHandler handler, IList<uint> luint) : base(handler, ushort.MaxValue, luint) { }
+            internal TGIIndexList(EventHandler handler, Stream s) : base(handler, ushort.MaxValue, s) { }
+            #endregion
+
+            #region Data I/O
+            protected override uint ReadCount(Stream s) { return (new BinaryReader(s)).ReadUInt16(); }
+            protected override uint CreateElement(Stream s) { return (new BinaryReader(s)).ReadUInt32(); }
+
+            protected override void WriteCount(Stream s, uint count) { (new BinaryWriter(s)).Write((UInt16)count); }
+            protected override void WriteElement(Stream s, uint element) { (new BinaryWriter(s)).Write((uint)element); }
+            #endregion
+
+            #region Content Fields
+            public String Value { get { string s = ""; for (int i = 0; i < Count; i++) s += string.Format("0x{0:X2}: 0x{1}\n", i, this[i].ToString("X8")); return s; } }
+            #endregion
+        }
+        #endregion
+
         #region Content Fields
         public ushort Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; OnResourceChanged(this, EventArgs.Empty); } } }
         public ushort Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; OnResourceChanged(this, EventArgs.Empty); } } }
-        public ushort Unknown3 { get { return unknown3; } set { if (unknown3 != value) { unknown3 = value; OnResourceChanged(this, EventArgs.Empty); } } }
-        public byte[] Unknown4 { get { return (byte[])unknown4.Clone(); } set { if (value.Length != unknown4.Length)throw new ArgumentLengthException("Unknown4", unknown4.Length); if (!ArrayCompare(unknown4, value)) { unknown4 = (byte[])value.Clone(); OnResourceChanged(this, EventArgs.Empty); } } }
-        public uint Unknown5 { get { return unknown5; } set { if (unknown5 != value) { unknown5 = value; OnResourceChanged(this, EventArgs.Empty); } } }
-        public uint Unknown6 { get { return unknown6; } set { if (unknown6 != value) { unknown6 = value; OnResourceChanged(this, EventArgs.Empty); } } }
-        public uint Unknown7 { get { return unknown7; } set { if (unknown7 != value) { unknown7 = value; OnResourceChanged(this, EventArgs.Empty); } } }
-        public uint Unknown8 { get { return unknown8; } set { if (unknown8 != value) { unknown8 = value; OnResourceChanged(this, EventArgs.Empty); } } }
-        public uint Unknown9 { get { return unknown9; } set { if (unknown9 != value) { unknown9 = value; OnResourceChanged(this, EventArgs.Empty); } } }
+        public TGIIndexList TGIIndexes { get { return tgiIndexes; } set { if (tgiIndexes != value) { tgiIndexes = new TGIIndexList(OnResourceChanged, value); OnResourceChanged(this, EventArgs.Empty); } } }
         public TGIBlockList TGIBlocks { get { return tgiBlocks; } set { if (tgiBlocks != value) { tgiBlocks = new TGIBlockList(OnResourceChanged, value); OnResourceChanged(this, EventArgs.Empty); } } }
 
         public String Value
         {
             get
             {
+                string h = "\n---------\n---------\n{0}: {1}\n---------\n";
+                string t = "---------\n";
                 string s = "";
-                foreach (string f in this.ContentFields)
-                {
-                    if (f.Equals("Value") || f.Equals("Stream") || f.Equals("AsBytes")) continue;
-                    TypedValue tv = this[f];
-                    string h = String.Format("\n---------\n---------\n{0}: {1}\n---------\n", tv.Type.Name, f);
-                    string t = "---------\n";
-                    if (typeof(TGIBlockList).IsAssignableFrom(tv.Type)) s += h + (tv.Value as TGIBlockList).Value + t;
-                    else s += string.Format("{0}: {1}\n", f, "" + tv);
-                }
+                s += "Unknown1: 0x" + unknown1.ToString("X4");
+                s += "Unknown2: 0x" + unknown2.ToString("X4");
+                s += String.Format(h, "TGIIndexList", "TGIIndexes") + tgiIndexes.Value + t;
+                s += String.Format(h, "TGIBlockList", "TGIBlocks") + tgiBlocks.Value + t;
                 return s;
             }
         }
