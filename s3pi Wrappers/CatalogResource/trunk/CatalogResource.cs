@@ -1186,12 +1186,26 @@ namespace CatalogResource
 
         #region Content Fields
         public Common CommonBlock { get { return common; } set { if (common != value) { common = new Common(requestedApiVersion, OnResourceChanged, value); OnResourceChanged(this, new EventArgs()); } } }
-        
+
         public virtual String Value
         {
             get
             {
                 string s = "";
+                s += "Common: CommonBlock\n---------\n" + CommonBlock.Value + "---------\n---------\n";
+                foreach (string f in this.ContentFields)
+                {
+                    if (f.Equals("Value") || f.Equals("Stream") || f.Equals("AsBytes")) continue;
+                    TypedValue tv = this[f];
+                    if (typeof(MaterialList).IsAssignableFrom(tv.Type)) { }
+                    else if (typeof(MaterialBlockList).IsAssignableFrom(tv.Type)) { }
+                    else if (typeof(TGIBlockList).IsAssignableFrom(tv.Type)) { }
+                    else if (typeof(Common).IsAssignableFrom(tv.Type)) { }
+                    else if (typeof(TypeCode).IsAssignableFrom(tv.Type)) { }
+                    else if (typeof(ObjectCatalogResource.MTDoorList).IsAssignableFrom(tv.Type)) { }
+                    else s += string.Format("{0}: {1}\n", f, "" + tv);
+                }
+                s += "\n";
                 foreach (string f in this.ContentFields)
                 {
                     if (f.Equals("Value") || f.Equals("Stream") || f.Equals("AsBytes")) continue;
@@ -1201,10 +1215,10 @@ namespace CatalogResource
                     if (typeof(MaterialList).IsAssignableFrom(tv.Type)) s += h + (tv.Value as MaterialList).Value + t;
                     else if (typeof(MaterialBlockList).IsAssignableFrom(tv.Type)) s += h + (tv.Value as MaterialBlockList).Value + t;
                     else if (typeof(TGIBlockList).IsAssignableFrom(tv.Type)) s += h + (tv.Value as TGIBlockList).Value + t;
-                    else if (typeof(Common).IsAssignableFrom(tv.Type)) s += h + (tv.Value as Common).Value + t;
+                    else if (typeof(Common).IsAssignableFrom(tv.Type)) { }
                     else if (typeof(TypeCode).IsAssignableFrom(tv.Type)) s += h + (tv.Value as TypeCode).Value + t;
                     else if (typeof(ObjectCatalogResource.MTDoorList).IsAssignableFrom(tv.Type)) s += h + (tv.Value as ObjectCatalogResource.MTDoorList).Value + t;
-                    else s += string.Format("{0}: {1}\n", f, "" + tv);
+                    else { }
                 }
                 return s;
             }
