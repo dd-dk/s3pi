@@ -271,29 +271,6 @@ namespace CatalogResource
                 if (!ArrayCompare(unknown11, value)) { unknown11 = (byte[])value.Clone(); OnResourceChanged(this, new EventArgs()); }
             }
         }
-
-        public override String Value
-        {
-            get
-            {
-                string s = "";
-                foreach (string f in this.ContentFields)
-                {
-                    if (f.Equals("Value") || f.Equals("Stream") || f.Equals("AsBytes")) continue;
-                    TypedValue tv = this[f];
-                    string h = String.Format("\n---------\n---------\n{0}: {1}\n---------\n", tv.Type.Name, f);
-                    string t = "---------\n";
-                    if (typeof(WallFloorPatternMaterialList).IsAssignableFrom(tv.Type)) s += h + (tv.Value as WallFloorPatternMaterialList).Value + t;
-                    else if (typeof(MaterialBlockList).IsAssignableFrom(tv.Type)) s += h + (tv.Value as MaterialBlockList).Value + t;
-                    else if (typeof(TGIBlockList).IsAssignableFrom(tv.Type)) s += h + (tv.Value as TGIBlockList).Value + t;
-                    else if (typeof(Common).IsAssignableFrom(tv.Type)) s += h + (tv.Value as Common).Value + t;
-                    else if (typeof(TypeCode).IsAssignableFrom(tv.Type)) s += h + (tv.Value as TypeCode).Value + t;
-                    else if (typeof(ObjectCatalogResource.MTDoorList).IsAssignableFrom(tv.Type)) s += h + (tv.Value as ObjectCatalogResource.MTDoorList).Value + t;
-                    else s += string.Format("{0}: {1}\n", f, "" + tv);
-                }
-                return s;
-            }
-        }
         #endregion
     }
 }

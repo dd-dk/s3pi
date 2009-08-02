@@ -1197,7 +1197,8 @@ namespace CatalogResource
                 {
                     if (f.Equals("Value") || f.Equals("Stream") || f.Equals("AsBytes")) continue;
                     TypedValue tv = this[f];
-                    if (typeof(MaterialList).IsAssignableFrom(tv.Type)) { }
+                    if (typeof(WallFloorPatternCatalogResource.WallFloorPatternMaterialList).IsAssignableFrom(tv.Type)) { }
+                    else if (typeof(MaterialList).IsAssignableFrom(tv.Type)) { }
                     else if (typeof(MaterialBlockList).IsAssignableFrom(tv.Type)) { }
                     else if (typeof(TGIBlockList).IsAssignableFrom(tv.Type)) { }
                     else if (typeof(Common).IsAssignableFrom(tv.Type)) { }
@@ -1212,7 +1213,8 @@ namespace CatalogResource
                     TypedValue tv = this[f];
                     string h = String.Format("\n---------\n---------\n{0}: {1}\n---------\n", tv.Type.Name, f);
                     string t = "---------\n";
-                    if (typeof(MaterialList).IsAssignableFrom(tv.Type)) s += h + (tv.Value as MaterialList).Value + t;
+                    if (typeof(WallFloorPatternCatalogResource.WallFloorPatternMaterialList).IsAssignableFrom(tv.Type)) s += h + (tv.Value as WallFloorPatternCatalogResource.WallFloorPatternMaterialList).Value + t;
+                    else if (typeof(MaterialList).IsAssignableFrom(tv.Type)) s += h + (tv.Value as MaterialList).Value + t;
                     else if (typeof(MaterialBlockList).IsAssignableFrom(tv.Type)) s += h + (tv.Value as MaterialBlockList).Value + t;
                     else if (typeof(TGIBlockList).IsAssignableFrom(tv.Type)) s += h + (tv.Value as TGIBlockList).Value + t;
                     else if (typeof(Common).IsAssignableFrom(tv.Type)) { }
