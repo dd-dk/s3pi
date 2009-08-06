@@ -58,12 +58,15 @@ namespace System.Windows.Forms
 
         public static int Show(string message, string caption, CopyableMessageBoxIcon icon, IList<string> buttons, int defBtn, int cncBtn)
         {
-            return Show(Application.OpenForms[0], message, caption, icon, buttons, defBtn, cncBtn);
+            return Show(Application.OpenForms.Count > 0 ? Application.OpenForms[0] : null, message, caption, icon, buttons, defBtn, cncBtn);
         }
 
         public static int Show(IWin32Window owner, string message, string caption, CopyableMessageBoxIcon icon, IList<string> buttons, int defBtn, int cncBtn)
         {
             CopyableMessageBox cmb = new CopyableMessageBox(message, caption, icon, buttons, defBtn, cncBtn);
+            if (owner != null) cmb.Icon = ((Form)owner).Icon;
+            else owner = new Form();
+
             if (cmb.ShowDialog(owner) == DialogResult.Cancel) return cncBtn;
             return (cmb.theButton != null) ? buttons.IndexOf(cmb.theButton.Text) : -1;
         }
@@ -123,8 +126,9 @@ namespace System.Windows.Forms
             int iconHeight = icon == CopyableMessageBoxIcon.None ? 0 : 77; // icon area, if icon present
 
             // To calculate the text box size, we get an autosize label to tell us how big it should be
-            lb.MaximumSize = new Size((int)(Application.OpenForms[0].Width * .8) - (formWidth + tbPadding + iconWidth),
-                (int)(Application.OpenForms[0].Height * .8) - (formHeight + buttonHeight + tbPadding));
+            Size winSize = Application.OpenForms.Count > 0 ? Application.OpenForms[0].Size : Screen.PrimaryScreen.WorkingArea.Size;
+            lb.MaximumSize = new Size((int)(winSize.Width * .8) - (formWidth + tbPadding + iconWidth),
+                (int)(winSize.Height * .8) - (formHeight + buttonHeight + tbPadding));
             lb.AutoSize = true;
             lb.Text = message;
 
