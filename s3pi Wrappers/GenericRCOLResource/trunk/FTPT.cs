@@ -149,8 +149,8 @@ namespace s3pi.GenericRCOLResource
             #endregion
 
             #region Content Fields
-            float X { get { return x; } set { if (x != value) { x = value; OnElementChanged(); } } }
-            float Y { get { return y; } set { if (y != value) { y = value; OnElementChanged(); } } }
+            public float X { get { return x; } set { if (x != value) { x = value; OnElementChanged(); } } }
+            public float Y { get { return y; } set { if (y != value) { y = value; OnElementChanged(); } } }
 
             public string Value { get { return String.Format("[X: {0}] [Y: {1}]", x, y); } }
             #endregion
@@ -298,18 +298,18 @@ namespace s3pi.GenericRCOLResource
             #endregion
 
             #region Content Fields
-            uint Name { get { return name; } set { if (name != value) { name = value; OnElementChanged(); } } }
-            byte Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; OnElementChanged(); } } }
-            AreaType AreaType { get { return areaType; } set { if (areaType != value) { areaType = value; OnElementChanged(); } } }
-            PolygonPointList ClosedPolygon { get { return closedPolygon; } set { if (closedPolygon != value) { closedPolygon = new PolygonPointList(handler, value); OnElementChanged(); } } }
-            uint PlacementFlags1 { get { return placementFlags1; } set { if (placementFlags1 != value) { placementFlags1 = value; OnElementChanged(); } } }
-            uint PlacementFlags2 { get { return placementFlags2; } set { if (placementFlags2 != value) { placementFlags2 = value; OnElementChanged(); } } }
-            uint PlacementFlags3 { get { return placementFlags3; } set { if (placementFlags3 != value) { placementFlags3 = value; OnElementChanged(); } } }
-            byte Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; OnElementChanged(); } } }
-            float LowerX { get { return lowerX; } set { if (lowerX != value) { lowerX = value; OnElementChanged(); } } }
-            float LowerY { get { return lowerY; } set { if (lowerY != value) { lowerY = value; OnElementChanged(); } } }
-            float UpperX { get { return upperX; } set { if (upperX != value) { upperX = value; OnElementChanged(); } } }
-            float UpperY { get { return upperY; } set { if (upperY != value) { upperY = value; OnElementChanged(); } } }
+            public uint Name { get { return name; } set { if (name != value) { name = value; OnElementChanged(); } } }
+            public byte Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; OnElementChanged(); } } }
+            public AreaType AreaType { get { return areaType; } set { if (areaType != value) { areaType = value; OnElementChanged(); } } }
+            public PolygonPointList ClosedPolygon { get { return closedPolygon; } set { if (closedPolygon != value) { closedPolygon = new PolygonPointList(handler, value); OnElementChanged(); } } }
+            public uint PlacementFlags1 { get { return placementFlags1; } set { if (placementFlags1 != value) { placementFlags1 = value; OnElementChanged(); } } }
+            public uint PlacementFlags2 { get { return placementFlags2; } set { if (placementFlags2 != value) { placementFlags2 = value; OnElementChanged(); } } }
+            public uint PlacementFlags3 { get { return placementFlags3; } set { if (placementFlags3 != value) { placementFlags3 = value; OnElementChanged(); } } }
+            public byte Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; OnElementChanged(); } } }
+            public float LowerX { get { return lowerX; } set { if (lowerX != value) { lowerX = value; OnElementChanged(); } } }
+            public float LowerY { get { return lowerY; } set { if (lowerY != value) { lowerY = value; OnElementChanged(); } } }
+            public float UpperX { get { return upperX; } set { if (upperX != value) { upperX = value; OnElementChanged(); } } }
+            public float UpperY { get { return upperY; } set { if (upperY != value) { upperY = value; OnElementChanged(); } } }
 
             public string Value
             {
@@ -355,8 +355,8 @@ namespace s3pi.GenericRCOLResource
 
         #region Content Fields
         public uint Version { get { return version; } set { if (version != value) { version = value; OnRCOLChanged(this, EventArgs.Empty); } } }
-        AreaList FootprintAreas { get { return footprintAreas; } set { if (footprintAreas != value) { footprintAreas = new AreaList(handler, value); OnRCOLChanged(this, EventArgs.Empty); } } }
-        AreaList SlotAreas { get { return slotAreas; } set { if (slotAreas != value) { slotAreas = new AreaList(handler, value); OnRCOLChanged(this, EventArgs.Empty); } } }
+        public AreaList FootprintAreas { get { return footprintAreas; } set { if (footprintAreas != value) { footprintAreas = new AreaList(handler, value); OnRCOLChanged(this, EventArgs.Empty); } } }
+        public AreaList SlotAreas { get { return slotAreas; } set { if (slotAreas != value) { slotAreas = new AreaList(handler, value); OnRCOLChanged(this, EventArgs.Empty); } } }
 
         public string Value
         {
