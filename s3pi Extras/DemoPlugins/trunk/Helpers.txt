@@ -40,7 +40,7 @@ img.EditorArguments: {}
 
 // DDS files
 dds.ResourceType: 0x00B2D882 0x8FFB80F6
-dds.Viewer: C:\Program Files\ViewDDS\ViewDDS.exe
+dds.Viewer: ViewDDS.exe
 ; ViewDDS can process data from the clipboard in the format used by s3pe:
 dds.ViewerArguments: /clipboard
 dds.Editor: C:\Program Files\GIMP-2.0\bin\gimp-2.6.exe
