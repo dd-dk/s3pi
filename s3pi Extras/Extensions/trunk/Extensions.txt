@@ -133,6 +133,7 @@
 0x94C5D14A  SIGR   .signature
 0xB1CC1AF6  _VID   .video
 0xB4DD716B  _INV   .inventory
+0xB52F5055  FBLN   .facialblend
 0xD063545B  LDES   .lotdesc
 0xD3044521  RSLT   .slot
 0xD4D9FBE5  PTRN   .patternlist
