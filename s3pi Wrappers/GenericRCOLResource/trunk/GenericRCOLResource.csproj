@@ -81,6 +81,7 @@ echo /*"*/ [assembly: AssemblyVersion(%25version%25)] /*"*/
   <ItemGroup>
     <Compile Include="ARCOLBlock.cs" />
     <Compile Include="DefaultRCOL.cs" />
+    <Compile Include="FTPT.cs" />
     <Compile Include="GenericRCOLResource.cs" />
     <Compile Include="IRCOLBlock.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
