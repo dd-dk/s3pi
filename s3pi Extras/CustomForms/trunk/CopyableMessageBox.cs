@@ -182,8 +182,8 @@ namespace System.Windows.Forms
             {
                 Button btn = CreateButton("button" + i, i, buttons[i - 1]);
                 flpButtons.Controls.Add(btn);
-                if (i == defBtn - 1) this.AcceptButton = btn;
-                if (i == cncBtn - 1) this.CancelButton = btn;
+                if (i == defBtn + 1) this.AcceptButton = btn;
+                if (i == cncBtn + 1) this.CancelButton = btn;
             }
             flpButtons.ResumeLayout();
         }
