@@ -38,7 +38,7 @@ namespace ObjKeyResource
         #region Attributes
         uint format = 7;
         ComponentList components;
-        KeyList keys;
+        ComponentDataList componentData;
         byte unknown1;
         TGIBlockList tgiBlocks;
         #endregion
@@ -56,7 +56,7 @@ namespace ObjKeyResource
             tgiSize = r.ReadUInt32();
 
             components = new ComponentList(OnResourceChanged, s);
-            keys = new KeyList(OnResourceChanged, s);
+            componentData = new ComponentDataList(OnResourceChanged, s);
             unknown1 = r.ReadByte();
 
             tgiBlocks = new TGIBlockList(OnResourceChanged, s, tgiPosn, tgiSize);
@@ -76,8 +76,8 @@ namespace ObjKeyResource
 
             if (components == null) components = new ComponentList(OnResourceChanged);
             components.UnParse(s);
-            if (keys == null) keys = new KeyList(OnResourceChanged);
-            keys.UnParse(s);
+            if (componentData == null) componentData = new ComponentDataList(OnResourceChanged);
+            componentData.UnParse(s);
             w.Write(unknown1);
 
             if (tgiBlocks == null) tgiBlocks = new TGIBlockList(OnResourceChanged);
@@ -111,23 +111,25 @@ namespace ObjKeyResource
         #region Sub-classes
         public enum Component : uint
         {
-            AnimationComponent = 0xee17c6ad,
-            EffectComponent = 0x80d91e9e,
-            FootprintComponent = 0xc807312a,
-            LightingComponent = 0xda6c50fd,
-            LocationComponent = 0x461922c8,
-            LotObjectComponent = 0x6693c8b3,
-            ModelComponent = 0x2954e734,
-            PhysicsComponent = 0x1a8feb14,
-            SacsComponent = 0x3ae9a8e7,
-            ScriptComponent = 0x23177498,
-            SimComponent = 0x22706efa,
-            SlotComponent = 0x2ef1e401,
-            SteeringComponent = 0x61bd317c,
-            TransformComponent = 0x54cb7ebb,
-            TreeComponent = 0xc602cd31,
-            VisualStateComponent = 0x50b3d17c,
+            Animation = 0xee17c6ad,
+            Effect = 0x80d91e9e,
+            Footprint = 0xc807312a,
+            Lighting = 0xda6c50fd,
+            Location = 0x461922c8,
+            LotObject = 0x6693c8b3,
+            Model = 0x2954e734,
+            Physics = 0x1a8feb14,
+            Sacs = 0x3ae9a8e7,
+            Script = 0x23177498,
+            Sim = 0x22706efa,
+            Slot = 0x2ef1e401,
+            Steering = 0x61bd317c,
+            Transform = 0x54cb7ebb,
+            Tree = 0xc602cd31,
+            VisualState = 0x50b3d17c,
         }
+
+        static Dictionary<Component, string> ComponentDataMap;
 
         public class ComponentElement : AHandlerElement, IEquatable<ComponentElement>
         {
@@ -135,6 +137,17 @@ namespace ObjKeyResource
             public ComponentElement(int APIversion, EventHandler handler) : base(APIversion, handler) { }
             public ComponentElement(int APIversion, EventHandler handler, uint value) : base(APIversion, handler) { element = (Component)value; }
             public ComponentElement(int APIversion, EventHandler handler, Component element) : base(APIversion, handler) { this.element = element; }
+
+            static ComponentElement()
+            {
+                ComponentDataMap = new Dictionary<Component, string>();
+                ComponentDataMap.Add(Component.Sim, "simOutfitKey");
+                ComponentDataMap.Add(Component.Script, "scriptClass");
+                ComponentDataMap.Add(Component.Model, "modelKey");
+                ComponentDataMap.Add(Component.Steering, "steeringInstance");
+                ComponentDataMap.Add(Component.Tree, "modelKey");
+                ComponentDataMap.Add(Component.Footprint, "footprintKey");
+            }
 
             #region AHandlerElement Members
             public override AHandlerElement Clone(EventHandler handler) { return new ComponentElement(requestedApiVersion, handler, element); }
@@ -149,6 +162,19 @@ namespace ObjKeyResource
             public bool Equals(ComponentElement other) { return ((uint)element).Equals((uint)other.element); }
 
             #endregion
+
+            public TypedValue Data(ComponentDataList list, TGIBlockList tgiBlocks)
+            {
+                if (!ComponentDataMap.ContainsKey(element)) return null;
+                if (!list.ContainsKey(ComponentDataMap[element])) return null;
+                ComponentDataType cd = list[ComponentDataMap[element]];
+                System.Reflection.PropertyInfo pi = cd.GetType().GetProperty("Data");
+                if (pi == null || !pi.CanRead) return null;
+                if (element == Component.Footprint || element == Component.Model || element == Component.Tree)
+                    return new TypedValue(typeof(AResource.TGIBlock), tgiBlocks[(int)pi.GetValue(cd, null)], "X");
+                else
+                    return new TypedValue(pi.PropertyType, pi.GetValue(cd, null), "X");
+            }
 
             public Component Element { get { return element; } set { if (element != value) { element = value; OnElementChanged(); } } }
             public string Value { get { return "0x" + ((uint)element).ToString("X8") + " (" + (Enum.IsDefined(typeof(Component), element) ? element + "" : "undefined") + ")"; } }
@@ -169,100 +195,51 @@ namespace ObjKeyResource
             protected override void WriteCount(Stream s, uint count) { (new BinaryWriter(s)).Write((byte)count); }
             protected override void WriteElement(Stream s, ComponentElement element) { (new BinaryWriter(s)).Write((uint)element.Element); }
             #endregion
-
-            #region Content Fields
-            public String Value { get { string s = ""; for (int i = 0; i < Count; i++) s += string.Format("0x{0:X2}: {1})\n", i, this[i].Value); return s; } }
-            #endregion
         }
 
-        public class Key : AHandlerElement, IComparable<Key>, IEqualityComparer<Key>, IEquatable<Key>
+        public abstract class ComponentDataType : AHandlerElement, IComparable<ComponentDataType>, IEqualityComparer<ComponentDataType>, IEquatable<ComponentDataType>
         {
             const int recommendedApiVersion = 1;
 
             #region Attributes
-            string key;
-            byte controlCode;
-            bool hasCcString;
-            string ccString;
-            bool hasCcIndex;
-            int ccIndex;
+            protected string key;
+            protected byte controlCode;
             #endregion
 
             #region Constructors
-            internal Key(int APIversion, EventHandler handler, Stream s)
-                : base(APIversion, handler) { Parse(s); }
+            protected ComponentDataType(int APIversion, EventHandler handler, string key, byte controlCode)
+                : base(APIversion, handler) { this.key = key; this.controlCode = controlCode; }
 
-            public Key(int APIversion, EventHandler handler, string key, byte controlCode, string ccString)
-                : this(APIversion, handler, key, controlCode, true, ccString, false, -1) { }
-            public Key(int APIversion, EventHandler handler, string key, byte controlCode, int ccIndex)
-                : this(APIversion, handler, key, controlCode, false, null, true, ccIndex) { }
-
-            private Key(int APIversion, EventHandler handler, string key, byte controlCode, bool hasCcString, string ccString, bool hasCcIndex, int ccIndex)
-                : base(APIversion, handler)
+            public static ComponentDataType CreateComponentData(int APIversion, EventHandler handler, Stream s)
             {
-                this.key = key;
-                this.controlCode = controlCode;
-                this.hasCcString = hasCcString;
-                if (checking) if (hasCcString && ccString == null)
-                        throw new ArgumentNullException("ccString");
-                this.ccString = ccString;
-                this.hasCcIndex = hasCcIndex;
-                this.ccIndex = ccIndex;
-
-                if (checking) switch (controlCode)
-                    {
-                        case 0x00:
-                        case 0x03:
-                            if (!hasCcString || hasCcIndex) throw new ArgumentException(String.Format("controlCode 0x{0:X2} requires a string", controlCode));
-                            break;
-                        case 0x01:
-                        case 0x02:
-                        case 0x04:
-                            if (hasCcString || !hasCcIndex) throw new ArgumentException(String.Format("controlCode 0x{0:X2} requires an index", controlCode));
-                            break;
-                        default:
-                            throw new ArgumentException(String.Format("Unknown control code 0x{0:X2}", controlCode));
-                    }
+                BinaryReader r = new BinaryReader(s);
+                string key = new string(r.ReadChars(r.ReadInt32()));
+                byte controlCode = r.ReadByte();
+                switch (controlCode)
+                {
+                    case 0x00: return new CDTString(APIversion, handler, key, controlCode, new string(r.ReadChars(r.ReadInt32())));
+                    case 0x01: return new CDTResourceKey(APIversion, handler, key, controlCode, r.ReadInt32());
+                    case 0x02: return new CDTAssetResourceName(APIversion, handler, key, controlCode, r.ReadInt32());
+                    case 0x03: return new CDTSteeringInstance(APIversion, handler, key, controlCode, new string(r.ReadChars(r.ReadInt32())));
+                    case 0x04: return new CDTUInt32(APIversion, handler, key, controlCode, r.ReadUInt32());
+                    default:
+                        if (checking) throw new InvalidDataException(String.Format("Unknown control code 0x{0:X2} at position 0x{1:X8}", controlCode, s.Position));
+                        return null;
+                }
             }
             #endregion
 
             #region Data I/O
-            void Parse(Stream s)
-            {
-                BinaryReader r = new BinaryReader(s);
-                key = new string(r.ReadChars(r.ReadInt32()));
-                controlCode = r.ReadByte();
-                switch (controlCode)
-                {
-                    case 0x00:
-                    case 0x03: hasCcString = true; hasCcIndex = false; ccString = new string(r.ReadChars(r.ReadInt32())); ccIndex = -1; break;
-                    case 0x01:
-                    case 0x02:
-                    case 0x04: hasCcString = false; hasCcIndex = true; ccString = null; ccIndex = r.ReadInt32(); break;
-                    default:
-                        if (checking) throw new InvalidDataException(String.Format("Unknown control code 0x{0:X2} at position 0x{1:X8}", controlCode, s.Position));
-                        hasCcString = false; hasCcIndex = false; ccString = null; ccIndex = -1;
-                        break;
-                }
-            }
-
-            internal void UnParse(Stream s)
+            internal virtual void UnParse(Stream s)
             {
                 BinaryWriter w = new BinaryWriter(s);
                 w.Write(key.Length);
                 w.Write(key.ToCharArray());
                 w.Write(controlCode);
-                if (hasCcString)
-                {
-                    w.Write(ccString.Length);
-                    w.Write(ccString.ToCharArray());
-                }
-                if (hasCcIndex) w.Write(ccIndex);
             }
             #endregion
 
             #region AHandlerElement Members
-            public override AHandlerElement Clone(EventHandler handler) { return new Key(requestedApiVersion, handler, key, controlCode, hasCcString, ccString, hasCcIndex, ccIndex); }
 
             public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
 
@@ -271,110 +248,192 @@ namespace ObjKeyResource
 
             #region IComparable<Key> Members
 
-            public int CompareTo(Key other)
-            {
-                int res = key.CompareTo(other.key); if (res != 0) return res;
-                res = controlCode.CompareTo(other.controlCode); if (res != 0) return res;
-                if (hasCcString) { res = ccString.CompareTo(other.ccString); if (res != 0) return res; }
-                if (hasCcIndex) { res = ccIndex.CompareTo(other.ccIndex); if (res != 0) return res; }
-                return 0;
-            }
+            public abstract int CompareTo(ComponentDataType other);
 
             #endregion
 
             #region IEqualityComparer<Key> Members
 
-            public bool Equals(Key x, Key y) { return x.Equals(y); }
+            public bool Equals(ComponentDataType x, ComponentDataType y) { return x.Equals(y); }
 
-            public int GetHashCode(Key obj) { return key.GetHashCode() ^ controlCode ^ (hasCcString ? ccString.GetHashCode() : 0) ^ (hasCcIndex ? ccIndex : 0); }
+            public abstract int GetHashCode(ComponentDataType obj);
 
             #endregion
 
             #region IEquatable<Key> Members
 
-            public bool Equals(Key other) { return this.CompareTo(other) == 0; }
+            public bool Equals(ComponentDataType other) { return this.CompareTo(other) == 0; }
 
             #endregion
 
             #region Content Fields
-            public string EntryName { get { return key; } set { if (key != value) { key = value; OnElementChanged(); } } }
-            public byte ControlCode
-            {
-                get { return controlCode; }
-                set
-                {
-                    if (controlCode == value) return;
-                    switch (value)
-                    {
-                        case 0x00:
-                        case 0x03:
-                            hasCcString = true; hasCcIndex = false;
-                            ccString = ""; ccIndex = -1;
-                            break;
-                        case 0x01:
-                        case 0x02:
-                        case 0x04:
-                            hasCcString = false; hasCcIndex = true;
-                            ccString = null; ccIndex = 0;
-                            break;
-                        default:
-                            throw new ArgumentException(String.Format("Unknown control code 0x{0:X2}", controlCode));
-                    }
-                    controlCode = value;
-                    OnElementChanged();
-                }
-            }
-            public bool HasCcString { get { return hasCcString; } set { } }
-            public string CcString { get { return ccString; } set { if (!hasCcString) throw new InvalidOperationException(); if (ccString != value) { ccString = value; OnElementChanged(); } } }
-            public bool HasCcIndex { get { return hasCcIndex; } set { } }
-            public int CcIndex { get { return ccIndex; } set { if (!hasCcIndex) throw new InvalidOperationException(); if (ccIndex != value) { ccIndex = value; OnElementChanged(); } } }
+            public string Key { get { return key; } set { if (key != value) { key = value; OnElementChanged(); } } }
 
-            public string Value
-            {
-                get
-                {
-                    string s = "";
-                    s += "Key: \"" + key + "\"" +
-                        "\nControl code: 0x" + controlCode.ToString("X2") +
-                        "\nData: " +
-                        (hasCcString ? "\"" + ccString + "\"" : "") +
-                        (hasCcIndex ? "0x" + ccIndex.ToString("X8") : "") +
-                        "\n"
-                        ;
-                    return s;
-                }
-            }
+            public virtual string Value { get { return "Key: \"" + key + "\"\nControl code: 0x" + controlCode.ToString("X2"); } }
             #endregion
         }
+        public class CDTString : ComponentDataType
+        {
+            #region Attributes
+            protected string data;
+            #endregion
 
-        public class KeyList : AResource.DependentList<Key>
+            #region Constructors
+            public CDTString(int APIversion, EventHandler handler, string key, byte controlCode, string data)
+                : base(APIversion, handler, key, controlCode) { this.data = data; }
+            #endregion
+
+            #region Data I/O
+            internal override void UnParse(Stream s)
+            {
+                base.UnParse(s);
+                BinaryWriter w = new BinaryWriter(s);
+                w.Write(data.Length);
+                w.Write(data.ToCharArray());
+            }
+            #endregion
+
+            public override AHandlerElement Clone(EventHandler handler) { return new CDTString(requestedApiVersion, handler, key, controlCode, data); }
+
+            public override int CompareTo(ComponentDataType other)
+            {
+                if (this.GetType() != other.GetType()) return -1;
+                CDTString oth = (CDTString)other;
+                int res = key.CompareTo(oth.key); if (res != 0) return res;
+                res = controlCode.CompareTo(oth.controlCode); if (res != 0) return res;
+                return data.CompareTo(oth.data);
+            }
+
+            public override int GetHashCode(ComponentDataType obj) { return key.GetHashCode() ^ controlCode ^ data.GetHashCode(); }
+
+            public string Data { get { return data; } set { if (data != value) { data = value; OnElementChanged(); } } }
+
+            public override string Value { get { return base.Value + "\nData: " + "\"" + data + "\""; } }
+        }
+        public class CDTResourceKey : ComponentDataType
+        {
+            #region Attributes
+            protected int data;
+            #endregion
+
+            #region Constructors
+            public CDTResourceKey(int APIversion, EventHandler handler, string key, byte controlCode, int data)
+                : base(APIversion, handler, key, controlCode) { this.data = data; }
+            #endregion
+
+            #region Data I/O
+            internal override void UnParse(Stream s)
+            {
+                base.UnParse(s);
+                new BinaryWriter(s).Write(data);
+            }
+            #endregion
+
+            public override AHandlerElement Clone(EventHandler handler) { return new CDTResourceKey(requestedApiVersion, handler, key, controlCode, data); }
+
+            public override int CompareTo(ComponentDataType other)
+            {
+                if (this.GetType() != other.GetType()) return -1;
+                CDTResourceKey oth = (CDTResourceKey)other;
+                int res = key.CompareTo(oth.key); if (res != 0) return res;
+                res = controlCode.CompareTo(oth.controlCode); if (res != 0) return res;
+                return data.CompareTo(oth.data);
+            }
+
+            public override int GetHashCode(ComponentDataType obj) { return key.GetHashCode() ^ controlCode ^ data; }
+
+            public int Data { get { return data; } set { if (data != value) { data = value; OnElementChanged(); } } }
+
+            public override string Value { get { return base.Value + "\nData: " + "0x" + data.ToString("X8"); } }
+        }
+        public class CDTAssetResourceName : CDTResourceKey
+        {
+            public CDTAssetResourceName(int APIversion, EventHandler handler, string key, byte controlCode, int data)
+                : base(APIversion, handler, key, controlCode, data) { }
+
+            public override AHandlerElement Clone(EventHandler handler) { return new CDTAssetResourceName(requestedApiVersion, handler, key, controlCode, data); }
+        }
+        public class CDTSteeringInstance : CDTString
         {
             #region Constructors
-            public KeyList(EventHandler handler) : base(handler, 255) { }
-            public KeyList(EventHandler handler, IList<Key> luint) : base(handler, 255, luint) { }
-            internal KeyList(EventHandler handler, Stream s) : base(handler, 255, s) { }
+            public CDTSteeringInstance(int APIversion, EventHandler handler, string key, byte controlCode, string data)
+                : base(APIversion, handler, key, controlCode, data) { }
+            #endregion
+
+            public override AHandlerElement Clone(EventHandler handler) { return new CDTSteeringInstance(requestedApiVersion, handler, key, controlCode, data); }
+        }
+        public class CDTUInt32 : ComponentDataType
+        {
+            #region Attributes
+            uint data;
+            #endregion
+
+            #region Constructors
+            public CDTUInt32(int APIversion, EventHandler handler, string key, byte controlCode, uint data)
+                : base(APIversion, handler, key, controlCode) { this.data = data; }
+            #endregion
+
+            #region Data I/O
+            internal override void UnParse(Stream s)
+            {
+                base.UnParse(s);
+                new BinaryWriter(s).Write(data);
+            }
+            #endregion
+
+            public override AHandlerElement Clone(EventHandler handler) { return new CDTUInt32(requestedApiVersion, handler, key, controlCode, data); }
+            public override int CompareTo(ComponentDataType other)
+            {
+                if (this.GetType() != other.GetType()) return -1;
+                CDTUInt32 oth = (CDTUInt32)other;
+                int res = key.CompareTo(oth.key); if (res != 0) return res;
+                res = controlCode.CompareTo(oth.controlCode); if (res != 0) return res;
+                return data.CompareTo(oth.data);
+            }
+
+            public override int GetHashCode(ComponentDataType obj) { return (int)(key.GetHashCode() ^ controlCode ^ data); }
+
+            public uint Data { get { return data; } set { if (data != value) { data = value; OnElementChanged(); } } }
+
+            public override string Value { get { return base.Value + "\nData: " + "0x" + data.ToString("X8"); } }
+        }
+
+        public class ComponentDataList : AResource.DependentList<ComponentDataType>
+        {
+            #region Constructors
+            public ComponentDataList(EventHandler handler) : base(handler, 255) { }
+            public ComponentDataList(EventHandler handler, IList<ComponentDataType> luint) : base(handler, 255, luint) { }
+            internal ComponentDataList(EventHandler handler, Stream s) : base(handler, 255, s) { }
             #endregion
 
             #region Data I/O
             protected override uint ReadCount(Stream s) { return (new BinaryReader(s)).ReadByte(); }
-            protected override Key CreateElement(Stream s) { return new Key(0, elementHandler, s); }
+            protected override ComponentDataType CreateElement(Stream s) { return ComponentDataType.CreateComponentData(0, elementHandler, s); }
 
             protected override void WriteCount(Stream s, uint count) { (new BinaryWriter(s)).Write((byte)count); }
-            protected override void WriteElement(Stream s, Key element) { element.UnParse(s); }
+            protected override void WriteElement(Stream s, ComponentDataType element) { element.UnParse(s); }
             #endregion
 
-            #region Content Fields
-            public String Value { get { string s = ""; for (int i = 0; i < Count; i++) s += string.Format("--0x{0:X2}--\n{1}\n", i, this[i].Value); return s; } }
-            #endregion
+            public bool ContainsKey(string key) { foreach (ComponentDataType cd in this) if (cd.Key.Equals(key)) return true; return false; }
+
+            public ComponentDataType this[string key]
+            {
+                get
+                {
+                    foreach (ComponentDataType cd in this)
+                        if (cd.Key.Equals(key)) return cd;
+                    throw new KeyNotFoundException();
+                }
+                set { this[IndexOf(this[key])] = value; }
+            }
         }
 
         #endregion
 
-
         #region Content Fields
         public uint Format { get { return format; } set { if (format != value) { format = value; OnResourceChanged(this, new EventArgs()); } } }
         public ComponentList Components { get { return components; } set { if (components != value) { components = new ComponentList(OnResourceChanged, value); OnResourceChanged(this, new EventArgs()); } } }
-        public KeyList Keys { get { return keys; } set { if (keys != value) { keys = new KeyList(OnResourceChanged, value); OnResourceChanged(this, new EventArgs()); } } }
+        public ComponentDataList ComponentData { get { return componentData; } set { if (componentData != value) { componentData = new ComponentDataList(OnResourceChanged, value); OnResourceChanged(this, new EventArgs()); } } }
         public byte Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; OnResourceChanged(this, new EventArgs()); } } }
         public TGIBlockList TGIBlocks { get { return tgiBlocks; } set { if (tgiBlocks != value) { tgiBlocks = new TGIBlockList(OnResourceChanged, value); OnResourceChanged(this, new EventArgs()); } } }
 
@@ -384,10 +443,17 @@ namespace ObjKeyResource
             {
                 string s = "";
                 s += String.Format("Format: 0x{0:X8}", format);
-                s += "\nComponents:\n" + components.Value + "----\n";
-                s += "\nKeys:\n" + keys.Value + "----\n";
+
+                s += "\nComponents:";
+                foreach (ComponentElement c in components)
+                {
+                    s += "\n  " + c.Value;
+                    TypedValue tv = c.Data(componentData, tgiBlocks);
+                    if (tv != null)
+                        s += "; Data: " + tv;
+                }
+
                 s += String.Format("\nUnknown1: 0x{0:X2}", unknown1);
-                s += "\nTGIBlocks:\n" + tgiBlocks.Value + "----\n";
                 return s;
             }
         }
