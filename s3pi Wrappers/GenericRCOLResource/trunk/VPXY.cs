@@ -120,6 +120,66 @@ namespace s3pi.GenericRCOLResource
         #endregion
 
         #region Sub-types
+        public class ElementUInt32 : AHandlerElement, IEquatable<ElementUInt32>
+        {
+            const int recommendedApiVersion = 1;
+
+            #region Attributes
+            UInt32 data;
+            #endregion
+
+            #region Constructors
+            public ElementUInt32(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
+            public ElementUInt32(int APIversion, EventHandler handler, UInt32 data) : base(APIversion, handler) { this.data = data; }
+            #endregion
+
+            #region Data I/O
+            void Parse(Stream s) { data = new BinaryReader(s).ReadUInt32(); }
+
+            internal void UnParse(Stream s) { new BinaryWriter(s).Write(data); }
+            #endregion
+
+            #region AHandlerElement Members
+            public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
+
+            /// <summary>
+            /// The list of available field names on this API object
+            /// </summary>
+            public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
+
+            public override AHandlerElement Clone(EventHandler handler) { return new ElementUInt32(requestedApiVersion, handler, data); }
+            #endregion
+
+            #region IEquatable<Entry> Members
+
+            public bool Equals(ElementUInt32 other) { return this.data == other.data; }
+
+            #endregion
+
+            #region Content Fields
+            public UInt32 Data { get { return data; } set { if (data != value) { data = value; if (handler != null) handler(this, EventArgs.Empty); } } }
+
+            public string Value { get { return "Data: 0x" + data.ToString("X8"); } }
+            #endregion
+        }
+
+        public class UintList : AResource.DependentList<ElementUInt32>
+        {
+            #region Constructors
+            public UintList(EventHandler handler) : base(handler, 255) { }
+            public UintList(EventHandler handler, Stream s) : base(handler, 255, s) { }
+            public UintList(EventHandler handler, IList<ElementUInt32> ltgi) : base(handler, 255, ltgi) { }
+            #endregion
+
+            #region Data I/O
+            protected override uint ReadCount(Stream s) { return (new BinaryReader(s)).ReadByte(); }
+            protected override void WriteCount(Stream s, uint count) { (new BinaryWriter(s)).Write((byte)count); }
+
+            protected override ElementUInt32 CreateElement(Stream s) { return new ElementUInt32(0, elementHandler, s); }
+            protected override void WriteElement(Stream s, ElementUInt32 element) { element.UnParse(s); }
+            #endregion
+        }
+
         public class Entry : AHandlerElement, IEquatable<Entry>
         {
             const int recommendedApiVersion = 1;
@@ -135,7 +195,7 @@ namespace s3pi.GenericRCOLResource
 
             #region Constructors
             public Entry(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
-            public Entry(int APIversion, EventHandler handler, byte entryID, IList<UInt32> ltgi)
+            public Entry(int APIversion, EventHandler handler, byte entryID, IList<ElementUInt32> ltgi)
                 : base(APIversion, handler)
             {
                 this.entryType = 0x00;
@@ -256,7 +316,7 @@ namespace s3pi.GenericRCOLResource
                     {
                         s += "  [EntryID: 0x" + entryID.ToString("X2") + "]";
                         s += "\n    TGIIndexes:";
-                        for (int i = 0; i < tgiIndexes.Count; i++) s += "  [" + i + "] 0x" + tgiIndexes[i].ToString("X8") + "    ";
+                        for (int i = 0; i < tgiIndexes.Count; i++) s += "  [" + i + "] 0x" + tgiIndexes[i].Data.ToString("X8") + "    ";
                     }
                     else if (entryType == 0x01)
                     {
@@ -266,24 +326,6 @@ namespace s3pi.GenericRCOLResource
                     return s;
                 }
             }
-            #endregion
-        }
-
-        public class UintList : AResource.DependentList<UInt32>
-        {
-            #region Constructors
-            public UintList(EventHandler handler) : base(handler, 255) { }
-            public UintList(EventHandler handler, Stream s) : base(handler, 255, s) { }
-            public UintList(EventHandler handler, IList<UInt32> ltgi) : base(handler, 255, ltgi) { }
-            #endregion
-
-            #region Data I/O
-            protected override uint ReadCount(Stream s) { return (new BinaryReader(s)).ReadByte(); }
-            protected override void WriteCount(Stream s, uint count) { (new BinaryWriter(s)).Write((byte)count); }
-
-            protected override UInt32 CreateElement(Stream s) { return (new BinaryReader(s)).ReadUInt32(); }
-
-            protected override void WriteElement(Stream s, UInt32 element) { (new BinaryWriter(s)).Write(element); }
             #endregion
         }
 

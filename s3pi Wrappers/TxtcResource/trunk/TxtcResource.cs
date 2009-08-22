@@ -259,66 +259,31 @@ namespace TxtcResource
             protected override void WriteElement(Stream s, SuperBlock element) { element.UnParse(s); }
         }
 
-        public class Entry : AHandlerElement, IEquatable<Entry>
+        public abstract class Entry : AHandlerElement, IEquatable<Entry>
         {
             const int recommendedApiVersion = 1;
 
             #region Attributes
-            uint property;
-            byte unknown;
-            byte dataType;
-            byte data1;//0x00, 0x01, 0x05, 0x0C
-            ushort data2;//0x02, 0x06
-            uint data3;//0x03, 0x07
-            ulong data4;//0x04, 0x08
-            float data5;//0x09
-            float[] data6 = new float[4];//0x0A, 0x0B
-            string data7 = "";//0x0D
+            protected uint property;
+            protected byte unknown;
+            protected byte dataType;
             #endregion
 
             #region Constructors
-            public Entry(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
+            public Entry(int APIversion, EventHandler handler, uint property, byte unknown, byte dataType)
+                : base(APIversion, handler) { this.property = property; this.unknown = unknown; this.dataType = dataType; }
 
-            public Entry(int APIversion, EventHandler handler, uint property, byte unknown, byte dataType, byte data1) : this(APIversion, handler, property, unknown, dataType)
-            { if (checking) if (!(new List<byte>(new byte[] { 0x00, 0x01, 0x05, 0x0C, })).Contains(dataType)) throw new ArgumentException("dataType"); this.data1 = data1; }
-            public Entry(int APIversion, EventHandler handler, uint property, byte unknown, byte dataType, ushort data2) : this(APIversion, handler, property, unknown, dataType)
-            { if (checking) if (!(new List<byte>(new byte[] { 0x02, 0x06, })).Contains(dataType)) throw new ArgumentException("dataType"); this.data2 = data2; }
-            public Entry(int APIversion, EventHandler handler, uint property, byte unknown, byte dataType, uint data3) : this(APIversion, handler, property, unknown, dataType)
-            { if (checking) if (!(new List<byte>(new byte[] { 0x03, 0x07, })).Contains(dataType)) throw new ArgumentException("dataType"); this.data3 = data3; }
-            public Entry(int APIversion, EventHandler handler, uint property, byte unknown, byte dataType, ulong data4) : this(APIversion, handler, property, unknown, dataType)
-            { if (checking) if (!(new List<byte>(new byte[] { 0x04, 0x08, })).Contains(dataType)) throw new ArgumentException("dataType"); this.data4 = data4; }
-            public Entry(int APIversion, EventHandler handler, uint property, byte unknown, float data5) : this(APIversion, handler, property, unknown, 0x09) { this.data5 = data5; }
-            public Entry(int APIversion, EventHandler handler, uint property, byte unknown, byte dataType, float[] data6) : this(APIversion, handler, property, unknown, dataType)
-            { if (checking) if (!(new List<byte>(new byte[] { 0x0A, 0x0B, })).Contains(dataType)) throw new ArgumentException("dataType"); this.data6 = data6; }
-            public Entry(int APIversion, EventHandler handler, uint property, byte unknown, string data7) : this(APIversion, handler, property, unknown, 0x0D) { this.data7 = data7; }
-
-            internal Entry(int APIversion, EventHandler handler, uint property, byte unknown, byte dataType) : base(APIversion, handler) { this.property = property; this.unknown = unknown; this.dataType = dataType; }
-            internal Entry(int APIversion, EventHandler handler, Entry basis)
-                : base(APIversion, handler)
-            {
-                this.property = basis.property;
-                this.dataType = basis.dataType;
-                this.data1 = basis.data1;
-                this.data2 = basis.data2;
-                this.data3 = basis.data3;
-                this.data4 = basis.data4;
-                this.data5 = basis.data5;
-                this.data6 = (float[])basis.data6.Clone();
-                this.data7 = basis.data7;
-            }
-            #endregion
-
-            #region Data I/O
-            void Parse(Stream s)
+            public static Entry CreateEntry(int APIversion, EventHandler handler, Stream s)
             {
                 BinaryReader r = new BinaryReader(s);
-                property = r.ReadUInt32();
+                uint property = r.ReadUInt32();
                 if (property == 0)
-                    return;
+                    return new EntryNull(APIversion, handler);
+
                 if (checking) if (!Enum.IsDefined(typeof(Properties), property))
                         throw new InvalidDataException(String.Format("Unexpected property ID 0x{0:X8} at 0x{1:X8}", property, s.Position));
-                unknown = r.ReadByte();
-                dataType = r.ReadByte();
+                byte unknown = r.ReadByte();
+                byte dataType = r.ReadByte();
                 switch (dataType)
                 {
                     //0x00, 0x01, 0x05, 0x0C
@@ -326,36 +291,39 @@ namespace TxtcResource
                     case 0x01:
                     case 0x05:
                     case 0x0C:
-                        data1 = r.ReadByte(); break;
+                        return new EntryByte(APIversion, handler, property, unknown, dataType, r.ReadByte());
                     //0x02, 0x06
                     case 0x02:
                     case 0x06:
-                        data2 = r.ReadUInt16(); break;
+                        return new EntryUInt16(APIversion, handler, property, unknown, dataType, r.ReadUInt16());
                     //0x03, 0x07
                     case 0x03:
                     case 0x07:
-                        data3 = r.ReadUInt32(); break;
+                        return new EntryUInt32(APIversion, handler, property, unknown, dataType, r.ReadUInt32());
                     //0x04, 0x08
                     case 0x04:
                     case 0x08:
-                        data4 = r.ReadUInt64(); break;
+                        return new EntryUInt64(APIversion, handler, property, unknown, dataType, r.ReadUInt64());
                     //0x09
                     case 0x09:
-                        data5 = r.ReadSingle(); break;
+                        return new EntrySingle(APIversion, handler, property, unknown, dataType, r.ReadSingle());
                     case 0x0A:
                     case 0x0B:
-                        for (int i = 0; i < data6.Length; i++) data6[i] = r.ReadSingle(); break;
+                        return new EntrySingleArray(APIversion, handler, property, unknown, dataType, r);
                     //0x0D
                     case 0x0D:
-                        data7 = new string(r.ReadChars(r.ReadUInt16())); break;
+                        return new EntryString(APIversion, handler, property, unknown, dataType, new String(r.ReadChars(r.ReadUInt16())));
                     default:
                         if (checking)
-                                throw new InvalidDataException(String.Format("Unsupported data type 0x{0:X2} at 0x{1:X8}", dataType, s.Position));
+                            throw new InvalidDataException(String.Format("Unsupported data type 0x{0:X2} at 0x{1:X8}", dataType, s.Position));
                         break;
                 }
+                return null;
             }
+            #endregion
 
-            internal void UnParse(Stream s)
+            #region Data I/O
+            internal virtual void UnParse(Stream s)
             {
                 BinaryWriter w = new BinaryWriter(s);
                 w.Write(property);
@@ -363,45 +331,10 @@ namespace TxtcResource
                     return;
                 w.Write(unknown);
                 w.Write(dataType);
-                switch (dataType)
-                {
-                    case 0x00:
-                    case 0x01:
-                    case 0x05:
-                    case 0x0C:
-                        w.Write(data1); break;
-                    //0x02, 0x06
-                    case 0x02:
-                    case 0x06:
-                        w.Write(data2); break;
-                    //0x03, 0x07
-                    case 0x03:
-                    case 0x07:
-                        w.Write(data3); break;
-                    //0x04, 0x08
-                    case 0x04:
-                    case 0x08:
-                        w.Write(data4); break;
-                    //0x09
-                    case 0x09:
-                        w.Write(data5); break;
-                    case 0x0A:
-                    case 0x0B:
-                        for (int i = 0; i < data6.Length; i++) w.Write(data6[i]); break;
-                    //0x0D
-                    case 0x0D:
-                        w.Write((ushort)data7.Length); w.Write(data7.ToCharArray()); break;
-                    default:
-                        if (checking)
-                            throw new InvalidOperationException();
-                        break;
-                }
             }
             #endregion
 
             #region AHandlerElement Members
-            public override AHandlerElement Clone(EventHandler handler) { return new Entry(requestedApiVersion, handler, this); }
-
             public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
 
             public override List<string> ContentFields { get { return AApiVersionedFields.GetContentFields(requestedApiVersion, this.GetType()); } }
@@ -424,83 +357,8 @@ namespace TxtcResource
             public uint Property { get { return property; } set { if (property != value) { property = value; OnElementChanged(); } } }
             public byte Unknown { get { return unknown; } set { if (unknown != value) { unknown = value; OnElementChanged(); } } }
             public byte DataType { get { return dataType; } set { if (dataType != value) { dataType = value; OnElementChanged(); } } }
-            public object Data
-            {
-                get
-                {
-                    switch (dataType)
-                    {
-                        //0x00, 0x01, 0x05, 0x0C
-                        case 0x00:
-                        case 0x01:
-                        case 0x05:
-                        case 0x0C:
-                            return data1;
-                        //0x02, 0x06
-                        case 0x02:
-                        case 0x06:
-                            return data2;
-                        //0x03, 0x07
-                        case 0x03:
-                        case 0x07:
-                            return data3;
-                        //0x04, 0x08
-                        case 0x04:
-                        case 0x08:
-                            return data4;
-                        //0x09
-                        case 0x09:
-                            return data5;
-                        //0x0A, 0x0B
-                        case 0x0A:
-                        case 0x0B:
-                            return (float[])data6.Clone();
-                        //0x0D
-                        case 0x0D:
-                            return data7;
-                        default:
-                            throw new InvalidOperationException();
-                    }
-                }
-                set
-                {
-                    switch (dataType)
-                    {
-                        //0x00, 0x01, 0x05, 0x0C
-                        case 0x00:
-                        case 0x01:
-                        case 0x05:
-                        case 0x0C:
-                            if (data1 != (byte)value) { data1 = (byte)value; OnElementChanged(); } break;
-                        //0x02, 0x06
-                        case 0x02:
-                        case 0x06:
-                            if (data2 != (ushort)value) { data2 = (ushort)value; OnElementChanged(); } break;
-                        //0x03, 0x07
-                        case 0x03:
-                        case 0x07:
-                            if (data3 != (uint)value) { data3 = (uint)value; OnElementChanged(); } break;
-                        //0x04, 0x08
-                        case 0x04:
-                        case 0x08:
-                            if (data4 != (ulong)value) { data4 = (ulong)value; OnElementChanged(); } break;
-                        //0x09
-                        case 0x09:
-                            if (data5 != (float)value) { data5 = (float)value; OnElementChanged(); } break;
-                        //0x0A, 0x0B
-                        case 0x0A:
-                        case 0x0B:
-                            if (!ArrayCompare(data6, (float[])value)) { data6 = (float[])((float[])value).Clone(); OnElementChanged(); } break;
-                        //0x0D
-                        case 0x0D:
-                            if (data7 != (string)value) { data7 = (string)value; OnElementChanged(); } break;
-                        default:
-                            throw new InvalidOperationException();
-                    }
-                }
-            }
 
-            public string Value
+            public virtual string Value
             {
                 get
                 {
@@ -508,46 +366,91 @@ namespace TxtcResource
                     s += "Property: 0x" + property.ToString("X8") + (Enum.IsDefined(typeof(Properties), property) ? " (" + ((Properties)property) + ")" : "(undefined)");
                     s += "; Unknown: 0x" + unknown.ToString("X2");
                     s += "; DataType: 0x" + dataType.ToString("X2");
-                    s += "; Data: ";
-                    switch (dataType)
-                    {
-                        //0x00, 0x01, 0x05, 0x0C
-                        case 0x00:
-                        case 0x01:
-                        case 0x05:
-                        case 0x0C:
-                            s += "0x" + data1.ToString("X2"); break;
-                        //0x02, 0x06
-                        case 0x02:
-                        case 0x06:
-                            s += "0x" + data2.ToString("X4"); break;
-                        //0x03, 0x07
-                        case 0x03:
-                        case 0x07:
-                            s += "0x" + data3.ToString("X8"); break;
-                        //0x04, 0x08
-                        case 0x04:
-                        case 0x08:
-                            s += "0x" + data4.ToString("X16"); break;
-                        //0x09
-                        case 0x09:
-                            s += data5.ToString(); break;
-                        //0x0A, 0x0B
-                        case 0x0A:
-                        case 0x0B:
-                            TypedValue tv = new TypedValue(typeof(float[]), data6);
-                            s += "" + tv;
-                            break;
-                        //0x0D
-                        case 0x0D:
-                            s += "'" + data7 + "'"; break;
-                        default:
-                            throw new InvalidOperationException();
-                    }
                     return s;
                 }
             }
             #endregion
+        }
+
+        public class EntryNull : Entry
+        {
+            public EntryNull(int APIversion, EventHandler handler)
+                : base(APIversion, handler, 0, 0, 0) { }
+            internal override void UnParse(Stream s) { throw new NotImplementedException(); }
+            public override AHandlerElement Clone(EventHandler handler) { throw new NotImplementedException(); }
+            public override string Value { get { throw new NotImplementedException(); } }
+        }
+        public class EntryByte : Entry
+        {
+            byte data;
+            public EntryByte(int APIversion, EventHandler handler, uint property, byte unknown, byte dataType, byte data)
+                : base(APIversion, handler, property, unknown, dataType) { this.data = data; }
+            internal override void UnParse(Stream s) { base.UnParse(s); new BinaryWriter(s).Write(data); }
+            public override AHandlerElement Clone(EventHandler handler) { return new EntryByte(requestedApiVersion, handler, property, unknown, dataType, data); }
+            public byte Data { get { return data; } set { if (data != value) { data = value; OnElementChanged(); } } }
+            public override string Value { get { return base.Value + "; Data: 0x" + data.ToString("X2"); } }
+        }
+        public class EntryUInt16 : Entry
+        {
+            UInt16 data;
+            public EntryUInt16(int APIversion, EventHandler handler, uint property, byte unknown, byte dataType, UInt16 data)
+                : base(APIversion, handler, property, unknown, dataType) { this.data = data; }
+            internal override void UnParse(Stream s) { base.UnParse(s); new BinaryWriter(s).Write(data); }
+            public override AHandlerElement Clone(EventHandler handler) { return new EntryUInt16(requestedApiVersion, handler, property, unknown, dataType, data); ; }
+            public UInt16 Data { get { return data; } set { if (data != value) { data = value; OnElementChanged(); } } }
+            public override string Value { get { return base.Value + "; Data: 0x" + data.ToString("X4"); } }
+        }
+        public class EntryUInt32 : Entry
+        {
+            UInt32 data;
+            public EntryUInt32(int APIversion, EventHandler handler, uint property, byte unknown, byte dataType, UInt32 data)
+                : base(APIversion, handler, property, unknown, dataType) { this.data = data; }
+            internal override void UnParse(Stream s) { base.UnParse(s); new BinaryWriter(s).Write(data); }
+            public override AHandlerElement Clone(EventHandler handler) { return new EntryUInt32(requestedApiVersion, handler, property, unknown, dataType, data); ; }
+            public UInt32 Data { get { return data; } set { if (data != value) { data = value; OnElementChanged(); } } }
+            public override string Value { get { return base.Value + "; Data: 0x" + data.ToString("X8"); } }
+        }
+        public class EntryUInt64 : Entry
+        {
+            UInt64 data;
+            public EntryUInt64(int APIversion, EventHandler handler, uint property, byte unknown, byte dataType, UInt64 data)
+                : base(APIversion, handler, property, unknown, dataType) { this.data = data; }
+            internal override void UnParse(Stream s) { base.UnParse(s); new BinaryWriter(s).Write(data); }
+            public override AHandlerElement Clone(EventHandler handler) { return new EntryUInt64(requestedApiVersion, handler, property, unknown, dataType, data); ; }
+            public UInt64 Data { get { return data; } set { if (data != value) { data = value; OnElementChanged(); } } }
+            public override string Value { get { return base.Value + "; Data: 0x" + data.ToString("X16"); } }
+        }
+        public class EntrySingle : Entry
+        {
+            Single data;
+            public EntrySingle(int APIversion, EventHandler handler, uint property, byte unknown, byte dataType, Single data)
+                : base(APIversion, handler, property, unknown, dataType) { this.data = data; }
+            internal override void UnParse(Stream s) { base.UnParse(s); new BinaryWriter(s).Write(data); }
+            public override AHandlerElement Clone(EventHandler handler) { return new EntrySingle(requestedApiVersion, handler, property, unknown, dataType, data); ; }
+            public Single Data { get { return data; } set { if (data != value) { data = value; OnElementChanged(); } } }
+            public override string Value { get { return base.Value + "; Data: " + data.ToString(); } }
+        }
+        public class EntrySingleArray : Entry
+        {
+            Single[] data = new Single[4];
+            public EntrySingleArray(int APIversion, EventHandler handler, uint property, byte unknown, byte dataType, BinaryReader r)
+                : base(APIversion, handler, property, unknown, dataType) { for (int i = 0; i < data.Length; i++) data[i] = r.ReadSingle(); }
+            public EntrySingleArray(int APIversion, EventHandler handler, uint property, byte unknown, byte dataType, Single[] data)
+                : base(APIversion, handler, property, unknown, dataType) { if (data.Length != this.data.Length) throw new ArgumentLengthException(); this.data = (Single[])data.Clone(); }
+            internal override void UnParse(Stream s) { base.UnParse(s); BinaryWriter w = new BinaryWriter(s); for (int i = 0; i < data.Length; i++) w.Write(data[i]); }
+            public override AHandlerElement Clone(EventHandler handler) { return new EntrySingleArray(requestedApiVersion, handler, property, unknown, dataType, data); ; }
+            public Single[] Data { get { return (Single[])data.Clone(); } set { if (!ArrayCompare(data, value)) { data = (Single[])value.Clone(); OnElementChanged(); } } }
+            public override string Value { get { return base.Value + "; Data: " + (new TypedValue(data.GetType(), data, "X")); } }
+        }
+        public class EntryString : Entry
+        {
+            String data;
+            public EntryString(int APIversion, EventHandler handler, uint property, byte unknown, byte dataType, String data)
+                : base(APIversion, handler, property, unknown, dataType) { this.data = data; }
+            internal override void UnParse(Stream s) { base.UnParse(s); BinaryWriter w = new BinaryWriter(s); w.Write((UInt16)data.Length); w.Write(data.ToCharArray()); }
+            public override AHandlerElement Clone(EventHandler handler) { return new EntryString(requestedApiVersion, handler, property, unknown, dataType, data); ; }
+            public String Data { get { return data; } set { if (data != value) { data = value; OnElementChanged(); } } }
+            public override string Value { get { return base.Value + "; Data: \"" + data + "\""; } }
         }
 
         public class EntryList : AResource.DependentList<Entry>
@@ -574,7 +477,7 @@ namespace TxtcResource
             void Parse(Stream s)
             {
                 theList = new EntryList(handler);
-                for (Entry e = new Entry(requestedApiVersion, handler, s); e.Property != 0; e = new Entry(requestedApiVersion, handler, s)) theList.Add(e);
+                for (Entry e = Entry.CreateEntry(requestedApiVersion, handler, s); e.Property != 0; e = Entry.CreateEntry(requestedApiVersion, handler, s)) theList.Add(e);
             }
 
             internal void UnParse(Stream s)
