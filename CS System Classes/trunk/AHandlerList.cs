@@ -41,13 +41,13 @@ namespace System.Collections.Generic
         #endregion
 
         #region IList<T> Members
-        public virtual new void Insert(int index, T item) { if (maxSize >= 0 && Count == maxSize) throw new InvalidOperationException(); base.Insert(index, item); OnListChanged(); }
+        public new virtual void Insert(int index, T item) { if (maxSize >= 0 && Count == maxSize) throw new InvalidOperationException(); base.Insert(index, item); OnListChanged(); }
         public new virtual void RemoveAt(int index) { base.RemoveAt(index); OnListChanged(); }
         public new virtual T this[int index] { get { return base[index]; } set { if (!base[index].Equals(value)) { base[index] = value; OnListChanged(); } } }
         #endregion
 
         #region ICollection<T> Members
-        public virtual new void Add(T item) { if (maxSize >= 0 && Count == maxSize) throw new InvalidOperationException(); base.Add(item); OnListChanged(); }
+        public new virtual void Add(T item) { if (maxSize >= 0 && Count == maxSize) throw new InvalidOperationException(); base.Add(item); OnListChanged(); }
         public new virtual void Clear() { base.Clear(); OnListChanged(); }
         public new virtual bool Remove(T item) { try { return base.Remove(item); } finally { OnListChanged(); } }
         #endregion
