@@ -44,13 +44,27 @@ namespace s3pi.GenericRCOLResource
         public VPXY(int APIversion, EventHandler handler, VPXY basis)
             : base(APIversion, handler, null)
         {
-            version = basis.version;
-            entryList = new EntryList(OnRCOLChanged, basis.entryList);
-            boundingBox = (float[])basis.boundingBox;
-            unused = (byte[])basis.unused.Clone();
-            modular = basis.modular;
+            this.version = basis.version;
+            this.entryList = new EntryList(handler, basis.entryList);
+            this.boundingBox = (float[])basis.boundingBox.Clone();
+            this.unused = (byte[])basis.unused.Clone();
+            this.modular = basis.modular;
             if (modular != 0)
-                ftptIndex = basis.ftptIndex;
+                this.ftptIndex = basis.ftptIndex;
+            this.tgiBlockList = new AResource.TGIBlockList(handler, basis.tgiBlockList);
+        }
+        public VPXY(int APIversion, EventHandler handler,
+            uint version, EntryList entryList, float[] boundingBox, byte[] unused, byte modular, uint ftptIndex, IList<AResource.TGIBlock> tgiBlockList)
+            : base(APIversion, handler, null)
+        {
+            this.version = version;
+            this.entryList = new EntryList(handler, entryList);
+            this.boundingBox = (float[])boundingBox.Clone();
+            this.unused = (byte[])unused.Clone();
+            this.modular = modular;
+            if (modular != 0)
+                this.ftptIndex = ftptIndex;
+            this.tgiBlockList = new AResource.TGIBlockList(handler, tgiBlockList);
         }
 
         #region ARCOLBlock
@@ -162,7 +176,6 @@ namespace s3pi.GenericRCOLResource
             public string Value { get { return "Data: 0x" + data.ToString("X8"); } }
             #endregion
         }
-
         public class UintList : AResource.DependentList<ElementUInt32>
         {
             #region Constructors
@@ -180,71 +193,25 @@ namespace s3pi.GenericRCOLResource
             #endregion
         }
 
-        public class Entry : AHandlerElement, IEquatable<Entry>
+        public abstract class Entry : AHandlerElement, IEquatable<Entry>
         {
             const int recommendedApiVersion = 1;
 
-            #region Attributes
-            byte entryType;
-            // if entryType == 0x00:
-            byte entryID;
-            UintList tgiIndexes;
-            // if entryType == 0x01:
-            uint tgiIndex;
-            #endregion
-
             #region Constructors
-            public Entry(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
-            public Entry(int APIversion, EventHandler handler, byte entryID, IList<ElementUInt32> ltgi)
-                : base(APIversion, handler)
+            protected Entry(int APIversion, EventHandler handler) : base(APIversion, handler) { }
+
+            public static Entry CreateEntry(int APIversion, EventHandler handler, Stream s)
             {
-                this.entryType = 0x00;
-                this.entryID = entryID;
-                this.tgiIndexes = new UintList(handler, ltgi);
-            }
-            public Entry(int APIversion, EventHandler handler, UInt32 tgi)
-                : base(APIversion, handler)
-            {
-                this.entryType = 0x01;
-                this.tgiIndex = tgi;
+                BinaryReader r = new BinaryReader(s);
+                byte entryType = r.ReadByte();
+                if (entryType == 0x00) return new Entry00(APIversion, handler, 0, r.ReadByte(), new UintList(handler, s));
+                if (entryType == 0x01) return new Entry01(APIversion, handler, 1, r.ReadUInt32());
+                throw new InvalidDataException(String.Format("Unknown EntryType 0x{0:X2} at 0x{1:X8}", entryType, s.Position));
             }
             #endregion
 
             #region Data I/O
-            void Parse(Stream s)
-            {
-                BinaryReader r = new BinaryReader(s);
-                entryType = r.ReadByte();
-                if (entryType == 0x00)
-                {
-                    entryID = r.ReadByte();
-                    tgiIndexes = new UintList(handler, s);
-                }
-                else if (entryType == 0x01)
-                {
-                    tgiIndex = r.ReadUInt32();
-                }
-                else if (checking)
-                    throw new InvalidDataException(String.Format("Unknown EntryType 0x{0:X2} at 0x{1:X8}", entryType, s.Position));
-            }
-
-            internal void UnParse(Stream s)
-            {
-                BinaryWriter w = new BinaryWriter(s);
-                w.Write(entryType);
-                if (entryType == 0x00)
-                {
-                    w.Write(entryID);
-                    if (tgiIndexes == null) tgiIndexes = new UintList(handler);
-                    tgiIndexes.UnParse(s);
-                }
-                else if (entryType == 0x01)
-                {
-                    w.Write(tgiIndex);
-                }
-                else if (checking)
-                    throw new InvalidOperationException(String.Format("Unknown EntryType 0x{0:X2}", entryType));
-            }
+            internal abstract void UnParse(Stream s);
             #endregion
 
             #region AHandlerElement Members
@@ -254,78 +221,74 @@ namespace s3pi.GenericRCOLResource
             /// The list of available field names on this API object
             /// </summary>
             public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
-
-            public override AHandlerElement Clone(EventHandler handler)
-            {
-                return this.entryType == 0x00
-                    ? new Entry(requestedApiVersion, handler, this.entryID, this.tgiIndexes)
-                    : new Entry(requestedApiVersion, handler, this.tgiIndex);
-            }
             #endregion
 
             #region IEquatable<Entry> Members
 
-            public bool Equals(Entry other)
-            {
-                if (other.entryType == entryType)
-                {
-                    if (entryType == 0x00)
-                    {
-                        if (other.entryID == entryID)
-                        {
-                            if (other.tgiIndexes.Count == tgiIndexes.Count)
-                            {
-                                for (int i = 0; i < tgiIndexes.Count; i++) if (other.tgiIndexes[i] != tgiIndexes[i]) return false;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    else if (entryType == 0x01) return other.tgiIndex == tgiIndex;
-                }
-                return false;
-            }
+            public abstract bool Equals(Entry other);
 
             #endregion
 
-            #region Content Fields
-            public byte EntryType { get { return entryType; } set { if (entryType != value) { entryType = value; if (handler != null) handler(this, EventArgs.Empty); } } }
-            public byte EntryID
+            public abstract string Value { get; }
+        }
+        public class Entry00 : Entry
+        {
+            byte entryID;
+            UintList tgiIndexes;
+            public Entry00(int APIversion, EventHandler handler, byte entryType, byte entryID, IList<ElementUInt32> tgiIndexes)
+                : base(APIversion, handler) { this.entryID = entryID; this.tgiIndexes = new UintList(handler, tgiIndexes); }
+            internal override void UnParse(Stream s)
             {
-                get { return entryID; }
-                set { if (entryType != 0x00) throw new InvalidOperationException(); if (entryID != value) { entryID = value; if (handler != null) handler(this, EventArgs.Empty); } }
-            }
-            public UintList TGIIndexes
-            {
-                get { return tgiIndexes; }
-                set { if (entryType != 0x00) throw new InvalidOperationException(); if (tgiIndexes != value) { tgiIndexes = new UintList(handler, value); if (handler != null) handler(this, EventArgs.Empty); } }
-            }
-            public UInt32 TGIIndex
-            {
-                get { return tgiIndex; }
-                set { if (entryType != 0x01) throw new InvalidOperationException(); if (tgiIndex != value) { tgiIndex = value; if (handler != null) handler(this, EventArgs.Empty); } }
+                BinaryWriter w = new BinaryWriter(s);
+                w.Write((byte)0x00);
+                w.Write(entryID);
+                if (tgiIndexes == null) tgiIndexes = new UintList(handler);
+                tgiIndexes.UnParse(s);
             }
 
-            public string Value
+            public override bool Equals(Entry other)
+            {
+                return other.GetType() == this.GetType() &&
+                    (other as Entry00).entryID == entryID && (other as Entry00).tgiIndexes == tgiIndexes;
+            }
+
+            public override AHandlerElement Clone(EventHandler handler) { return new Entry00(requestedApiVersion, handler, 0, entryID, tgiIndexes); }
+
+            #region Content Fields
+            public byte EntryID { get { return entryID; } set { if (entryID != value) { entryID = value; if (handler != null) handler(this, EventArgs.Empty); } } }
+            public UintList TGIIndexes { get { return tgiIndexes; } set { if (tgiIndexes != value) { tgiIndexes = new UintList(handler, value); if (handler != null) handler(this, EventArgs.Empty); } } }
+
+            public override string Value
             {
                 get
                 {
                     string s = "";
-                    s += "[EntryType: 0x" + entryType.ToString("X2") + "]";
-                    if (entryType == 0x00)
-                    {
-                        s += "  [EntryID: 0x" + entryID.ToString("X2") + "]";
-                        s += "\n    TGIIndexes:";
-                        for (int i = 0; i < tgiIndexes.Count; i++) s += "  [" + i + "] 0x" + tgiIndexes[i].Data.ToString("X8") + "    ";
-                    }
-                    else if (entryType == 0x01)
-                    {
-                        s += "  [TGIIndex: 0x" + tgiIndex.ToString("X8") + "]";
-                    }
-                    else throw new InvalidOperationException();
-                    return s;
+                    s += "EntryID: 0x" + entryID.ToString("X2") + "; TGIIndexes:";
+                    for (int i = 0; i < tgiIndexes.Count; i++) s += " [" + i + "] 0x" + tgiIndexes[i].Data.ToString("X8") + ";";
+                    return s.TrimEnd(';');
                 }
             }
+            #endregion
+        }
+        public class Entry01 : Entry
+        {
+            uint tgiIndex;
+            public Entry01(int APIversion, EventHandler handler, byte entryType, uint tgiIndex) : base(APIversion, handler) { this.tgiIndex = tgiIndex; }
+            internal override void UnParse(Stream s)
+            {
+                BinaryWriter w = new BinaryWriter(s);
+                w.Write((byte)0x01);
+                w.Write(tgiIndex);
+            }
+
+            public override bool Equals(Entry other) { return other.GetType() == this.GetType() && (other as Entry01).tgiIndex == tgiIndex; }
+
+            public override AHandlerElement Clone(EventHandler handler) { return new Entry01(requestedApiVersion, handler, 1, tgiIndex); }
+
+            #region Content Fields
+            public UInt32 TGIIndex { get { return tgiIndex; } set { if (tgiIndex != value) { tgiIndex = value; if (handler != null) handler(this, EventArgs.Empty); } } }
+
+            public override string Value { get { return "TGIIndex: 0x" + tgiIndex.ToString("X8") + ""; } }
             #endregion
         }
 
@@ -341,10 +304,20 @@ namespace s3pi.GenericRCOLResource
             protected override uint ReadCount(Stream s) { return (new BinaryReader(s)).ReadByte(); }
             protected override void WriteCount(Stream s, uint count) { (new BinaryWriter(s)).Write((byte)count); }
 
-            protected override Entry CreateElement(Stream s) { return new Entry(0, elementHandler, s); }
+            protected override Entry CreateElement(Stream s) { return Entry.CreateEntry(0, elementHandler, s); }
 
             protected override void WriteElement(Stream s, Entry element) { element.UnParse(s); }
             #endregion
+
+            protected override Type GetElementType(params object[] fields)
+            {
+                switch ((byte)fields[0])
+                {
+                    case 0x00: return typeof(Entry00);
+                    case 0x01: return typeof(Entry01);
+                }
+                throw new ArgumentException(String.Format("Unknown entry type 0x{0:X2}", (byte)fields[0]));
+            }
         }
         #endregion
 

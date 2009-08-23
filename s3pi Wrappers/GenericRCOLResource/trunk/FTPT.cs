@@ -39,9 +39,16 @@ namespace s3pi.GenericRCOLResource
         public FTPT(int APIversion, EventHandler handler, FTPT basis)
             : base(APIversion, handler, null)
         {
-            version = basis.version;
-            footprintAreas = new AreaList(handler, basis.footprintAreas);
-            slotAreas = new AreaList(handler, basis.slotAreas);
+            this.version = basis.version;
+            this.footprintAreas = new AreaList(handler, basis.footprintAreas);
+            this.slotAreas = new AreaList(handler, basis.slotAreas);
+        }
+        public FTPT(int APIversion, EventHandler handler, uint version)
+            : base(APIversion, handler, null)
+        {
+            this.version = version;
+            this.footprintAreas = new AreaList(handler);
+            this.slotAreas = new AreaList(handler);
         }
 
         #region ARCOLBlock
@@ -79,14 +86,6 @@ namespace s3pi.GenericRCOLResource
         #endregion
 
         #region Sub-types
-        [Flags]
-        public enum AreaType : uint
-        {
-            Unknown = 0,
-            Placement = 1,
-            Pathing = 2,
-            Shape = 4,
-        }
         public class PolygonPoint : AHandlerElement, IEquatable<PolygonPoint>
         {
             const int recommendedApiVersion = 1;
@@ -172,6 +171,15 @@ namespace s3pi.GenericRCOLResource
             protected override void WriteElement(Stream s, PolygonPoint element) { element.UnParse(s); }
             #endregion
         }
+
+        [Flags]
+        public enum AreaType : uint
+        {
+            Unknown = 0,
+            Placement = 1,
+            Pathing = 2,
+            Shape = 4,
+        }
         public class Area : AHandlerElement, IEquatable<Area>
         {
             const int recommendedApiVersion = 1;
@@ -209,8 +217,13 @@ namespace s3pi.GenericRCOLResource
                 this.upperX = basis.upperX;
                 this.upperY = basis.upperY;
             }
+            /*public Area(int APIversion, EventHandler handler,
+                uint name, byte unknown1, AreaType areaType, uint placementFlags1, uint placementFlags2, uint placementFlags3,
+                byte unknown2, float lowerX, float lowerY, float upperX, float upperY)
+                : this(APIversion, handler, name, unknown1, areaType, new List<PolygonPoint>(),
+                placementFlags1, placementFlags2, placementFlags3, unknown2, lowerX, lowerY, upperX, upperY) { }/**/
             public Area(int APIversion, EventHandler handler,
-                uint name, byte unknown1, AreaType areaType, AResource.DependentList<PolygonPoint> closedPolygon, uint placementFlags1, uint placementFlags2, uint placementFlags3,
+                uint name, byte unknown1, AreaType areaType, IList<PolygonPoint> closedPolygon, uint placementFlags1, uint placementFlags2, uint placementFlags3,
                 byte unknown2, float lowerX, float lowerY, float upperX, float upperY)
                 : base(APIversion, handler)
             {
@@ -333,7 +346,6 @@ namespace s3pi.GenericRCOLResource
             }
             #endregion
         }
-
         public class AreaList : AResource.DependentList<Area>
         {
             #region Constructors
