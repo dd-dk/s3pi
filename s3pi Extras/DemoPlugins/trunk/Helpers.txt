@@ -46,6 +46,10 @@ dds.ViewerArguments: /clipboard
 dds.Editor: C:\Program Files\GIMP-2.0\bin\gimp-2.6.exe
 dds.EditorArguments: {}
 
+// ObjKey editor, using the editor supplied with s3pe
+objk.ResourceType: 0x02DC343F
+objk.Editor: OBJKResourceEditor
+
 // String tables, using the editor supplied with s3pe
 stbl.ResourceType: 0x220557DA
 stbl.Editor: STBLResourceEditor
