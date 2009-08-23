@@ -36,9 +36,9 @@ namespace s3pi.GenericRCOLResource
 
         public override AHandlerElement Clone(EventHandler handler) { return new DefaultRCOL(requestedApiVersion, handler, this); }
 
-        public override string Tag { get { return "*"; } }
+        public override string Tag { get { return "*"; } } // For RCOLDealer
 
-        public override uint ResourceType { get { return 0xffffffff; } }
+        public override uint ResourceType { get { return 0xFFFFFFFF; } }
 
         public override System.IO.Stream UnParse() { MemoryStream ms = new MemoryStream(); ms.Write(data, 0, data.Length); return ms; }
 
