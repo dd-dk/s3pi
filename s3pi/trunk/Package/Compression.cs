@@ -161,7 +161,7 @@ namespace s3pi.Package
         {
 #if true
             byte[] res;
-            bool smaller = Tiger.Compression.Compress(data, out res);
+            bool smaller = Tiger.DBPFCompression.Compress(data, out res);
             return smaller ? res : data;
 #else
             if (data.Length < 10) return data;
@@ -190,6 +190,8 @@ namespace s3pi.Package
 #endif
         }
 
+#if true
+#else
         public static int Enchunk(BinaryWriter bw, byte[] buffer, int pos)
         {
             //if (buffer.Length - pos < 4)
@@ -447,6 +449,7 @@ namespace s3pi.Package
 
             return retval;
         }
+#endif
     }
 }
 
@@ -459,471 +462,693 @@ namespace s3pi.Package
 
 namespace Tiger
 {
-    public class CompressionLevel
+    class DBPFCompression
     {
-        public static readonly CompressionLevel Max = new CompressionLevel(1, 1, 10, 64);
-
-        public readonly int BlockInterval;
-        public readonly int SearchLength;
-        public readonly int PrequeueLength;
-        public readonly int QueueLength;
-        public readonly int SameValToTrack;
-        public readonly int BruteForceLength;
-
-        public CompressionLevel(int blockInterval, int searchLength, int prequeueLength, int queueLength, int sameValToTrack, int bruteForceLength)
+        public DBPFCompression(int level)
         {
-            this.BlockInterval = blockInterval;
-            this.SearchLength = searchLength;
-            this.PrequeueLength = prequeueLength;
-            this.QueueLength = queueLength;
-            this.SameValToTrack = sameValToTrack;
-            this.BruteForceLength = bruteForceLength;
+            mTracker = CreateTracker(level, out mBruteForceLength);
         }
 
-        public CompressionLevel(int blockInterval, int searchLength, int sameValToTrack, int bruteForceLength)
+        public DBPFCompression(int blockinterval, int lookupstart, int windowlength, int bucketdepth, int bruteforcelength)
         {
-            this.BlockInterval = blockInterval;
-            this.SearchLength = searchLength;
-            this.PrequeueLength = this.SearchLength / this.BlockInterval;
-            this.QueueLength = 131000 / this.BlockInterval - this.PrequeueLength;
-            this.SameValToTrack = sameValToTrack;
-            this.BruteForceLength = bruteForceLength;
-        }
-    }
-
-    public class Compression
-    {
-        public static bool Compress(byte[] input, out byte[] output)
-        {
-            return Compress(input, out output, CompressionLevel.Max);
+            mTracker = CreateTracker(blockinterval, lookupstart, windowlength, bucketdepth);
+            mBruteForceLength = bruteforcelength;
         }
 
-        public static bool Compress(byte[] input, out byte[] output, CompressionLevel level)
+        private int mBruteForceLength;
+        private IMatchtracker mTracker;
+
+        private byte[] mData;
+
+        private int mSequenceSource;
+        private int mSequenceLength;
+        private int mSequenceDest;
+        private bool mSequenceFound;
+
+        public static bool Compress(byte[] data, out byte[] compressed)
         {
-            if (input.LongLength >= 0xFFFFFFFF)
+            DBPFCompression compressor = new DBPFCompression(5);
+            compressed = compressor.Compress(data);
+            return (compressed != null);
+        }
+
+        public static bool Compress(byte[] data, out byte[] compressed, int level)
+        {
+            DBPFCompression compressor = new DBPFCompression(level);
+            compressed = compressor.Compress(data);
+            return (compressed != null);
+        }
+
+        public byte[] Compress(byte[] data)
+        {
+            bool endisvalid = false;
+            List<byte[]> compressedchunks = new List<byte[]>();
+            int compressedidx = 0;
+            int compressedlen = 0;
+
+            if (data.Length < 16 || data.LongLength > UInt32.MaxValue)
+                return null;
+
+            mData = data;
+
+            try
             {
-                throw new InvalidOperationException("input data is too large");
-            }
+                int lastbytestored = 0;
 
-            bool endIsValid = false;
-            List<byte[]> compressedChunks = new List<byte[]>();
-            int compressedIndex = 0;
-            int compressedLength = 0;
-            output = null;
-
-            if (input.Length < 16)
-            {
-                return false;
-            }
-
-            Queue<KeyValuePair<int, int>> blockTrackingQueue = new Queue<KeyValuePair<int, int>>();
-            Queue<KeyValuePair<int, int>> blockPretrackingQueue = new Queue<KeyValuePair<int, int>>();
-
-            // So lists aren't being freed and allocated so much
-            Queue<List<int>> unusedLists = new Queue<List<int>>();
-            Dictionary<int, List<int>> latestBlocks = new Dictionary<int, List<int>>();
-            int lastBlockStored = 0;
-
-            while (compressedIndex < input.Length)
-            {
-                while (compressedIndex > lastBlockStored + level.BlockInterval && input.Length - compressedIndex > 16)
+                while (compressedidx < data.Length)
                 {
-                    if (blockPretrackingQueue.Count >= level.PrequeueLength)
+                    if (data.Length - compressedidx < 4)
                     {
-                        KeyValuePair<int, int> tmppair = blockPretrackingQueue.Dequeue();
-                        blockTrackingQueue.Enqueue(tmppair);
+                        // Just copy the rest
+                        byte[] chunk = new byte[data.Length - compressedidx + 1];
+                        chunk[0] = (byte)(0xFC | (data.Length - compressedidx));
+                        Array.Copy(data, compressedidx, chunk, 1, data.Length - compressedidx);
+                        compressedchunks.Add(chunk);
+                        compressedidx += chunk.Length - 1;
+                        compressedlen += chunk.Length;
 
-                        List<int> valueList;
+                        endisvalid = true;
+                        continue;
+                    }
 
-                        if (!latestBlocks.TryGetValue(tmppair.Key, out valueList))
+                    while (compressedidx > lastbytestored - 3)
+                        mTracker.Addvalue(data[lastbytestored++]);
+
+                    // Search ahead in blocks of 4 bytes for a match until one is found
+                    // Record the best match if multiple are found
+                    mSequenceSource = 0;
+                    mSequenceLength = 0;
+                    mSequenceDest = int.MaxValue;
+                    mSequenceFound = false;
+                    do
+                    {
+                        for (int loop = 0; loop < 4; loop++)
                         {
-                            if (unusedLists.Count > 0)
+                            mTracker.Addvalue(data[lastbytestored++]);
+                            FindSequence(lastbytestored - 4);
+                        }
+                    }
+                    while (!mSequenceFound && lastbytestored + 4 <= data.Length);
+
+                    if (!mSequenceFound)
+                        mSequenceDest = mData.Length;
+
+                    // If the next match is more than four bytes away, put in codes to read uncompressed data
+                    while (mSequenceDest - compressedidx >= 4)
+                    {
+                        int tocopy = (mSequenceDest - compressedidx) & ~3;
+                        if (tocopy > 112)
+                            tocopy = 112;
+
+                        byte[] chunk = new byte[tocopy + 1];
+                        chunk[0] = (byte)(0xE0 | ((tocopy >> 2) - 1));
+                        Array.Copy(data, compressedidx, chunk, 1, tocopy);
+                        compressedchunks.Add(chunk);
+                        compressedidx += tocopy;
+                        compressedlen += chunk.Length;
+                    }
+
+                    if (mSequenceFound)
+                    {
+                        byte[] chunk = null;
+                        /*
+                         * 00-7F  0oocccpp oooooooo
+                         *   Read 0-3
+                         *   Copy 3-10
+                         *   Offset 0-1023
+                         *   
+                         * 80-BF  10cccccc ppoooooo oooooooo
+                         *   Read 0-3
+                         *   Copy 4-67
+                         *   Offset 0-16383
+                         *   
+                         * C0-DF  110cccpp oooooooo oooooooo cccccccc
+                         *   Read 0-3
+                         *   Copy 5-1028
+                         *   Offset 0-131071
+                         *   
+                         * E0-FC  111ppppp
+                         *   Read 4-128 (Multiples of 4)
+                         *   
+                         * FD-FF  111111pp
+                         *   Read 0-3
+                         */
+                        //if (FindRunLength(data, seqstart, compressedidx + seqidx) < seqlength)
+                        //{
+                        //    break;
+                        //}
+                        while (mSequenceLength > 0)
+                        {
+                            int thislength = mSequenceLength;
+                            if (thislength > 1028)
+                                thislength = 1028;
+                            mSequenceLength -= thislength;
+
+                            int offset = mSequenceDest - mSequenceSource - 1;
+                            int readbytes = mSequenceDest - compressedidx;
+
+                            mSequenceSource += thislength;
+                            mSequenceDest += thislength;
+
+                            if (thislength > 67 || offset > 16383)
                             {
-                                valueList = unusedLists.Dequeue();
+                                chunk = new byte[readbytes + 4];
+                                chunk[0] = (byte)(0xC0 | readbytes | (((thislength - 5) >> 6) & 0x0C) | ((offset >> 12) & 0x10));
+                                chunk[1] = (byte)((offset >> 8) & 0xFF);
+                                chunk[2] = (byte)(offset & 0xFF);
+                                chunk[3] = (byte)((thislength - 5) & 0xFF);
+                            }
+                            else if (thislength > 10 || offset > 1023)
+                            {
+                                chunk = new byte[readbytes + 3];
+                                chunk[0] = (byte)(0x80 | ((thislength - 4) & 0x3F));
+                                chunk[1] = (byte)(((readbytes << 6) & 0xC0) | ((offset >> 8) & 0x3F));
+                                chunk[2] = (byte)(offset & 0xFF);
                             }
                             else
                             {
-                                valueList = new List<int>();
+                                chunk = new byte[readbytes + 2];
+                                chunk[0] = (byte)((readbytes & 0x3) | (((thislength - 3) << 2) & 0x1C) | ((offset >> 3) & 0x60));
+                                chunk[1] = (byte)(offset & 0xFF);
                             }
 
-                            latestBlocks[tmppair.Key] = valueList;
-                        }
+                            if (readbytes > 0)
+                                Array.Copy(data, compressedidx, chunk, chunk.Length - readbytes, readbytes);
 
-                        if (valueList.Count >= level.SameValToTrack)
-                        {
-                            int earliestIndex = 0;
-                            int earliestValue = valueList[0];
-
-                            for (int loop = 1; loop < valueList.Count; loop++)
-                            {
-                                if (valueList[loop] < earliestValue)
-                                {
-                                    earliestIndex = loop;
-                                    earliestValue = valueList[loop];
-                                }
-                            }
-
-                            valueList[earliestIndex] = tmppair.Value;
-                        }
-                        else
-                        {
-                            valueList.Add(tmppair.Value);
-                        }
-
-                        if (blockTrackingQueue.Count > level.QueueLength)
-                        {
-                            KeyValuePair<int, int> tmppair2 = blockTrackingQueue.Dequeue();
-                            valueList = latestBlocks[tmppair2.Key];
-
-                            for (int loop = 0; loop < valueList.Count; loop++)
-                            {
-                                if (valueList[loop] == tmppair2.Value)
-                                {
-                                    valueList.RemoveAt(loop);
-                                    break;
-                                }
-                            }
-
-                            if (valueList.Count == 0)
-                            {
-                                latestBlocks.Remove(tmppair2.Key);
-                                unusedLists.Enqueue(valueList);
-                            }
+                            compressedchunks.Add(chunk);
+                            compressedidx += thislength + readbytes;
+                            compressedlen += chunk.Length;
                         }
                     }
-
-                    KeyValuePair<int, int> newBlock = new KeyValuePair<int, int>(BitConverter.ToInt32(input, lastBlockStored), lastBlockStored);
-                    lastBlockStored += level.BlockInterval;
-                    blockPretrackingQueue.Enqueue(newBlock);
                 }
 
-                if (input.Length - compressedIndex < 4)
+                if (compressedlen + 6 < data.Length)
                 {
-                    // Just copy the rest
-                    byte[] chunk = new byte[input.Length - compressedIndex + 1];
-                    chunk[0] = (byte)(0xFC | (input.Length - compressedIndex));
-                    Array.Copy(input, compressedIndex, chunk, 1, input.Length - compressedIndex);
+                    int chunkpos;
+                    byte[] compressed;
 
-                    compressedChunks.Add(chunk);
-                    compressedIndex += chunk.Length - 1;
-                    compressedLength += chunk.Length;
+                    if (data.Length > 0xFFFFFF)
+                    {
+                        // Activate the large data bit for > 16mb uncompressed data
+                        compressed = new byte[compressedlen + 6 + (endisvalid ? 0 : 1)];
+                        compressed[0] = 0x10 | 0x80; // 0x80 = length is 4 bytes
+                        compressed[1] = 0xFB;
+                        compressed[2] = (byte)(data.Length >> 24);
+                        compressed[3] = (byte)(data.Length >> 16);
+                        compressed[4] = (byte)(data.Length >> 8);
+                        compressed[5] = (byte)(data.Length);
+                        chunkpos = 6;
+                    }
+                    else
+                    {
+                        compressed = new byte[compressedlen + 5 + (endisvalid ? 0 : 1)];
+                        compressed[0] = 0x10;
+                        compressed[1] = 0xFB;
+                        compressed[2] = (byte)(data.Length >> 16);
+                        compressed[3] = (byte)(data.Length >> 8);
+                        compressed[4] = (byte)(data.Length);
+                        chunkpos = 5;
+                    }
 
-                    // int toRead = 0;
-                    // int toCopy2 = 0;
-                    // int copyOffset = 0;
+                    for (int loop = 0; loop < compressedchunks.Count; loop++)
+                    {
+                        Array.Copy(compressedchunks[loop], 0, compressed, chunkpos, compressedchunks[loop].Length);
+                        chunkpos += compressedchunks[loop].Length;
+                    }
+                    if (!endisvalid)
+                        compressed[compressed.Length - 1] = 0xfc;
+                    return compressed;
+                }
 
-                    endIsValid = true;
+                return null;
+            }
+            finally
+            {
+                mData = null;
+                mTracker.Reset();
+            }
+        }
+
+        private void FindSequence(int startindex)
+        {
+            // Try a straight forward brute force first
+            int end = -mBruteForceLength;
+            if (startindex < mBruteForceLength)
+                end = -startindex;
+
+            byte searchforbyte = mData[startindex];
+
+            for (int loop = -1; loop >= end && mSequenceLength < 1028; loop--)
+            {
+                byte curbyte = mData[loop + startindex];
+                if (curbyte != searchforbyte)
                     continue;
-                }
 
-                // Search ahead the next 3 bytes for the "best" sequence to copy
-                int sequenceStart = 0;
-                int sequenceLength = 0;
-                int sequenceIndex = 0;
-                bool isSequence = false;
+                int len = FindRunLength(startindex + loop, startindex);
 
-                if (FindSequence(input, compressedIndex, ref sequenceStart, ref sequenceLength, ref sequenceIndex, latestBlocks, level))
+                if (len <= mSequenceLength
+                    || len < 3
+                    || len < 4 && loop <= -1024
+                    || len < 5 && loop <= -16384)
+                    continue;
+
+                mSequenceFound = true;
+                mSequenceSource = startindex + loop;
+                mSequenceLength = len;
+                mSequenceDest = startindex;
+            }
+
+            // Use the look-up table next
+            int matchloc;
+            if (mSequenceLength < 1028 && mTracker.FindMatch(out matchloc))
+            {
+                do
                 {
-                    isSequence = true;
+                    int len = FindRunLength(matchloc, startindex);
+                    if (len < 5)
+                        continue;
+
+                    mSequenceFound = true;
+                    mSequenceSource = matchloc;
+                    mSequenceLength = len;
+                    mSequenceDest = startindex;
+                }
+                while (mSequenceLength < 1028 && mTracker.Nextmatch(out matchloc));
+            }
+        }
+
+        private int FindRunLength(int src, int dst)
+        {
+            int endsrc = src + 1;
+            int enddst = dst + 1;
+            while (enddst < mData.Length && mData[endsrc] == mData[enddst] && enddst - dst < 1028)
+            {
+                endsrc++;
+                enddst++;
+            }
+
+            return enddst - dst;
+        }
+
+        private interface IMatchtracker
+        {
+            bool FindMatch(out int where);
+            bool Nextmatch(out int where);
+            void Addvalue(byte val);
+            void Reset();
+        }
+
+        static IMatchtracker CreateTracker(int blockinterval, int lookupstart, int windowlength, int bucketdepth)
+        {
+            if (bucketdepth <= 1)
+                return new SingledepthMatchTracker(blockinterval, lookupstart, windowlength);
+            else
+                return new DeepMatchTracker(blockinterval, lookupstart, windowlength, bucketdepth);
+        }
+
+        static IMatchtracker CreateTracker(int level, out int bruteforcelength)
+        {
+            switch (level)
+            {
+                case 0:
+                    bruteforcelength = 0;
+                    return CreateTracker(4, 0, 16384, 1);
+                case 1:
+                    bruteforcelength = 0;
+                    return CreateTracker(2, 0, 32768, 1);
+                case 2:
+                    bruteforcelength = 0;
+                    return CreateTracker(1, 0, 65536, 1);
+                case 3:
+                    bruteforcelength = 0;
+                    return CreateTracker(1, 0, 131000, 2);
+                case 4:
+                    bruteforcelength = 16;
+                    return CreateTracker(1, 16, 131000, 2);
+                case 5:
+                    bruteforcelength = 16;
+                    return CreateTracker(1, 16, 131000, 5);
+                case 6:
+                    bruteforcelength = 32;
+                    return CreateTracker(1, 32, 131000, 5);
+                case 7:
+                    bruteforcelength = 32;
+                    return CreateTracker(1, 32, 131000, 10);
+                case 8:
+                    bruteforcelength = 64;
+                    return CreateTracker(1, 64, 131000, 10);
+                case 9:
+                    bruteforcelength = 128;
+                    return CreateTracker(1, 128, 131000, 20);
+                default:
+                    return CreateTracker(5, out bruteforcelength);
+            }
+        }
+
+        private class SingledepthMatchTracker : IMatchtracker
+        {
+            public SingledepthMatchTracker(int blockinterval, int lookupstart, int windowlength)
+            {
+                mInterval = blockinterval;
+                if (lookupstart > 0)
+                {
+                    mPendingValues = new UInt32[lookupstart / blockinterval];
+                    mQueueLength = mPendingValues.Length * blockinterval;
                 }
                 else
+                    mQueueLength = 0;
+                mInsertedValues = new UInt32[windowlength / blockinterval - lookupstart / blockinterval];
+                mWindowStart = -(mInsertedValues.Length + lookupstart / blockinterval) * blockinterval - 4;
+            }
+
+            public void Reset()
+            {
+                mLookupTable.Clear();
+                mRunningValue = 0;
+
+                mRollingInterval = 0;
+                mWindowStart = -(mInsertedValues.Length + (mPendingValues != null ? mPendingValues.Length : 0)) * mInterval - 4;
+                mDataLength = 0;
+
+                mInitialized = false;
+                mInsertLocation = 0;
+                mPendingOffset = 0;
+
+                // No need to clear the arrays, the values will be ignored by the next time around
+            }
+
+            // Current 32 bit value of the last 4 bytes
+            private UInt32 mRunningValue;
+
+            // How often to insert into the table
+            private int mInterval;
+            // Avoid division by using a rolling count instead
+            private int mRollingInterval;
+
+            // How many bytes to queue up before adding it to the lookup table
+            private int mQueueLength;
+
+            // Queued up values for future matches
+            private UInt32[] mPendingValues;
+            private int mPendingOffset;
+
+            // Bytes processed so far
+            private int mDataLength;
+            private int mWindowStart;
+
+            // Four or more bytes read
+            private bool mInitialized;
+
+            // Values values pending removal
+            private UInt32[] mInsertedValues;
+            private int mInsertLocation;
+
+            // Hash of seen values
+            private Dictionary<UInt32, int> mLookupTable = new Dictionary<uint, int>();
+
+            #region IMatchtracker Members
+
+            // Never more than one match with a depth of 1
+            public bool Nextmatch(out int where)
+            {
+                where = 0;
+                return false;
+            }
+
+            public void Addvalue(byte val)
+            {
+                if (mInitialized)
                 {
-                    // Find the next sequence
-                    for (int loop = compressedIndex + 4; !isSequence && loop + 3 < input.Length; loop += 4)
+                    mRollingInterval++;
+                    // Time to add a value to the table
+                    if (mRollingInterval == mInterval)
                     {
-                        if (FindSequence(input, loop, ref sequenceStart, ref sequenceLength, ref sequenceIndex, latestBlocks, level))
+                        mRollingInterval = 0;
+                        // Remove a value from the table if the window just rolled past it
+                        if (mWindowStart >= 0)
                         {
-                            sequenceIndex += loop - compressedIndex;
-                            isSequence = true;
+                            int idx;
+                            if (mInsertLocation == mInsertedValues.Length)
+                                mInsertLocation = 0;
+                            UInt32 oldval = mInsertedValues[mInsertLocation];
+                            if (mLookupTable.TryGetValue(oldval, out idx) && idx == mWindowStart)
+                                mLookupTable.Remove(oldval);
                         }
-                    }
-
-                    if (sequenceIndex == int.MaxValue)
-                    {
-                        sequenceIndex = input.Length - compressedIndex;
-                    }
-
-                    // Copy all the data skipped over
-                    while (sequenceIndex >= 4)
-                    {
-                        int toCopy = (sequenceIndex & ~3);
-                        if (toCopy > 112)
+                        if (mPendingValues != null)
                         {
-                            toCopy = 112;
-                        }
+                            // Pop the top of the queue and put it in the table
+                            if (mDataLength > mQueueLength + 4)
+                            {
+                                UInt32 poppedval = mPendingValues[mPendingOffset];
+                                mInsertedValues[mInsertLocation] = poppedval;
+                                mInsertLocation++;
+                                if (mInsertLocation > mInsertedValues.Length)
+                                    mInsertLocation = 0;
 
-                        byte[] chunk = new byte[toCopy + 1];
-                        chunk[0] = (byte)(0xE0 | ((toCopy >> 2) - 1));
-                        Array.Copy(input, compressedIndex, chunk, 1, toCopy);
-                        compressedChunks.Add(chunk);
-                        compressedIndex += toCopy;
-                        compressedLength += chunk.Length;
-                        sequenceIndex -= toCopy;
-
-                        // int toRead = 0;
-                        // int toCopy2 = 0;
-                        // int copyOffset = 0;
-                    }
-                }
-
-                if (isSequence)
-                {
-                    byte[] chunk = null;
-                    /*
-                     * 00-7F  0oocccpp oooooooo
-                     *   Read 0-3
-                     *   Copy 3-10
-                     *   Offset 0-1023
-                     *   
-                     * 80-BF  10cccccc ppoooooo oooooooo
-                     *   Read 0-3
-                     *   Copy 4-67
-                     *   Offset 0-16383
-                     *   
-                     * C0-DF  110cccpp oooooooo oooooooo cccccccc
-                     *   Read 0-3
-                     *   Copy 5-1028
-                     *   Offset 0-131071
-                     *   
-                     * E0-FC  111ppppp
-                     *   Read 4-128 (Multiples of 4)
-                     *   
-                     * FD-FF  111111pp
-                     *   Read 0-3
-                     */
-                    if (FindRunLength(input, sequenceStart, compressedIndex + sequenceIndex) < sequenceLength)
-                    {
-                        break;
-                    }
-
-                    while (sequenceLength > 0)
-                    {
-                        int thisLength = sequenceLength;
-                        if (thisLength > 1028)
-                        {
-                            thisLength = 1028;
-                        }
-
-                        sequenceLength -= thisLength;
-                        int offset = compressedIndex - sequenceStart + sequenceIndex - 1;
-
-                        if (thisLength > 67 || offset > 16383)
-                        {
-                            chunk = new byte[sequenceIndex + 4];
-                            chunk[0] = (byte)(0xC0 | sequenceIndex | (((thisLength - 5) >> 6) & 0x0C) | ((offset >> 12) & 0x10));
-                            chunk[1] = (byte)((offset >> 8) & 0xFF);
-                            chunk[2] = (byte)(offset & 0xFF);
-                            chunk[3] = (byte)((thisLength - 5) & 0xFF);
-                        }
-                        else if (thisLength > 10 || offset > 1023)
-                        {
-                            chunk = new byte[sequenceIndex + 3];
-                            chunk[0] = (byte)(0x80 | ((thisLength - 4) & 0x3F));
-                            chunk[1] = (byte)(((sequenceIndex << 6) & 0xC0) | ((offset >> 8) & 0x3F));
-                            chunk[2] = (byte)(offset & 0xFF);
+                                // Put it into the table
+                                mLookupTable[poppedval] = mDataLength - mQueueLength - 4;
+                            }
+                            // Push the next value onto the queue
+                            mPendingValues[mPendingOffset] = mRunningValue;
+                            mPendingOffset++;
+                            if (mPendingOffset == mPendingValues.Length)
+                                mPendingOffset = 0;
                         }
                         else
                         {
-                            chunk = new byte[sequenceIndex + 2];
-                            chunk[0] = (byte)((sequenceIndex & 0x3) | (((thisLength - 3) << 2) & 0x1C) | ((offset >> 3) & 0x60));
-                            chunk[1] = (byte)(offset & 0xFF);
+                            // No queue, straight to the dictionary
+                            mInsertedValues[mInsertLocation] = mRunningValue;
+                            mInsertLocation++;
+                            if (mInsertLocation > mInsertedValues.Length)
+                                mInsertLocation = 0;
+
+                            mLookupTable[mRunningValue] = mDataLength - 4;
                         }
-
-                        if (sequenceIndex > 0)
-                        {
-                            Array.Copy(input, compressedIndex, chunk, chunk.Length - sequenceIndex, sequenceIndex);
-                        }
-
-                        compressedChunks.Add(chunk);
-                        compressedIndex += thisLength + sequenceIndex;
-                        compressedLength += chunk.Length;
-
-                        // int toRead = 0;
-                        // int toCopy = 0;
-                        // int copyOffset = 0;
-
-                        sequenceStart += thisLength;
-                        sequenceIndex = 0;
                     }
-                }
-            }
-
-            if (compressedLength + 6 < input.Length)
-            {
-                int chunkPosition;
-
-                if (input.Length > 0xFFFFFF)
-                {
-                    output = new byte[compressedLength + 5 + (endIsValid ? 0 : 1)];
-                    output[0] = 0x10 | 0x80; // 0x80 = length is 4 bytes
-                    output[1] = 0xFB;
-                    output[2] = (byte)(input.Length >> 24);
-                    output[3] = (byte)(input.Length >> 16);
-                    output[4] = (byte)(input.Length >> 8);
-                    output[5] = (byte)(input.Length);
-                    chunkPosition = 6;
                 }
                 else
                 {
-                    output = new byte[compressedLength + 5 + (endIsValid ? 0 : 1)];
-                    output[0] = 0x10;
-                    output[1] = 0xFB;
-                    output[2] = (byte)(input.Length >> 16);
-                    output[3] = (byte)(input.Length >> 8);
-                    output[4] = (byte)(input.Length);
-                    chunkPosition = 5;
+                    mRollingInterval++;
+                    if (mRollingInterval == mInterval)
+                        mRollingInterval = 0;
+                    mInitialized = (mDataLength == 3);
                 }
 
-                for (int loop = 0; loop < compressedChunks.Count; loop++)
-                {
-                    Array.Copy(compressedChunks[loop], 0, output, chunkPosition, compressedChunks[loop].Length);
-                    chunkPosition += compressedChunks[loop].Length;
-                }
-
-                if (!endIsValid)
-                {
-                    output[output.Length - 1] = 0xFC;
-                }
-
-                return true;
+                mRunningValue = (mRunningValue << 8) | val;
+                mDataLength++;
+                mWindowStart++;
             }
 
-            return false;
+            public bool FindMatch(out int where)
+            {
+                return mLookupTable.TryGetValue(mRunningValue, out where);
+            }
+
+            #endregion
         }
 
-        private static bool FindSequence(byte[] data, int offset, ref int bestStart, ref int bestLength, ref int bestIndex, Dictionary<int, List<int>> blockTracking, CompressionLevel level)
+        private class DeepMatchTracker : IMatchtracker
         {
-            int start;
-            int end = -level.BruteForceLength;
-
-            if (offset < level.BruteForceLength)
+            public DeepMatchTracker(int blockinterval, int lookupstart, int windowlength, int bucketdepth)
             {
-                end = -offset;
-            }
-
-            if (offset > 4)
-            {
-                start = -3;
-            }
-            else
-            {
-                start = offset - 3;
-            }
-
-            bool foundRun = false;
-            try
-            {
-                if (bestLength < 3)
+                mInterval = blockinterval;
+                if (lookupstart > 0)
                 {
-                    bestLength = 3;
-                    bestIndex = int.MaxValue;
+                    mPendingValues = new UInt32[lookupstart / blockinterval];
+                    mQueueLength = mPendingValues.Length * blockinterval;
                 }
+                else
+                    mQueueLength = 0;
+                mInsertedValues = new UInt32[windowlength / blockinterval - lookupstart / blockinterval];
+                mWindowStart = -(mInsertedValues.Length + lookupstart / blockinterval) * blockinterval - 4;
+                mBucketDepth = bucketdepth;
+            }
 
-                byte[] search = new byte[data.Length - offset > 4 ? 4 : data.Length - offset];
+            public void Reset()
+            {
+                mLookupTable.Clear();
+                mRunningValue = 0;
 
-                for (int loop = 0; loop < search.Length; loop++)
+                mRollingInterval = 0;
+                mWindowStart = -(mInsertedValues.Length + (mPendingValues != null ? mPendingValues.Length : 0)) * mInterval - 4;
+                mDataLength = 0;
+
+                mInitialized = false;
+                mInsertLocation = 0;
+                mPendingOffset = 0;
+
+                mCurrentMatch = null;
+
+                // No need to clear the arrays, the values will be ignored by the next time around
+            }
+
+            private int mBucketDepth;
+
+            // Current 32 bit value of the last 4 bytes
+            private UInt32 mRunningValue;
+
+            // How often to insert into the table
+            private int mInterval;
+            // Avoid division by using a rolling count instead
+            private int mRollingInterval;
+
+            // How many bytes to queue up before adding it to the lookup table
+            private int mQueueLength;
+
+            // Queued up values for future matches
+            private UInt32[] mPendingValues;
+            private int mPendingOffset;
+
+            // Bytes processed so far
+            private int mDataLength;
+            private int mWindowStart;
+
+            // Four or more bytes read
+            private bool mInitialized;
+
+            // Values values pending removal
+            private UInt32[] mInsertedValues;
+            private int mInsertLocation;
+
+            // Hash of seen values
+            private Dictionary<UInt32, List<int>> mLookupTable = new Dictionary<uint, List<int>>();
+
+            // Save allocating items unnecessarily
+            private Stack<List<int>> mUnusedLists = new Stack<List<int>>();
+
+            private List<int> mCurrentMatch;
+            private int mCurrentMatchIndex;
+
+            #region IMatchtracker Members
+
+            public void Addvalue(byte val)
+            {
+                if (mInitialized)
                 {
-                    search[loop] = data[offset + loop];
-                }
-
-                while (start >= end && bestLength < 1028)
-                {
-                    byte currentByte = data[start + offset];
-
-                    for (int loop = 0; loop < search.Length; loop++)
+                    mRollingInterval++;
+                    // Time to add a value to the table
+                    if (mRollingInterval == mInterval)
                     {
-                        if (currentByte != search[loop] || start >= loop || start - loop < -131072)
-                            continue;
-
-                        int len = FindRunLength(data, offset + start, offset + loop);
-
-                        if ((len > bestLength || len == bestLength && loop < bestIndex) &&
-                            (len >= 5 ||
-                            len >= 4 && start - loop > -16384 ||
-                            len >= 3 && start - loop > -1024))
+                        mRollingInterval = 0;
+                        // Remove a value from the table if the window just rolled past it
+                        if (mWindowStart > 0)
                         {
-                            foundRun = true;
-                            bestStart = offset + start;
-                            bestLength = len;
-                            bestIndex = loop;
-                        }
-                    }
-
-                    start--;
-                }
-
-                if (blockTracking.Count > 0 && data.Length - offset > 16 && bestLength < 1028)
-                {
-                    for (int loop = 0; loop < 4; loop++)
-                    {
-                        int thisPosition = offset + 3 - loop;
-                        int adjust = loop > 3 ? loop - 3 : 0;
-                        int value = BitConverter.ToInt32(data, thisPosition);
-                        List<int> positions;
-
-                        if (blockTracking.TryGetValue(value, out positions))
-                        {
-                            foreach (int trypos in positions)
+                            List<int> locations;
+                            if (mInsertLocation == mInsertedValues.Length)
+                                mInsertLocation = 0;
+                            UInt32 oldval = mInsertedValues[mInsertLocation];
+                            if (mLookupTable.TryGetValue(oldval, out locations) && locations[0] == mWindowStart)
                             {
-                                int localadjust = adjust;
-
-                                if (trypos + 131072 < offset + 8)
+                                locations.RemoveAt(0);
+                                if (locations.Count == 0)
                                 {
-                                    continue;
-                                }
-
-                                int length = FindRunLength(data, trypos + localadjust, thisPosition + localadjust);
-
-                                if (length >= 5 && length > bestLength)
-                                {
-                                    foundRun = true;
-                                    bestStart = trypos + localadjust;
-                                    bestLength = length;
-                                    if (loop < 3)
-                                    {
-                                        bestIndex = 3 - loop;
-                                    }
-                                    else
-                                    {
-                                        bestIndex = 0;
-                                    }
-                                }
-
-                                if (bestLength > 1028)
-                                {
-                                    break;
+                                    mLookupTable.Remove(oldval);
+                                    mUnusedLists.Push(locations);
                                 }
                             }
                         }
-
-                        if (bestLength > 1028)
+                        if (mPendingValues != null)
                         {
-                            break;
+                            // Pop the top of the queue and put it in the table
+                            if (mDataLength > mQueueLength + 4)
+                            {
+                                UInt32 poppedval = mPendingValues[mPendingOffset];
+                                mInsertedValues[mInsertLocation] = poppedval;
+                                mInsertLocation++;
+                                if (mInsertLocation > mInsertedValues.Length)
+                                    mInsertLocation = 0;
+
+                                // Put it into the table
+                                List<int> locations;
+                                if (mLookupTable.TryGetValue(poppedval, out locations))
+                                {
+                                    // Check if the bucket runneth over
+                                    if (locations.Count == mBucketDepth)
+                                        locations.RemoveAt(0);
+                                }
+                                else
+                                {
+                                    // Allocate a new bucket
+                                    if (mUnusedLists.Count > 0)
+                                        locations = mUnusedLists.Pop();
+                                    else
+                                        locations = new List<int>();
+                                    mLookupTable[poppedval] = locations;
+                                }
+                                locations.Add(mDataLength - mQueueLength - 4);
+                            }
+                            // Push the next value onto the queue
+                            mPendingValues[mPendingOffset] = mRunningValue;
+                            mPendingOffset++;
+                            if (mPendingOffset == mPendingValues.Length)
+                                mPendingOffset = 0;
+                        }
+                        else
+                        {
+                            mInsertedValues[mInsertLocation] = mRunningValue;
+                            mInsertLocation++;
+                            if (mInsertLocation > mInsertedValues.Length)
+                                mInsertLocation = 0;
+
+                            // Put it into the table
+                            List<int> locations;
+                            if (mLookupTable.TryGetValue(mRunningValue, out locations))
+                            {
+                                // Check if the bucket runneth over
+                                if (locations.Count == mBucketDepth)
+                                    locations.RemoveAt(0);
+                            }
+                            else
+                            {
+                                // Allocate a new bucket
+                                if (mUnusedLists.Count > 0)
+                                    locations = mUnusedLists.Pop();
+                                else
+                                    locations = new List<int>();
+                                mLookupTable[mRunningValue] = locations;
+                            }
+                            locations.Add(mDataLength - 4);
                         }
                     }
                 }
+                else
+                {
+                    mRollingInterval++;
+                    if (mRollingInterval == mInterval)
+                        mRollingInterval = 0;
+                    mInitialized = (mDataLength == 3);
+                }
+                mRunningValue = (mRunningValue << 8) | val;
+                mDataLength++;
+                mWindowStart++;
             }
 
-            catch (Exception ex)
+            public bool Nextmatch(out int where)
             {
-                throw new Exception(ex.Message, ex);
+                if (mCurrentMatch != null && mCurrentMatchIndex < mCurrentMatch.Count)
+                {
+                    where = mCurrentMatch[mCurrentMatchIndex];
+                    mCurrentMatchIndex++;
+                    return true;
+                }
+                where = -1;
+                return false;
             }
 
-            return foundRun;
-        }
-
-        private static int FindRunLength(byte[] data, int source, int destination)
-        {
-            int endSource = source + 1;
-            int endDestination = destination + 1;
-
-            while (endDestination < data.Length && data[endSource] == data[endDestination] && endDestination - destination < 1028)
+            public bool FindMatch(out int where)
             {
-                endSource++;
-                endDestination++;
+                if (mLookupTable.TryGetValue(mRunningValue, out mCurrentMatch))
+                {
+                    mCurrentMatchIndex = 1;
+                    where = mCurrentMatch[0];
+                    return true;
+                }
+                mCurrentMatch = null;
+                where = -1;
+                return false;
             }
 
-            return endDestination - destination;
+            #endregion
         }
     }
 }
