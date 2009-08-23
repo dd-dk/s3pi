@@ -90,6 +90,7 @@ namespace s3pi.Interfaces
                 stream.Position = 0;
                 return (new BinaryReader(stream)).ReadBytes((int)stream.Length);
             }
+            set { MemoryStream ms = new MemoryStream(value); Parse(ms); OnRCOLChanged(this, EventArgs.Empty); }
         }
 
         /// <summary>
@@ -109,5 +110,26 @@ namespace s3pi.Interfaces
         /// Used to indicate the RCOL has changed
         /// </summary>
         protected virtual void OnRCOLChanged(object sender, EventArgs e) { dirty = true; OnElementChanged(); }
+
+        /// <summary>
+        /// To allow editor import/export
+        /// </summary>
+        public virtual BinaryReader Data
+        {
+            get { return new BinaryReader(UnParse()); }
+            set
+            {
+                if (value.BaseStream.CanSeek) { value.BaseStream.Position = 0; Parse(value.BaseStream); }
+                else
+                {
+                    MemoryStream ms = new MemoryStream();
+                    byte[] buffer = new byte[1024 * 1024];
+                    for (int read = value.BaseStream.Read(buffer, 0, buffer.Length); read > 0; read = value.BaseStream.Read(buffer, 0, buffer.Length))
+                        ms.Write(buffer, 0, read);
+                    Parse(ms);
+                }
+                OnRCOLChanged(this, EventArgs.Empty);
+            }
+        }
     }
 }
