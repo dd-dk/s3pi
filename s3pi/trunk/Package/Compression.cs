@@ -544,7 +544,8 @@ namespace Tiger
                     {
                         for (int loop = 0; loop < 4; loop++)
                         {
-                            mTracker.Addvalue(data[lastbytestored++]);
+                            if (lastbytestored < data.Length)
+                                mTracker.Addvalue(data[lastbytestored++]);
                             FindSequence(lastbytestored - 4);
                         }
                     }
