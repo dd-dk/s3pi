@@ -281,15 +281,42 @@ namespace s3pi.GenericRCOLResource
 
         public static ARCOLBlock RCOLDealer(int APIversion, EventHandler handler, uint type, Stream s)
         {
+            Type[] types = new Type[] { typeof(int), typeof(EventHandler), typeof(Stream), };
+            object[] args = new object[] { APIversion, handler, s };
             if (GenericRCOLResourceHandler.typeRegistry.ContainsKey(type))
             {
                 Type t = GenericRCOLResourceHandler.typeRegistry[type];
-                return (ARCOLBlock)t.GetConstructor(new Type[] { typeof(int), typeof(EventHandler), typeof(Stream), }).Invoke(new object[] { APIversion, handler, s });
+                return (ARCOLBlock)t.GetConstructor(types).Invoke(args);
             }
             if (GenericRCOLResourceHandler.tagRegistry.ContainsKey("*"))
             {
                 Type t = GenericRCOLResourceHandler.tagRegistry["*"];
-                return (ARCOLBlock)t.GetConstructor(new Type[] { typeof(int), typeof(EventHandler), typeof(Stream), }).Invoke(new object[] { APIversion, handler, s });
+                return (ARCOLBlock)t.GetConstructor(types).Invoke(args);
+            }
+            return null;
+        }
+
+        public static ARCOLBlock RCOLDealer(int APIversion, EventHandler handler, uint type, params object[] fields)
+        {
+            Type[] types = new Type[2 + fields.Length];
+            types[0] = typeof(int);
+            types[1] = typeof(EventHandler);
+            for (int i = 0; i < fields.Length; i++) types[2 + i] = fields[i].GetType();
+
+            object[] args = new object[2 + fields.Length];
+            args[0] = APIversion;
+            args[1] = handler;
+            Array.Copy(fields, 0, args, 2, fields.Length);
+
+            if (GenericRCOLResourceHandler.typeRegistry.ContainsKey(type))
+            {
+                Type t = GenericRCOLResourceHandler.typeRegistry[type];
+                return (ARCOLBlock)t.GetConstructor(types).Invoke(args);
+            }
+            if (GenericRCOLResourceHandler.tagRegistry.ContainsKey("*"))
+            {
+                Type t = GenericRCOLResourceHandler.tagRegistry["*"];
+                return (ARCOLBlock)t.GetConstructor(types).Invoke(args);
             }
             return null;
         }
