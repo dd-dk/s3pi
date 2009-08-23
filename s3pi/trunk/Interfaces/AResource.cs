@@ -120,6 +120,31 @@ namespace s3pi.Interfaces
             protected virtual void WriteCount(Stream s, uint count) { (new BinaryWriter(s)).Write(count); }
             protected abstract void WriteElement(Stream s, T element);
             #endregion
+
+            public void Add(params object[] fields)
+            {
+                Type elementType = typeof(T);
+                if (fields.Length == 1 && elementType.IsAssignableFrom(fields[0].GetType())) { base.Add((T)fields[0]); return; }
+
+                if (elementType.IsAbstract) elementType = GetElementType(fields);
+
+                Type[] types = new Type[2 + fields.Length];
+                types[0] = typeof(int);
+                types[1] = typeof(EventHandler);
+                for (int i = 0; i < fields.Length; i++) types[2 + i] = fields[i].GetType();
+
+                object[] args = new object[2 + fields.Length];
+                args[0] = (int)0;
+                args[1] = elementHandler;
+                Array.Copy(fields, 0, args, 2, fields.Length);
+
+                base.Add((T)(elementType.GetConstructor(types).Invoke(args)));
+            }
+
+            protected virtual Type GetElementType(params object[] fields)
+            {
+                throw new NotImplementedException(); // Override me in lists of abstract Types
+            }
         }
 
         public class TGIBlock : AHandlerElement, IComparable<TGIBlock>, IEqualityComparer<TGIBlock>, IEquatable<TGIBlock>
@@ -232,10 +257,10 @@ namespace s3pi.Interfaces
             public uint ResourceGroup { get { return resourceGroup; } set { if (resourceGroup != value) { resourceGroup = value; OnElementChanged(); } } }
             public ulong Instance { get { return instance; } set { if (instance != value) { instance = value; OnElementChanged(); } } }
 
-            public String Value { get { return String.Format("0x{0:X8}-0x{1:X8}-0x{2:X16}", resourceType, resourceGroup, instance); } }
+            public String Value { get { return this.ToString(); } }
             #endregion
 
-            public override string ToString() { return Value; }
+            public override string ToString() { return String.Format("0x{0:X8}-0x{1:X8}-0x{2:X16}", resourceType, resourceGroup, instance); }
             public static implicit operator String(TGIBlock value) { return value.ToString(); }
         }
 
