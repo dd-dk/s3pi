@@ -139,12 +139,22 @@ namespace TxtcResource
             public SuperBlock(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
             public SuperBlock(int APIversion, EventHandler handler, SuperBlock basis) : base(APIversion, handler)
             {
-                id = basis.id;
-                unknown1 = basis.unknown1;
-                unknown2 = (byte[])basis.unknown2.Clone();
-                unknown3 = basis.unknown3;
-                entries = new EntryBlockList(handler, basis.entries);
-                unknown4 = basis.unknown4;
+                this.id = basis.id;
+                this.unknown1 = basis.unknown1;
+                this.unknown2 = (byte[])basis.unknown2.Clone();
+                this.unknown3 = basis.unknown3;
+                this.entries = new EntryBlockList(handler, basis.entries);
+                this.unknown4 = basis.unknown4;
+            }
+            public SuperBlock(int APIversion, EventHandler handler, byte id, uint unknown1, byte[] unknown2, byte unknown3, uint unknown4)
+                : base(APIversion, handler)
+            {
+                this.id = id;
+                this.unknown1 = unknown1;
+                this.unknown2 = (byte[])unknown2.Clone();
+                this.unknown3 = unknown3;
+                this.entries = new EntryBlockList(handler);
+                this.unknown4 = unknown4;
             }
             #endregion
 
@@ -439,7 +449,7 @@ namespace TxtcResource
                 : base(APIversion, handler, property, unknown, dataType) { if (data.Length != this.data.Length) throw new ArgumentLengthException(); this.data = (Single[])data.Clone(); }
             internal override void UnParse(Stream s) { base.UnParse(s); BinaryWriter w = new BinaryWriter(s); for (int i = 0; i < data.Length; i++) w.Write(data[i]); }
             public override AHandlerElement Clone(EventHandler handler) { return new EntrySingleArray(requestedApiVersion, handler, property, unknown, dataType, data); ; }
-            public Single[] Data { get { return (Single[])data.Clone(); } set { if (!ArrayCompare(data, value)) { data = (Single[])value.Clone(); OnElementChanged(); } } }
+            public Single[] Data { get { return (Single[])data.Clone(); } set { if (value.Length != this.data.Length) throw new ArgumentLengthException(); if (!ArrayCompare(data, value)) { data = (Single[])value.Clone(); OnElementChanged(); } } }
             public override string Value { get { return base.Value + "; Data: " + (new TypedValue(data.GetType(), data, "X")); } }
         }
         public class EntryString : Entry
@@ -463,6 +473,47 @@ namespace TxtcResource
 
             protected override void WriteCount(Stream s, uint count) { } // List owner must do this, if required
             protected override void WriteElement(Stream s, Entry element) { element.UnParse(s); }
+
+            protected override Type GetElementType(params object[] fields)
+            {
+                uint property = (uint)fields[0];
+                if (property == 0) return typeof(EntryNull);
+
+                if (checking) if (!Enum.IsDefined(typeof(Properties), property))
+                        throw new InvalidDataException(String.Format("Unexpected property ID 0x{0:X8}", property));
+
+                switch ((byte)fields[2])
+                {
+                    //0x00, 0x01, 0x05, 0x0C
+                    case 0x00:
+                    case 0x01:
+                    case 0x05:
+                    case 0x0C:
+                        return typeof(EntryByte);
+                    //0x02, 0x06
+                    case 0x02:
+                    case 0x06:
+                        return typeof(EntryUInt16);
+                    //0x03, 0x07
+                    case 0x03:
+                    case 0x07:
+                        return typeof(EntryUInt32);
+                    //0x04, 0x08
+                    case 0x04:
+                    case 0x08:
+                        return typeof(EntryUInt64);
+                    //0x09
+                    case 0x09:
+                        return typeof(EntrySingle);
+                    case 0x0A:
+                    case 0x0B:
+                        return typeof(EntrySingleArray);
+                    //0x0D
+                    case 0x0D:
+                        return typeof(EntryString);
+                }
+                throw new InvalidDataException(String.Format("Unsupported data type 0x{0:X2}", (byte)fields[2]));
+            }
         }
 
         public class EntryBlock : AHandlerElement, IEquatable<EntryBlock>
@@ -471,6 +522,7 @@ namespace TxtcResource
 
             EntryList theList;
 
+            public EntryBlock(int APIversion, EventHandler handler) : base(APIversion, handler) { theList = new EntryList(handler); }
             public EntryBlock(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
             internal EntryBlock(int APIversion, EventHandler handler, EntryBlock basis) : base(APIversion, handler) { theList = new EntryList(handler, basis.theList); }
 

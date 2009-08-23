@@ -725,7 +725,7 @@ namespace CatalogResource
             uint unknown2;
 
             internal TypeCode2F(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler, s, null) { }
-            public TypeCode2F(int APIversion, EventHandler handler, byte unknown1, uint unknown2) : base(APIversion, handler, null) { this.unknown1 = unknown1; this.unknown2 = unknown2; }
+            public TypeCode2F(int APIversion, EventHandler handler, byte tc, byte unknown1, uint unknown2) : base(APIversion, handler, null) { this.unknown1 = unknown1; this.unknown2 = unknown2; }
 
             protected override void Parse(Stream s)
             {
@@ -756,7 +756,7 @@ namespace CatalogResource
                 return unknown1.GetHashCode() ^ unknown2.GetHashCode();
             }
 
-            public override AHandlerElement Clone(EventHandler handler) { return new TypeCode2F(requestedApiVersion, handler, unknown1, unknown2); }
+            public override AHandlerElement Clone(EventHandler handler) { return new TypeCode2F(requestedApiVersion, handler, 0x2F, unknown1, unknown2); }
 
             public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
 
@@ -768,7 +768,7 @@ namespace CatalogResource
         {
             int length;
             internal TypeCode40(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler, s, null) { }
-            private TypeCode40(int APIversion, EventHandler handler, int length) : base(APIversion, handler, null) { this.length = length; }
+            private TypeCode40(int APIversion, EventHandler handler, byte tc, int length) : base(APIversion, handler, null) { this.length = length; }
 
             protected override void Parse(Stream s)
             {
@@ -797,7 +797,7 @@ namespace CatalogResource
                 return length.GetHashCode();
             }
 
-            public override AHandlerElement Clone(EventHandler handler) { return new TypeCode40(requestedApiVersion, handler, length); }
+            public override AHandlerElement Clone(EventHandler handler) { return new TypeCode40(requestedApiVersion, handler, 0x40, length); }
 
             public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
 
@@ -833,6 +833,30 @@ namespace CatalogResource
             #region Content Fields
             public String Value { get { string s = ""; for (int i = 0; i < Count; i++) s += string.Format("\n--{0}: {1}--\n", i, this[i].GetType().Name) + this[i].Value; return s; } }
             #endregion
+
+            protected override Type GetElementType(params object[] fields)
+            {
+                if (fields[0].GetType().Equals(typeof(byte)))
+                {
+                    if ((byte)fields[0] == 0x40) return typeof(TypeCode40);
+                    else if ((byte)fields[0] == 0x2F) return typeof(TypeCode2F);
+                }
+                else if (fields[0].GetType().Equals(typeof(byte[])))
+                {
+                    switch (((byte[])fields[0])[1])
+                    {
+                        case 0x01: return typeof(TypeCode01);
+                        case 0x02: return typeof(TypeCode02);
+                        case 0x03: return typeof(TypeCode03);
+                        case 0x04: return typeof(TypeCode04);
+                        case 0x05: return typeof(TypeCode05);
+                        case 0x06: return typeof(TypeCode06);
+                        case 0x07: return typeof(TypeCode07);
+                    }
+                    throw new InvalidDataException(String.Format("Unknown TypeCode 0x{0:X2}", ((byte[])fields[0])[1]));
+                }
+                throw new ArgumentException();
+            }
         }
         #endregion
 

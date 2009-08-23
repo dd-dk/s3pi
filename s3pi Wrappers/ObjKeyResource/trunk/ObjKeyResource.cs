@@ -195,6 +195,15 @@ namespace ObjKeyResource
             protected override void WriteCount(Stream s, uint count) { (new BinaryWriter(s)).Write((byte)count); }
             protected override void WriteElement(Stream s, ComponentElement element) { (new BinaryWriter(s)).Write((uint)element.Element); }
             #endregion
+
+            public bool HasComponent(Component component) { return Find(component) != null; }
+
+            public ComponentElement Find(Component component)
+            {
+                foreach (ComponentElement ce in this)
+                    if (ce.Element == component) return ce;
+                return null;
+            }
         }
 
         public abstract class ComponentDataType : AHandlerElement, IComparable<ComponentDataType>, IEqualityComparer<ComponentDataType>, IEquatable<ComponentDataType>
@@ -269,7 +278,7 @@ namespace ObjKeyResource
             #region Content Fields
             public string Key { get { return key; } set { if (key != value) { key = value; OnElementChanged(); } } }
 
-            public virtual string Value { get { return "Key: \"" + key + "\"\nControl code: 0x" + controlCode.ToString("X2"); } }
+            public virtual string Value { get { return "Key: \"" + key + "\"; Control code: 0x" + controlCode.ToString("X2"); } }
             #endregion
         }
         public class CDTString : ComponentDataType
@@ -308,7 +317,7 @@ namespace ObjKeyResource
 
             public string Data { get { return data; } set { if (data != value) { data = value; OnElementChanged(); } } }
 
-            public override string Value { get { return base.Value + "\nData: " + "\"" + data + "\""; } }
+            public override string Value { get { return base.Value + "; Data: " + "\"" + data + "\""; } }
         }
         public class CDTResourceKey : ComponentDataType
         {
@@ -344,7 +353,7 @@ namespace ObjKeyResource
 
             public int Data { get { return data; } set { if (data != value) { data = value; OnElementChanged(); } } }
 
-            public override string Value { get { return base.Value + "\nData: " + "0x" + data.ToString("X8"); } }
+            public override string Value { get { return base.Value + "; Data: " + "0x" + data.ToString("X8"); } }
         }
         public class CDTAssetResourceName : CDTResourceKey
         {
@@ -395,7 +404,7 @@ namespace ObjKeyResource
 
             public uint Data { get { return data; } set { if (data != value) { data = value; OnElementChanged(); } } }
 
-            public override string Value { get { return base.Value + "\nData: " + "0x" + data.ToString("X8"); } }
+            public override string Value { get { return base.Value + "; Data: " + "0x" + data.ToString("X8"); } }
         }
 
         public class ComponentDataList : AResource.DependentList<ComponentDataType>
@@ -413,6 +422,21 @@ namespace ObjKeyResource
             protected override void WriteCount(Stream s, uint count) { (new BinaryWriter(s)).Write((byte)count); }
             protected override void WriteElement(Stream s, ComponentDataType element) { element.UnParse(s); }
             #endregion
+
+            protected override Type GetElementType(params object[] fields)
+            {
+                if (fields.Length != 3) throw new ArgumentException();
+
+                switch ((byte)fields[1])
+                {
+                    case 0x00: return typeof(CDTString);
+                    case 0x01: return typeof(CDTResourceKey);
+                    case 0x02: return typeof(CDTAssetResourceName);
+                    case 0x03: return typeof(CDTSteeringInstance);
+                    case 0x04: return typeof(CDTUInt32);
+                }
+                throw new ArgumentException(String.Format("Unknown control code 0x{0:X2}", (byte)fields[1]));
+            }
 
             public bool ContainsKey(string key) { foreach (ComponentDataType cd in this) if (cd.Key.Equals(key)) return true; return false; }
 
@@ -444,7 +468,7 @@ namespace ObjKeyResource
                 string s = "";
                 s += String.Format("Format: 0x{0:X8}", format);
 
-                s += "\nComponents:";
+                s += "\n\nComponents:";
                 foreach (ComponentElement c in components)
                 {
                     s += "\n  " + c.Value;
@@ -453,7 +477,15 @@ namespace ObjKeyResource
                         s += "; Data: " + tv;
                 }
 
-                s += String.Format("\nUnknown1: 0x{0:X2}", unknown1);
+                s += String.Format("\n\nUnknown1: 0x{0:X2}", unknown1);
+
+                s += "\n\nComponent Data (may be referenced above):";
+                foreach (ComponentDataType cdt in componentData)
+                    s += "\n  " + cdt.Value;
+
+                s += "\n\nTGI Blocks (may be referenced above):";
+                for (int i = 0; i < tgiBlocks.Count; i++)
+                    s += "\n  [0x" + i.ToString("X8") + "]: " + tgiBlocks[i];
                 return s;
             }
         }
