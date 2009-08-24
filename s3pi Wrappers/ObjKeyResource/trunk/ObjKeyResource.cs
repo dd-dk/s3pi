@@ -479,11 +479,11 @@ namespace ObjKeyResource
 
                 s += String.Format("\n\nUnknown1: 0x{0:X2}", unknown1);
 
-                s += "\n\nComponent Data (may be referenced above):";
+                s += "\n\nComponent Data:";
                 foreach (ComponentDataType cdt in componentData)
                     s += "\n  " + cdt.Value;
 
-                s += "\n\nTGI Blocks (may be referenced above):";
+                s += "\n\nTGI Blocks:";
                 for (int i = 0; i < tgiBlocks.Count; i++)
                     s += "\n  [0x" + i.ToString("X8") + "]: " + tgiBlocks[i];
                 return s;
