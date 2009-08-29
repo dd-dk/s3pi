@@ -20,6 +20,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 
 namespace s3pi.Interfaces
 {
@@ -85,7 +86,7 @@ namespace s3pi.Interfaces
         #endregion
 
         #region Sub-classes
-        public abstract class DependentList<T> : AHandlerList<T>
+        public abstract class DependentList<T> : AHandlerList<T>, IGenericAdd
             where T : IEquatable<T>
         {
             protected EventHandler elementHandler; // Work around list event handler triggering during stream constructor
@@ -121,10 +122,76 @@ namespace s3pi.Interfaces
             protected abstract void WriteElement(Stream s, T element);
             #endregion
 
-            public void Add(params object[] fields)
+            public bool Add()
             {
                 Type elementType = typeof(T);
-                if (fields.Length == 1 && elementType.IsAssignableFrom(fields[0].GetType())) { base.Add((T)fields[0]); return; }
+                if (elementType.IsAbstract) return false;
+
+                T ah = (T)createElement(elementType);
+                if (ah == null) return false;
+
+                base.Add((T)ah);
+                return true;
+            }
+            object createElement(Type elementType)
+            {
+                if (!typeof(AHandlerElement).IsAssignableFrom(elementType)) return null;
+
+                List<Type> types = new List<Type>();
+                types.Add(typeof(int));
+                types.Add(typeof(EventHandler));
+
+                List<object> args = new List<object>();
+                args.Add((int)0);
+                args.Add(elementHandler);
+
+                foreach (ConstructorInfo cie in elementType.GetConstructors())
+                {
+                    ParameterInfo[] api = cie.GetParameters();
+                    if (api.Length < 2 || api[0].ParameterType != typeof(int) || api[1].ParameterType != typeof(EventHandler)) continue;
+                    if (api.Length > 2 && (api[2].ParameterType == typeof(Stream) || api[2].ParameterType == elementType)) continue;
+                    for (int i = 2; i < api.Length; i++) types.Add(api[i].ParameterType);
+                    for (int i = 2; i < api.Length; i++)
+                    {
+                        if (api[i].ParameterType.IsAssignableFrom(typeof(string))) { args.Add(""); continue; }
+                        if (api[i].ParameterType.IsAssignableFrom(typeof(bool))) { args.Add(false); continue; }
+                        if (api[i].ParameterType.IsAssignableFrom(typeof(DateTime))) { args.Add(DateTime.UtcNow); continue; }
+                        if (typeof(IConvertible).IsAssignableFrom(api[i].ParameterType)) { args.Add((byte)0); continue; }
+                        if (typeof(AHandlerElement).IsAssignableFrom(api[i].ParameterType)) { args.Add(createElement(api[i].ParameterType)); continue; }
+
+                        if (api[i].ParameterType.HasElementType)
+                        {
+                            Type aryElementType = api[i].ParameterType.GetElementType();
+                            args.Add(aryElementType.MakeArrayType(api[i].ParameterType.GetArrayRank()));
+                            continue;
+                        }
+                        if (isCollection(api[i].ParameterType) && (
+                            api[i].ParameterType.GetGenericArguments().Length == 1 && api[i].ParameterType.GetGenericArguments()[0].Equals(typeof(AResource.TGIBlock))
+                            ||
+                            api[i].ParameterType.BaseType.GetGenericArguments().Length == 1 && api[i].ParameterType.BaseType.GetGenericArguments()[0].Equals(typeof(AResource.TGIBlock))
+                            )
+                            ) { args.Add(new List<AResource.TGIBlock>()); continue; }
+                        if (isCollection(api[i].ParameterType)) { args.Add(typeof(List<>).MakeGenericType(api[i].ParameterType).GetConstructor(new Type[0]).Invoke(new object[0])); continue; }
+                    }
+                    break;
+                }
+                return elementType.GetConstructor(types.ToArray()).Invoke(args.ToArray());
+            }
+            bool isCollection(Type fieldType)
+            {
+                if (!typeof(System.Collections.ICollection).IsAssignableFrom(fieldType)) return false;
+                Type baseType;
+                if (fieldType.GetGenericArguments().Length == 1) baseType = fieldType.GetGenericArguments()[0];
+                else if (fieldType.BaseType.GetGenericArguments().Length == 1) baseType = fieldType.BaseType.GetGenericArguments()[0];
+                else return false;
+                return typeof(AApiVersionedFields).IsAssignableFrom(baseType);
+            }
+
+            public bool Add(params object[] fields)
+            {
+                if (fields == null) return false;
+                Type elementType = typeof(T);
+                if (fields.Length == 1 && elementType.IsAssignableFrom(fields[0].GetType())) { base.Add((T)fields[0]); return true; }
 
                 if (elementType.IsAbstract) elementType = GetElementType(fields);
 
@@ -138,7 +205,10 @@ namespace s3pi.Interfaces
                 args[1] = elementHandler;
                 Array.Copy(fields, 0, args, 2, fields.Length);
 
+                System.Reflection.ConstructorInfo ci = elementType.GetConstructor(types);
+                if (ci == null) return false;
                 base.Add((T)(elementType.GetConstructor(types).Invoke(args)));
+                return true;
             }
 
             protected virtual Type GetElementType(params object[] fields)
