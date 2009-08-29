@@ -43,7 +43,6 @@
     <Compile Include="APackage.cs" />
     <Compile Include="AResource.cs" />
     <Compile Include="AResourceHandler.cs" />
-    <Compile Include="IGenericAdd.cs" />
     <Compile Include="Properties\AssemblyVersion.cs" />
     <Compile Include="IApiVersion.cs" />
     <Compile Include="IContentFields.cs" />
