@@ -86,7 +86,7 @@ namespace s3pi.Interfaces
         #endregion
 
         #region Sub-classes
-        public abstract class DependentList<T> : AHandlerList<T>
+        public abstract class DependentList<T> : AHandlerList<T>, IGenericAdd
             where T : IEquatable<T>
         {
             protected EventHandler elementHandler; // Work around list event handler triggering during stream constructor
@@ -150,6 +150,8 @@ namespace s3pi.Interfaces
             {
                 throw new NotImplementedException(); // Override me in lists of abstract Types
             }
+
+            public abstract void Add();
         }
 
         public class TGIBlock : AHandlerElement, IComparable<TGIBlock>, IEqualityComparer<TGIBlock>, IEquatable<TGIBlock>
@@ -311,8 +313,10 @@ namespace s3pi.Interfaces
             protected override void WriteCount(Stream s, uint count) { } // creator stores
             #endregion
 
+            public override void Add() { this.Add(new TGIBlock(0, elementHandler, 0, 0, 0)); }
+
             #region Content Fields
-            public String Value { get { string s = ""; for (int i = 0; i < Count; i++) s += string.Format("{0:X8}: {1}\n", i, this[i].Value); return s; } }
+            public String Value { get { string s = ""; for (int i = 0; i < Count; i++) s += string.Format("0x{0:X8}: {1}\n", i, this[i].Value); return s; } }
             #endregion
         }
 
@@ -363,8 +367,10 @@ namespace s3pi.Interfaces
             }
             #endregion
 
+            public override void Add() { this.Add(new TGIBlock(0, elementHandler, 0, 0, 0)); }
+
             #region Content Fields
-            public String Value { get { string s = ""; for (int i = 0; i < Count; i++) s += string.Format("{0:X8}: {1}\n", i, this[i].Value); return s; } }
+            public String Value { get { string s = ""; for (int i = 0; i < Count; i++) s += string.Format("0x{0:X8}: {1}\n", i, this[i].Value); return s; } }
             #endregion
         }
         #endregion
