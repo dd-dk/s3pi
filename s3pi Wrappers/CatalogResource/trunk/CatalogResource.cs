@@ -834,6 +834,8 @@ namespace CatalogResource
             public String Value { get { string s = ""; for (int i = 0; i < Count; i++) s += string.Format("\n--{0}: {1}--\n", i, this[i].GetType().Name) + this[i].Value; return s; } }
             #endregion
 
+            public override void Add() { throw new NotImplementedException(); }
+
             protected override Type GetElementType(params object[] fields)
             {
                 if (fields[0].GetType().Equals(typeof(byte)))
@@ -1011,6 +1013,12 @@ namespace CatalogResource
             protected override MaterialBlock CreateElement(Stream s) { return new MaterialBlock(0, elementHandler, s); }
             protected override void WriteElement(Stream s, MaterialBlock element) { element.UnParse(s); }
             #endregion
+
+            public override void Add()
+            {
+                this.Add(new MaterialBlock(0, elementHandler, 0,
+                    new TypeCode01(0, elementHandler, null, 0), new TypeCode01(0, elementHandler, null, 0), new List<TypeCode>(), new List<MaterialBlock>()));
+            }
 
             #region Content Fields
             public String Value { get { string s = ""; for (int i = 0; i < Count; i++) s += string.Format("\n--{0}--\n", i) + this[i].Value; return s; } }
@@ -1201,6 +1209,13 @@ namespace CatalogResource
             protected override Material CreateElement(Stream s) { return new Material(0, elementHandler, s); }
             protected override void WriteElement(Stream s, Material element) { element.UnParse(s); }
             #endregion
+
+            public override void Add()
+            {
+                this.Add(new Material(0, elementHandler, 0, 0, 0,
+                    new MaterialBlock(0, elementHandler, 0, new TypeCode01(0, elementHandler, null, 0), new TypeCode01(0, elementHandler, null, 0), new List<TypeCode>(), new List<MaterialBlock>()),
+                    new List<TGIBlock>(), 0));
+            }
 
             #region Content Fields
             public String Value { get { string s = ""; for (int i = 0; i < Count; i++) s += string.Format("\n--{0}--\n", i) + this[i].Value; return s; } }

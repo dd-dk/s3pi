@@ -204,6 +204,8 @@ namespace ObjKeyResource
                     if (ce.Element == component) return ce;
                 return null;
             }
+
+            public override void Add() { this.Add(new ComponentElement(0, null)); }
         }
 
         public abstract class ComponentDataType : AHandlerElement, IComparable<ComponentDataType>, IEqualityComparer<ComponentDataType>, IEquatable<ComponentDataType>
@@ -450,6 +452,8 @@ namespace ObjKeyResource
                 }
                 set { this[IndexOf(this[key])] = value; }
             }
+
+            public override void Add() { throw new NotImplementedException(); }
         }
 
         #endregion

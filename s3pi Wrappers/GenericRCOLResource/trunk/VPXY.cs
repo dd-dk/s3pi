@@ -191,6 +191,8 @@ namespace s3pi.GenericRCOLResource
             protected override ElementUInt32 CreateElement(Stream s) { return new ElementUInt32(0, elementHandler, s); }
             protected override void WriteElement(Stream s, ElementUInt32 element) { element.UnParse(s); }
             #endregion
+
+            public override void Add() { this.Add(new ElementUInt32(0, elementHandler, 0)); }
         }
 
         public abstract class Entry : AHandlerElement, IEquatable<Entry>
@@ -318,6 +320,8 @@ namespace s3pi.GenericRCOLResource
                 }
                 throw new ArgumentException(String.Format("Unknown entry type 0x{0:X2}", (byte)fields[0]));
             }
+
+            public override void Add() { throw new NotImplementedException(); }
         }
         #endregion
 

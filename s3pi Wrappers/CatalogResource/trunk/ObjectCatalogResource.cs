@@ -638,6 +638,8 @@ namespace CatalogResource
             protected override void WriteElement(Stream s, MTDoor element) { element.UnParse(s); }
             #endregion
 
+            public override void Add() { this.Add(new MTDoor(0, elementHandler, new float[4], 0, 0)); }
+
             #region Content Fields
             public String Value { get { string s = ""; for (int i = 0; i < Count; i++) s += string.Format("\n--{0}--\n", i) + this[i].Value; return s; } }
             #endregion

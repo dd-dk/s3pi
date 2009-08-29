@@ -200,6 +200,8 @@ namespace s3pi.GenericRCOLResource
             protected override void WriteElement(Stream s, ChunkEntry element) { throw new NotImplementedException(); }
 
             internal EventHandler listEventHandler { set { handler = value; } }
+
+            public override void Add() { throw new NotImplementedException(); }
         }
 
         #endregion

@@ -170,6 +170,8 @@ namespace s3pi.GenericRCOLResource
 
             protected override void WriteElement(Stream s, PolygonPoint element) { element.UnParse(s); }
             #endregion
+
+            public override void Add() { this.Add(new PolygonPoint(0, elementHandler, 0, 0)); }
         }
 
         [Flags]
@@ -362,6 +364,8 @@ namespace s3pi.GenericRCOLResource
 
             protected override void WriteElement(Stream s, Area element) { element.UnParse(s); }
             #endregion
+
+            public override void Add() { this.Add(new Area(0, elementHandler, 0, 0, (AreaType)0, new List<PolygonPoint>(), 0, 0, 0, 0, 0, 0, 0, 0)); }
         }
         #endregion
 

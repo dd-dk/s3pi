@@ -235,6 +235,13 @@ namespace CatalogResource
             protected override void WriteElement(Stream s, WallFloorPatternMaterial element) { element.UnParse(s); }
             #endregion
 
+            public override void Add()
+            {
+                this.Add(new WallFloorPatternMaterial(0, elementHandler, 0, 0, 0,
+                    new MaterialBlock(0, elementHandler, 0, new TypeCode01(0, elementHandler, null, 0), new TypeCode01(0, elementHandler, null, 0), new List<TypeCode>(), new List<MaterialBlock>()),
+                    new List<TGIBlock>(), 0, 0, 0, 0));
+            }
+
             #region Content Fields
             public String Value { get { string s = ""; for (int i = 0; i < Count; i++) s += string.Format("\n--{0}--\n", i) + this[i].Value; return s; } }
             #endregion
