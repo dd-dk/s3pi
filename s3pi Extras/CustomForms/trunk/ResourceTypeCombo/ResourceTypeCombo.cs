@@ -58,6 +58,7 @@ namespace System.Windows.Forms
         {
             get
             {
+                if (cbType.Text.Length == 0) return 0;
                 if (cbType.Items.IndexOf(cbType.Text) < 0)
                 {
                     string s = cbType.Text.Trim().ToLower();
