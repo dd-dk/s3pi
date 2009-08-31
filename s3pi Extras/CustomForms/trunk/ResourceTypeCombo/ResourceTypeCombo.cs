@@ -48,7 +48,7 @@ namespace System.Windows.Forms
             cbType.Items.AddRange(tagDropDown);
         }
 
-        bool valid;
+        bool valid = true;
         public bool Valid { get { return valid; } private set { if (valid != value) { valid = value; OnValidChanged(this, EventArgs.Empty); } } }
 
         public event EventHandler ValidChanged;
@@ -82,8 +82,11 @@ namespace System.Windows.Forms
             }
         }
 
+        [Browsable(false)]
+        public override string Text { get { return Valid ? "0x" + Value.ToString("X8") : ""; } set { cbType.Text = value; } }
+
         public event EventHandler ValueChanged;
-        protected void OnValueChanged(object sender, EventArgs e) { if (ValueChanged != null)ValueChanged(sender, e); }
+        protected void OnValueChanged(object sender, EventArgs e) { if (ValueChanged != null) ValueChanged(sender, e); }
 
         private void cbType_TextUpdate(object sender, EventArgs e)
         {
@@ -92,16 +95,18 @@ namespace System.Windows.Forms
             if (cb.Items.IndexOf(cb.Text) < 0)
             {
                 string s = cb.Text.Trim().ToLower();
-                if (s.Length == 0) { valid = false; return; }
-                UInt32 res;
-                if (s.StartsWith("0x")) Valid = UInt32.TryParse(s.Substring(2), System.Globalization.NumberStyles.HexNumber, null, out res);
-                else Valid = UInt32.TryParse(s, out res);
+                if (s.Length == 0) Valid = false;
+                else
+                {
+                    UInt32 res;
+                    if (s.StartsWith("0x")) Valid = UInt32.TryParse(s.Substring(2), System.Globalization.NumberStyles.HexNumber, null, out res);
+                    else Valid = UInt32.TryParse(s, out res);
+                }
             }
-            else
-            {
-                Valid = true;
-            }
-            OnValueChanged(this, EventArgs.Empty);
+            else Valid = true;
+
+            if (Valid)
+                OnValueChanged(this, EventArgs.Empty);
         }
 
         private void cbType_SelectedValueChanged(object sender, EventArgs e)
