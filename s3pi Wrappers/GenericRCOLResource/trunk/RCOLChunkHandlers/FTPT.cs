@@ -43,10 +43,9 @@ namespace s3pi.GenericRCOLResource
             this.footprintAreas = new AreaList(handler, basis.footprintAreas);
             this.slotAreas = new AreaList(handler, basis.slotAreas);
         }
-        public FTPT(int APIversion, EventHandler handler, uint version)
+        public FTPT(int APIversion, EventHandler handler)
             : base(APIversion, handler, null)
         {
-            this.version = version;
             this.footprintAreas = new AreaList(handler);
             this.slotAreas = new AreaList(handler);
         }

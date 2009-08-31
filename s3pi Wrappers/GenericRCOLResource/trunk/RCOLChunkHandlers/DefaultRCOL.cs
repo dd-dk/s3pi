@@ -28,6 +28,7 @@ namespace s3pi.GenericRCOLResource
     {
         byte[] data = new byte[0];
 
+        // This ARCOLBlock does not support CreateRCOLBlock
         public DefaultRCOL(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler, s) { }
         public DefaultRCOL(int APIversion, EventHandler handler, DefaultRCOL basis)
             : base(APIversion, handler, null) { data = (byte[])basis.data.Clone(); }

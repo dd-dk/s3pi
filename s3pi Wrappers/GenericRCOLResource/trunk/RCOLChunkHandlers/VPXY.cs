@@ -66,6 +66,12 @@ namespace s3pi.GenericRCOLResource
                 this.ftptIndex = ftptIndex;
             this.tgiBlockList = new AResource.TGIBlockList(handler, tgiBlockList);
         }
+        public VPXY(int APIversion, EventHandler handler)
+            : base(APIversion, handler, null)
+        {
+            entryList = new EntryList(handler);
+            tgiBlockList = new AResource.TGIBlockList(handler);
+        }
 
         #region ARCOLBlock
         public override string Tag { get { return "VPXY"; } }
