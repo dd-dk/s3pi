@@ -128,6 +128,8 @@ namespace System.Windows.Forms.TGIBlockListEditorForm
 
         private void cbType_Validated(object sender, EventArgs e)
         {
+            if (listView1.SelectedIndices.Count <= 0) return;
+
             items[listView1.SelectedIndices[0]].ResourceType = cbType.Value;
             ListViewItem lvi = CreateListViewItem(items[listView1.SelectedIndices[0]]);
             listView1.SelectedItems[0].Text = lvi.Text;
@@ -147,6 +149,8 @@ namespace System.Windows.Forms.TGIBlockListEditorForm
 
         private void tbGroup_Validated(object sender, EventArgs e)
         {
+            if (listView1.SelectedIndices.Count <= 0) return;
+
             uint res;
             string s = tbGroup.Text.Trim().ToLower();
             if (s.StartsWith("0x"))
@@ -172,6 +176,8 @@ namespace System.Windows.Forms.TGIBlockListEditorForm
 
         private void tbInstance_Validated(object sender, EventArgs e)
         {
+            if (listView1.SelectedIndices.Count <= 0) return;
+
             ulong res;
             string s = tbInstance.Text.Trim().ToLower();
             if (s.StartsWith("0x"))

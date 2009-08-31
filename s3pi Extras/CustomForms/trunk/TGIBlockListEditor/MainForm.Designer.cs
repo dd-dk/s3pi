@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.ListViewItem listViewItem2 = new System.Windows.Forms.ListViewItem(new string[] {
+            System.Windows.Forms.ListViewItem listViewItem1 = new System.Windows.Forms.ListViewItem(new string[] {
             "WWWW",
             "0xDDDDDDDD",
             "0xDDDDDDDD",
@@ -59,7 +59,7 @@
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 23);
             this.btnOK.TabIndex = 5;
-            this.btnOK.Text = "Save";
+            this.btnOK.Text = "&Save";
             this.btnOK.UseVisualStyleBackColor = true;
             this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
             // 
@@ -71,7 +71,7 @@
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(75, 23);
             this.btnCancel.TabIndex = 4;
-            this.btnCancel.Text = "Abandon";
+            this.btnCancel.Text = "A&bandon";
             this.btnCancel.UseVisualStyleBackColor = true;
             // 
             // btnAdd
@@ -153,6 +153,7 @@
             this.cbType.Name = "cbType";
             this.cbType.Size = new System.Drawing.Size(153, 21);
             this.cbType.TabIndex = 3;
+            this.cbType.Value = ((uint)(0u));
             this.cbType.ValueChanged += new System.EventHandler(this.cbType_ValueChanged);
             this.cbType.Validated += new System.EventHandler(this.cbType_Validated);
             this.cbType.Validating += new System.ComponentModel.CancelEventHandler(this.cbType_Validating);
@@ -168,7 +169,7 @@
             this.listView1.FullRowSelect = true;
             this.listView1.HideSelection = false;
             this.listView1.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
-            listViewItem2});
+            listViewItem1});
             this.listView1.Location = new System.Drawing.Point(3, 3);
             this.listView1.MultiSelect = false;
             this.listView1.Name = "listView1";
