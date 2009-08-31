@@ -281,6 +281,23 @@ namespace s3pi.GenericRCOLResource
             }
         }
 
+        public static ARCOLBlock CreateRCOLBlock(int APIversion, EventHandler handler, uint type)
+        {
+            Type[] types = new Type[] { typeof(int), typeof(EventHandler), };
+            object[] args = new object[] { APIversion, handler, };
+            if (GenericRCOLResourceHandler.typeRegistry.ContainsKey(type))
+            {
+                Type t = GenericRCOLResourceHandler.typeRegistry[type];
+                return (ARCOLBlock)t.GetConstructor(types).Invoke(args);
+            }
+            if (GenericRCOLResourceHandler.tagRegistry.ContainsKey("*"))
+            {
+                Type t = GenericRCOLResourceHandler.tagRegistry["*"];
+                return (ARCOLBlock)t.GetConstructor(types).Invoke(args);
+            }
+            return null;
+        }
+
         public static ARCOLBlock RCOLDealer(int APIversion, EventHandler handler, uint type, Stream s)
         {
             Type[] types = new Type[] { typeof(int), typeof(EventHandler), typeof(Stream), };
