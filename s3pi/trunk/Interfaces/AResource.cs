@@ -260,8 +260,11 @@ namespace s3pi.Interfaces
             #endregion
 
             #region Content Fields
+            [ElementPriority(1)]
             public uint ResourceType { get { return resourceType; } set { if (resourceType != value) { resourceType = value; OnElementChanged(); } } }
+            [ElementPriority(2)]
             public uint ResourceGroup { get { return resourceGroup; } set { if (resourceGroup != value) { resourceGroup = value; OnElementChanged(); } } }
+            [ElementPriority(3)]
             public ulong Instance { get { return instance; } set { if (instance != value) { instance = value; OnElementChanged(); } } }
 
             public String Value { get { return this.ToString(); } }
