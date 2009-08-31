@@ -53,6 +53,12 @@
     <Compile Include="ResourceTypeCombo\ResourceTypeCombo.Designer.cs">
       <DependentUpon>ResourceTypeCombo.cs</DependentUpon>
     </Compile>
+    <Compile Include="TGIBlockCombo\TGIBlockCombo.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="TGIBlockCombo\TGIBlockCombo.Designer.cs">
+      <DependentUpon>TGIBlockCombo.cs</DependentUpon>
+    </Compile>
     <Compile Include="TGIBlockListEditor\MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -64,6 +70,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="ResourceTypeCombo\ResourceTypeCombo.resx">
       <DependentUpon>ResourceTypeCombo.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TGIBlockCombo\TGIBlockCombo.resx">
+      <DependentUpon>TGIBlockCombo.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="TGIBlockListEditor\MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
