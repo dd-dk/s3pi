@@ -80,6 +80,7 @@ namespace s3pi.Interfaces
         /// <summary>
         /// The resource content as a byte array
         /// </summary>
+        [ElementPriority(0)]
         public virtual byte[] AsBytes
         {
             get
@@ -114,6 +115,7 @@ namespace s3pi.Interfaces
         /// <summary>
         /// To allow editor import/export
         /// </summary>
+        [ElementPriority(1)]
         public virtual BinaryReader Data
         {
             get { return new BinaryReader(UnParse()); }
