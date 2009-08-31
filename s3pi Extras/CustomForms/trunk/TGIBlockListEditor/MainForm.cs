@@ -35,6 +35,7 @@ namespace System.Windows.Forms.TGIBlockListEditorForm
             tbGroup.Text = tbInstance.Text = "";
             btnAdd.Enabled = items != null && (items.MaxSize == -1 || listView1.Items.Count < items.MaxSize);
             btnDelete.Enabled = listView1.SelectedItems.Count > 0;
+            cbType.Enabled = tbGroup.Enabled = tbInstance.Enabled = false;
         }
 
         AResource.TGIBlockList items;
@@ -79,8 +80,9 @@ namespace System.Windows.Forms.TGIBlockListEditorForm
             ListViewItem lvi = CreateListViewItem(items[items.Count - 1]);
             lvi.Tag = items[items.Count - 1];
             listView1.Items.Add(lvi);
-            btnAdd.Enabled = items.MaxSize == -1 || listView1.Items.Count < items.MaxSize;
             lvi.Selected = true;
+            btnAdd.Enabled = items.MaxSize == -1 || listView1.Items.Count < items.MaxSize;
+            cbType.Focus();
         }
 
         private void btnDelete_Click(object sender, EventArgs e)
@@ -93,6 +95,7 @@ namespace System.Windows.Forms.TGIBlockListEditorForm
             if (i < 0 && items.Count > 0) i = 0;
             if (i >= 0)
                 listView1.Items[i].Selected = true;
+            btnAdd.Enabled = items.MaxSize == -1 || listView1.Items.Count < items.MaxSize;
             btnDelete.Enabled = listView1.SelectedItems.Count > 0;
         }
 
@@ -100,18 +103,17 @@ namespace System.Windows.Forms.TGIBlockListEditorForm
         {
             if (listView1.SelectedIndices.Count == 0)
             {
-                cbType.Enabled = tbGroup.Enabled = tbInstance.Enabled = false;
-                cbType.Text = tbGroup.Text = tbInstance.Text = "";
+                cbType.Value = 0;
+                tbGroup.Text = tbInstance.Text = "";
             }
             else
             {
-                cbType.Enabled = tbGroup.Enabled = tbInstance.Enabled = true;
                 AResource.TGIBlock item = listView1.SelectedItems[0].Tag as AResource.TGIBlock;
                 cbType.Value = item.ResourceType;
                 tbGroup.Text = "0x" + item.ResourceGroup.ToString("X8");
                 tbInstance.Text = "0x" + item.Instance.ToString("X16");
             }
-            btnDelete.Enabled = listView1.SelectedItems.Count > 0;
+            cbType.Enabled = tbGroup.Enabled = tbInstance.Enabled = btnDelete.Enabled = listView1.SelectedIndices.Count > 0;
         }
 
         private void cbType_ValueChanged(object sender, EventArgs e)

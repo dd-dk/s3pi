@@ -207,7 +207,7 @@
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(31, 13);
             this.label1.TabIndex = 2;
-            this.label1.Text = "Type";
+            this.label1.Text = "&Type";
             // 
             // label2
             // 
@@ -217,7 +217,7 @@
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(36, 13);
             this.label2.TabIndex = 4;
-            this.label2.Text = "Group";
+            this.label2.Text = "&Group";
             // 
             // label3
             // 
@@ -227,7 +227,7 @@
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(48, 13);
             this.label3.TabIndex = 6;
-            this.label3.Text = "Instance";
+            this.label3.Text = "&Instance";
             // 
             // MainForm
             // 
