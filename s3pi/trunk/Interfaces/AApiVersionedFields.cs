@@ -106,32 +106,32 @@ namespace s3pi.Interfaces
             banlist = new List<string>();
             foreach (PropertyInfo m in t.GetProperties()) banlist.Add(m.Name);
         }
-#if UNDEF
+
+        static Int32 Version(Type attribute, Type type, string field)
+        {
+            foreach (VersionAttribute attr in type.GetProperty(field).GetCustomAttributes(attribute, true)) return attr.Version;
+            return 0;
+        }
+        static Int32 MinimumVersion(Type type, string field) { return Version(typeof(MinimumVersionAttribute), type, field); }
+        static Int32 MaximumVersion(Type type, string field) { return Version(typeof(MaximumVersionAttribute), type, field); }
+        protected Int32 MinimumVersion(string field) { return AApiVersionedFields.MinimumVersion(this.GetType(), field); }
+        protected Int32 MaximumVersion(string field) { return AApiVersionedFields.MaximumVersion(this.GetType(), field); }
         static Int32 getRecommendedApiVersion(Type t)
         {
             FieldInfo fi = t.GetField("recommendedApiVersion", BindingFlags.Static | BindingFlags.NonPublic);
             if (fi == null || fi.FieldType != typeof(Int32))
-                throw new Exception("recommendedApiVersion not found on Type " + t.FullName);
-
+                return 0;
             return (Int32)fi.GetValue(null);
         }
-
-        static bool checkVersion(MethodInfo m, Int32 v)
+        static bool checkVersion(Type type, string field, int requestedApiVersion)
         {
+            if (requestedApiVersion == 0) return true;
+            int min = MinimumVersion(type, field);
+            if (min != 0 && requestedApiVersion < min) return false;
+            int max = MaximumVersion(type, field);
+            if (max != 0 && requestedApiVersion > max) return false;
             return true;
-#if UNDEF
-            foreach (Attribute attr in Attribute.GetCustomAttributes(m))
-            {
-                if (attr.GetType() == typeof(MinimumVersionAttribute))
-                    if (v < (attr as MinimumVersionAttribute).Version)
-                        return false;
-                if (attr.GetType() == typeof(MaximumVersionAttribute))
-                    if (v > (attr as MaximumVersionAttribute).Version)
-                        return false;
-            }
-#endif
         }
-#endif
 
         /// <summary>
         /// Versioning is not currently implemented
@@ -144,12 +144,12 @@ namespace s3pi.Interfaces
         {
             List<string> fields = new List<string>();
 
-            //Int32 recommendedApiVersion = getRecommendedApiVersion(t);
+            Int32 recommendedApiVersion = getRecommendedApiVersion(t);//Could be zero if no "recommendedApiVersion" const field
             PropertyInfo[] ap = t.GetProperties();
             foreach (PropertyInfo m in ap)
             {
                 if (banlist.Contains(m.Name)) continue;
-                //if (!checkVersion(m, APIversion == 0 ? recommendedApiVersion : APIversion)) continue;
+                if (!checkVersion(t, m.Name, APIversion == 0 ? recommendedApiVersion : APIversion)) continue;
 
                 fields.Add(m.Name);
             }
@@ -161,12 +161,12 @@ namespace s3pi.Interfaces
         {
             Dictionary<string, Type> types = new Dictionary<string, Type>();
 
-            //Int32 recommendedApiVersion = getRecommendedApiVersion(t);
+            Int32 recommendedApiVersion = getRecommendedApiVersion(t);//Could be zero if no "recommendedApiVersion" const field
             PropertyInfo[] ap = t.GetProperties();
             foreach (PropertyInfo m in ap)
             {
                 if (banlist.Contains(m.Name)) continue;
-                //if (!checkVersion(m, APIversion == 0 ? recommendedApiVersion : APIversion)) continue;
+                if (!checkVersion(t, m.Name, APIversion == 0 ? recommendedApiVersion : APIversion)) continue;
 
                 types.Add(m.Name, m.PropertyType);
             }
@@ -179,14 +179,14 @@ namespace s3pi.Interfaces
         {
             List<string> methods = null;
 
-            //Int32 recommendedApiVersion = getRecommendedApiVersion(t);
+            Int32 recommendedApiVersion = getRecommendedApiVersion(t);//Could be zero if no "recommendedApiVersion" const field
             methods = new List<string>();
             MethodInfo[] am = t.GetMethods();
             foreach (MethodInfo m in am)
             {
                 if (!m.IsPublic || banlist.Contains(m.Name)) continue;
                 if ((m.Name.StartsWith("get_") && m.GetParameters().Length == 0)) continue;
-                //if (!checkVersion(m, APIversion == 0 ? recommendedApiVersion : APIversion)) continue;
+                if (!checkVersion(t, m.Name, APIversion == 0 ? recommendedApiVersion : APIversion)) continue;
 
                 methods.Add(m.Name);
             }
@@ -200,7 +200,7 @@ namespace s3pi.Interfaces
         {
             Type[] at = new Type[parms.Length];
             object[] ao = new object[parms.Length];
-            for (int i = 0; i < parms.Length; i++) { at[i] = parms[i].Type; ao[i] = parms[i].Value; }
+            for (int i = 0; i < parms.Length; i++) { at[i] = parms[i].Type; ao[i] = parms[i].Value; }//Array.Copy, please...
 
             MethodInfo m = this.GetType().GetMethod(method, at);
             if (m == null)

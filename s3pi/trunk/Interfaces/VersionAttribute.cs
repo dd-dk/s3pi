@@ -43,11 +43,13 @@ namespace s3pi.Interfaces
     /// Versioning is not currently implemented
     /// Specify the Minumum version from which a field or method is supported
     /// </summary>
+    [AttributeUsage(AttributeTargets.All, AllowMultiple = false,  Inherited = true)]
     public class MinimumVersionAttribute : VersionAttribute { public MinimumVersionAttribute(Int32 Version) : base(Version) { } }
 
     /// <summary>
     /// Versioning is not currently implemented
     /// Specify the Maximum version up to which a field or method is supported
     /// </summary>
+    [AttributeUsage(AttributeTargets.All, AllowMultiple = false, Inherited = true)]
     public class MaximumVersionAttribute : VersionAttribute { public MaximumVersionAttribute(Int32 Version) : base(Version) { } }
 }
