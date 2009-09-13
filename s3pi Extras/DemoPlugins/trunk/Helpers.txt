@@ -31,21 +31,24 @@ txt.EditorArguments: {}
 
 // Images
 ; jpg
-img.ResourceType: 0x2F7D0002
+jpg.ResourceType: 0x2F7D0002
+jpg.Editor: mspaint
+jpg.EditorArguments: {}
+
 ; png
 img.Wrapper: ImageResource
 // This is where GIMP installs by default:
-img.Editor: C:\Program Files\GIMP-2.0\bin\gimp-2.6.exe
+;img.Editor: C:\Program Files\GIMP-2.0\bin\gimp-2.6.exe
 // It likes quotes:
-img.EditorArguments: "{}"
+;img.EditorArguments: "{}"
 
 // DDS files
 dds.ResourceType: 0x00B2D882 0x8FFB80F6
 dds.Viewer: ViewDDS.exe
 ; ViewDDS can process data from the clipboard in the format used by s3pe:
 dds.ViewerArguments: /clipboard
-dds.Editor: C:\Program Files\GIMP-2.0\bin\gimp-2.6.exe
-dds.EditorArguments: "{}"
+;dds.Editor: C:\Program Files\GIMP-2.0\bin\gimp-2.6.exe
+;dds.EditorArguments: "{}"
 
 // ObjKey editor, using the editor supplied with s3pe
 objk.ResourceType: 0x02DC343F
