@@ -34,8 +34,9 @@ namespace System.Windows.Forms
             InitializeComponent();
         }
 
-        public TGIBlockCombo(AResource.DependentList<AResource.TGIBlock> tgiBlocks) : this(tgiBlocks, -1) { }
-        public TGIBlockCombo(AResource.DependentList<AResource.TGIBlock> tgiBlocks, int index) : this() { TGIBlocks = tgiBlocks; SelectedIndex = index; }
+        public TGIBlockCombo(AResource.DependentList<AResource.TGIBlock> tgiBlocks) : this(tgiBlocks, -1, true) { }
+        public TGIBlockCombo(AResource.DependentList<AResource.TGIBlock> tgiBlocks, int index) : this(tgiBlocks, index, true) { }
+        public TGIBlockCombo(AResource.DependentList<AResource.TGIBlock> tgiBlocks, int index, bool showEdit) : this() { TGIBlocks = tgiBlocks; SelectedIndex = index; ShowEdit = showEdit; }
 
         AResource.DependentList<AResource.TGIBlock> tgiBlocks;
         public AResource.DependentList<AResource.TGIBlock> TGIBlocks
@@ -82,6 +83,9 @@ namespace System.Windows.Forms
             set { if (cbTGIBlocks.SelectedIndex != value) { cbTGIBlocks.SelectedIndex = value; OnSelectedIndexChanged(this, EventArgs.Empty); } }
         }
 
+        [DefaultValue(true)]
+        public bool ShowEdit { get { return btnTGIBlockListEditor.Visible; } set { btnTGIBlockListEditor.Visible = value; } }
+
         public override void Refresh()
         {
             AResource.TGIBlock tgib = tgiBlocks == null ? null : cbTGIBlocks.SelectedIndex >= 0 && cbTGIBlocks.SelectedIndex < tgiBlocks.Count ? tgiBlocks[cbTGIBlocks.SelectedIndex] : null;
@@ -104,7 +108,7 @@ namespace System.Windows.Forms
             string selectedItem = tgib == null ? "(null)" : MakeItem(tgib);
             tgiBlocks.Clear();
             tgiBlocks.AddRange(tgiBlocksCopy.ToArray());
-            if (selectedItem == "(null)" && tgiBlocks.Count > 0) selectedItem = MakeItem(tgiBlocks[tgiBlocks.Count - 1]);
+
             FillList(selectedItem);
 
             OnTGIBlockListChanged(this, EventArgs.Empty);
