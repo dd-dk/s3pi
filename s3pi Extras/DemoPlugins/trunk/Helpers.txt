@@ -1,5 +1,6 @@
 #
-# Comments start with "#", "//" or ";"
+# Comments start with "#", "//" or ";" anywhere on the line
+# Block comments /* */ are allowed, too.
 #
 
 #
@@ -13,11 +14,20 @@
 # In both cases "*" can be used to mean "any".
 #
 
-# "{}" is replaced with the filename when on Editor/Viewer or ...Arguments lines
+# There are two helpers, "Helper1" and "Helper2".  For brevity I've used "..." to mean either "Helper1" or "Helper2":
+
+# You can specify the label for the buttons with "...Label: labeltext"
+
+# The command to run is specified with "...Command: exename" (with path, if needed)
+# (Note that the folder containing the config file is included in the OS search path)
+
+# Any required arguments are specified with "...Arguments: args"
+# "{}" is replaced with the filename when on ...Command or ...Arguments lines
 # "{prop}" is replaced with the selected resource's "prop" field value on ...Argument lines
 
+# To flag a command as read-only (preventing any updates to the package), use "...ReadOnly: anything_here"
 # Note: if you are passing a file to your editor and it does not update the write timestamp,
-# use "group.EditorIgnoreWriteTimestamp: anything_here".
+# use "...IgnoreWriteTimestamp: anything_here".
 
 # To group matching criteria with their actions, prefix the criteria and actions with the same value
 # (here we use "txt", "img", "dds" and "any").
@@ -25,59 +35,73 @@
 
 // Text/(pure) XML files 
 txt.Wrapper: TextResource
+txt.Helper1Label: Edit
 // Windows notepad is in the standard Windows PATH, so you don't need to say where it is:
-txt.Editor: notepad
-txt.EditorArguments: {}
+txt.Helper1Command: notepad
+txt.Helper1Arguments: {}
 
 // Images
 ; jpg
 jpg.ResourceType: 0x2F7D0002
-jpg.Editor: mspaint
-jpg.EditorArguments: {}
+jpg.Helper1Label: Paint
+jpg.Helper1Command: mspaint
+jpg.Helper1Arguments: {}
 
 ; png
 img.Wrapper: ImageResource
 // This is where GIMP installs by default:
-;img.Editor: C:\Program Files\GIMP-2.0\bin\gimp-2.6.exe
+;img.Helper1Label: GIMP
+;img.Helper1Command: C:\Program Files\GIMP-2.0\bin\gimp-2.6.exe
 // It likes quotes:
-;img.EditorArguments: "{}"
+;img.Helper1Arguments: "{}"
 
 // DDS files
 dds.ResourceType: 0x00B2D882 0x8FFB80F6
-dds.Viewer: ViewDDS.exe
+dds.Helper1Label: View
+dds.Helper1Command: ViewDDS.exe
+dds.Helper1ReadOnly: yes
 ; ViewDDS can process data from the clipboard in the format used by s3pe:
-dds.ViewerArguments: /clipboard
-;dds.Editor: C:\Program Files\GIMP-2.0\bin\gimp-2.6.exe
-;dds.EditorArguments: "{}"
+dds.Helper1Arguments: /clipboard
+;dds.Helper2Label: GIMP
+;dds.Helper2Command: C:\Program Files\GIMP-2.0\bin\gimp-2.6.exe
+;dds.Helper2Arguments: "{}"
 
 // ObjKey editor, using the editor supplied with s3pe
 objk.ResourceType: 0x02DC343F
-objk.Editor: OBJKResourceEditor
+objk.Helper1Label: Edit
+objk.Helper1Command: OBJKResourceEditor
 
 // String tables, using the editor supplied with s3pe
 stbl.ResourceType: 0x220557DA
-stbl.Editor: STBLResourceEditor
+stbl.Helper1Label: Edit
+stbl.Helper1Command: STBLResourceEditor
 
 // Visual proxy files, using the editor supplied with s3pe
 vpxy.ResourceType: 0x736884F1
-vpxy.Editor: VPXYResourceEditor
+vpxy.Helper1Label: Edit
+vpxy.Helper1Command: VPXYResourceEditor
 
 
 // --
 // Here are some other examples
 // --
 
-// Could try just running it... but we won't
+// Could try just running it... but we won't; the uses the OS's file associations
 ;any.Wrapper: *
-;any.Viewer: {}
+;any.Helper1Label: Start
+;any.Helper1Command: {}
+// To avoid ever saving updates, say the helper is read-only
+;any.Helper1ReadOnly: yes
 
 // Or you might want to use Notepad on everything not handled above
 ;any.Wrapper: *
-;any.Editor: notepad
-;any.EditorArguments: {}
+;any.Helper1Label: Edit
+;any.Helper1Command: notepad
+;any.Helper1Arguments: {}
 
 // If you have an editor that doesn't update file timestamps on save, call it like this:
 ;any.ResourceType: 0xFEEDF00D
-;any.Editor: X:\Path\To\Editor.exe
-;any.EditorArguments: {}
-;any.EditorIgnoreWriteTimestamp: whatever
+;any.Helper1Label: Edit
+;any.Helper1Command: X:\Path\To\Editor.exe
+;any.Helper1Arguments: {}
+;any.Helper1IgnoreWriteTimestamp: whatever

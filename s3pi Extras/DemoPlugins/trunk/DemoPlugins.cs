@@ -31,16 +31,16 @@ namespace s3pi.DemoPlugins
     /// </summary>
     public class DemoPlugins
     {
-        static List<string> reserved = new List<string>(new string[] { // must be lower case
-                "viewer", "viewerarguments",
-                "editor", "editorarguments", "editorignorewritetimestamp",
+        static List<string> reserved = new List<string>(new string[] { // must be lower case; currently fixed at two helpers
+                "helper1label", "helper1command", "helper1arguments", "helper1readonly", "helper1ignorewritetimestamp",
+                "helper2label", "helper2command", "helper2arguments", "helper2readonly", "helper2ignorewritetimestamp",
                 "wrapper",
             });
         static List<string> keywords = new List<string>();
         static Dictionary<string, Dictionary<string, string>> demoPlugins = null;
 
         static string config = "";
-
+        
         public static string Config
         {
             get { return config != null && config.Length > 0 ? config : Path.Combine(Path.GetDirectoryName(typeof(DemoPlugins).Assembly.Location), "Helpers.txt"); }
@@ -55,12 +55,40 @@ namespace s3pi.DemoPlugins
             demoPlugins = new Dictionary<string, Dictionary<string, string>>();
             if (!File.Exists(Config)) return;
 
-            StreamReader sr = new StreamReader(new FileStream(Config, FileMode.Open, FileAccess.Read));
+            StreamReader sr = new StreamReader(new FileStream(Config, FileMode.Open, FileAccess.Read, FileShare.Read));
+
+            bool inCommentBlock = false;
 
             for (string s = sr.ReadLine(); s != null; s = sr.ReadLine())
             {
                 s = s.Trim();
-                if (s.Length == 0 || s.StartsWith("#") || s.StartsWith(";") || s.StartsWith("//")) continue;
+
+                #region Comments
+                if (inCommentBlock)
+                {
+                    int i = s.IndexOf("*/");
+                    if (i > -1)
+                    {
+                        s = s.Substring(i + 2).Trim();
+                        inCommentBlock = false;
+                    }
+                }
+
+                string[] commentMarks = { "#", ";", "//" };
+                for (int i = 0; s.Length > 0 && i < commentMarks.Length; i++)
+                {
+                    int j = s.IndexOf(commentMarks[i]);
+                    if (j > -1) s = s.Substring(0, j).Trim();
+                }
+
+                if (inCommentBlock || s.Length == 0) continue;
+
+                if (s.Contains("/*"))
+                {
+                    s = s.Substring(0, s.IndexOf("/*")).Trim();
+                    inCommentBlock = true;
+                }
+                #endregion
 
                 string[] headtail = s.Split(new char[] { '.' }, 2);
                 if (headtail.Length != 2) continue;
@@ -77,33 +105,53 @@ namespace s3pi.DemoPlugins
                 target.Add(keyword, headtail[1].Trim());
             }
 
+            sr.Close();
+
             List<string> toDelete = new List<string>();
             foreach (string group in demoPlugins.Keys)
-                if (!(demoPlugins[group].ContainsKey("viewer") || demoPlugins[group].ContainsKey("editor")))
+                if (!(demoPlugins[group].ContainsKey("helper1command") || demoPlugins[group].ContainsKey("helper2command")))
                     toDelete.Add(group);
             foreach (string group in toDelete) demoPlugins.Remove(group);
         }
 
         struct Cmd
         {
+            public struct Helper
+            {
+                public string label;
+                public string command;
+                public string arguments;
+                public bool isReadOnly;
+                public bool ignoreWriteTimestamp;
+                public bool export;
+            }
             public string group;
             public string filename;
-            public bool hasViewer;
-            public bool hasEditor;
-            public bool exportViewer;
-            public bool exportEditor;
-            public bool ignoreWriteTimestamp;
+            public Dictionary<string, Helper> helpers;
         }
         Cmd cmd = new Cmd();
-        public bool HasViewer { get { return cmd.hasViewer; } }
-        public bool HasEditor { get { return cmd.hasEditor; } }
+
+        bool hasHelper(string hlp) { return cmd.helpers == null || cmd.helpers.Count == 0 ? false : cmd.helpers.ContainsKey(hlp); }
+        public bool HasHelper1 { get { return hasHelper("1"); } }
+        public bool HasHelper2 { get { return hasHelper("2"); } }
+
+        string helperLabel(string hlp) { return hasHelper(hlp) ? cmd.helpers[hlp].label : ""; }
+        public string Helper1Label { get { return helperLabel("1"); } }
+        public string Helper2Label { get { return helperLabel("2"); } }
+
+        bool execHelper(string hlp, IResource res) { return hasHelper(hlp) ? cmd.helpers[hlp].isReadOnly ? DoReadOnly(cmd.helpers[hlp], res) : DoReadWrite(cmd.helpers[hlp], res) : false; }
+        public bool Helper1(IResource res) { return execHelper("1", res); }
+        public bool Helper2(IResource res) { return execHelper("2", res); }
+
+        bool helperIsReadOnly(string hlp) { return hasHelper(hlp) ? cmd.helpers[hlp].isReadOnly : true; }
+        public bool Helper1IsReadOnly { get { return helperIsReadOnly("1"); } }
+        public bool Helper2IsReadOnly { get { return helperIsReadOnly("2"); } }
 
         /// <summary>
-        /// Get the command line to execute for a given resource
+        /// Initialise a new Cmd structure for a given resource
         /// </summary>
-        /// <param name="pkg">The package containing the resource</param>
         /// <param name="key">The resource index entry</param>
-        /// <returns></returns>
+        /// <param name="res">The resource</param>
         public DemoPlugins(IResourceIndexEntry key, IResource res)
         {
             if (demoPlugins == null) ReadConfig();
@@ -138,31 +186,34 @@ namespace s3pi.DemoPlugins
         matched:
             if (!match) return;
 
-            cmd.hasViewer = demoPlugins[cmd.group].ContainsKey("viewer");
-            cmd.hasEditor = demoPlugins[cmd.group].ContainsKey("editor");
-            cmd.exportViewer = cmd.hasViewer &&
-                (demoPlugins[cmd.group]["viewer"].IndexOf("{}") >= 0
-                || (demoPlugins[cmd.group].ContainsKey("viewerarguments") && demoPlugins[cmd.group]["viewerarguments"].IndexOf("{}") >= 0)
-                );
-            cmd.exportEditor = cmd.hasEditor &&
-                (demoPlugins[cmd.group]["editor"].IndexOf("{}") >= 0
-                || (demoPlugins[cmd.group].ContainsKey("editorarguments") && demoPlugins[cmd.group]["editorarguments"].IndexOf("{}") >= 0)
-                );
-            cmd.ignoreWriteTimestamp = cmd.exportEditor &&
-                (demoPlugins[cmd.group].ContainsKey("editorignorewritetimestamp"));
-            if (cmd.exportViewer || cmd.exportEditor)
+            cmd.helpers = new Dictionary<string, Cmd.Helper>();
+
+            bool wantFilename = false;
+            foreach (string hlp in new string[] { "1", "2", })
+            {
+                if (!demoPlugins[cmd.group].ContainsKey("helper" + hlp + "command")) continue;
+                Cmd.Helper helper = new Cmd.Helper();
+                helper.label = getString(cmd.group, "helper" + hlp + "label");
+                helper.command = getString(cmd.group, "helper" + hlp + "command");
+                helper.arguments = getString(cmd.group, "helper" + hlp + "arguments");
+                helper.isReadOnly = getString(cmd.group, "helper" + hlp + "readonly").Length > 0;
+                helper.export = helper.command.IndexOf("{}") >= 0 || helper.arguments.IndexOf("{}") >= 0;
+                helper.ignoreWriteTimestamp = helper.export && getString(cmd.group, "helper" + hlp + "ignorewritetimestamp").Length > 0;
+                cmd.helpers.Add(hlp, helper);
+                if (helper.export) wantFilename = true;
+            }
+            if (wantFilename)
                 cmd.filename = Path.Combine(Path.GetTempPath(), (s3pi.Extensions.TGIN)(key as AResourceIndexEntry));
         }
+        string getString(string group, string key) { return demoPlugins[group].ContainsKey(key) ? demoPlugins[group][key] : ""; }
 
-        public bool View(IResource res)
+        private bool DoReadOnly(Cmd.Helper helper, IResource res)
         {
-            if (!cmd.hasViewer) return false;
-
             DateTime lastWriteTime = new DateTime();
-            if (cmd.exportViewer && Clipboard.ContainsData(DataFormats.Serializable))
+            if (helper.export && Clipboard.ContainsData(DataFormats.Serializable))
                 lastWriteTime = pasteTo(cmd.filename);
 
-            bool result = Execute(res, cmd, demoPlugins[cmd.group]["viewer"], demoPlugins[cmd.group].ContainsKey("viewerarguments") ? demoPlugins[cmd.group]["viewerarguments"] : "");
+            bool result = Execute(res, cmd, helper.command, helper.arguments);
 
             if (File.Exists(cmd.filename))
                 File.Delete(cmd.filename);
@@ -170,20 +221,18 @@ namespace s3pi.DemoPlugins
             return result;
         }
 
-        public bool Edit(IResource res)
+        private bool DoReadWrite(Cmd.Helper helper, IResource res)
         {
-            if (!cmd.hasEditor) return false;
-
             DateTime lastWriteTime = new DateTime();
-            if (cmd.exportEditor && Clipboard.ContainsData(DataFormats.Serializable))
+            if (helper.export && Clipboard.ContainsData(DataFormats.Serializable))
                 lastWriteTime = pasteTo(cmd.filename);
 
-            bool result = Execute(res, cmd, demoPlugins[cmd.group]["editor"], demoPlugins[cmd.group].ContainsKey("editorarguments") ? demoPlugins[cmd.group]["editorarguments"] : "");
+            bool result = Execute(res, cmd, helper.command, helper.arguments);
 
             if (result)
             {
-                if (cmd.exportEditor)
-                    result = copyFile(cmd.filename, cmd.ignoreWriteTimestamp ? new DateTime(0) : lastWriteTime);
+                if (helper.export)
+                    result = copyFile(cmd.filename, helper.ignoreWriteTimestamp ? new DateTime(0) : lastWriteTime);
             }
 
             return result;
