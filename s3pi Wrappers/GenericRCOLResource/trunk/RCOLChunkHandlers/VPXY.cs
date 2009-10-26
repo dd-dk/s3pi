@@ -45,32 +45,32 @@ namespace s3pi.GenericRCOLResource
             : base(APIversion, handler, null)
         {
             this.version = basis.version;
-            this.entryList = new EntryList(handler, basis.entryList);
+            this.entryList = new EntryList(OnRCOLChanged, basis.entryList);
             this.boundingBox = (float[])basis.boundingBox.Clone();
             this.unused = (byte[])basis.unused.Clone();
             this.modular = basis.modular;
             if (modular != 0)
                 this.ftptIndex = basis.ftptIndex;
-            this.tgiBlockList = new AResource.TGIBlockList(handler, basis.tgiBlockList);
+            this.tgiBlockList = new AResource.TGIBlockList(OnRCOLChanged, basis.tgiBlockList);
         }
         public VPXY(int APIversion, EventHandler handler,
             uint version, EntryList entryList, float[] boundingBox, byte[] unused, byte modular, uint ftptIndex, IList<AResource.TGIBlock> tgiBlockList)
             : base(APIversion, handler, null)
         {
             this.version = version;
-            this.entryList = new EntryList(handler, entryList);
+            this.entryList = new EntryList(OnRCOLChanged, entryList);
             this.boundingBox = (float[])boundingBox.Clone();
             this.unused = (byte[])unused.Clone();
             this.modular = modular;
             if (modular != 0)
                 this.ftptIndex = ftptIndex;
-            this.tgiBlockList = new AResource.TGIBlockList(handler, tgiBlockList);
+            this.tgiBlockList = new AResource.TGIBlockList(OnRCOLChanged, tgiBlockList);
         }
         public VPXY(int APIversion, EventHandler handler)
             : base(APIversion, handler, null)
         {
-            entryList = new EntryList(handler);
-            tgiBlockList = new AResource.TGIBlockList(handler);
+            entryList = new EntryList(OnRCOLChanged);
+            tgiBlockList = new AResource.TGIBlockList(OnRCOLChanged);
         }
 
         #region ARCOLBlock
@@ -333,7 +333,7 @@ namespace s3pi.GenericRCOLResource
 
         #region Content Fields
         public uint Version { get { return version; } set { if (version != value) { version = value; OnRCOLChanged(this, EventArgs.Empty); } } }
-        public EntryList Entries { get { return entryList; } set { if (entryList != value) { entryList = new EntryList(handler, value); OnRCOLChanged(this, EventArgs.Empty); } } }
+        public EntryList Entries { get { return entryList; } set { if (entryList != value) { entryList = new EntryList(OnRCOLChanged, value); OnRCOLChanged(this, EventArgs.Empty); } } }
         //public byte TC02 { get { return tc02; } set { if (tc02 != value) { tc02 = value; OnRCOLChanged(this, EventArgs.Empty); } } }
         public float[] BoundingBox
         {
@@ -362,7 +362,7 @@ namespace s3pi.GenericRCOLResource
         public AResource.TGIBlockList TGIBlocks
         {
             get { return tgiBlockList; }
-            set { if (tgiBlockList != value) { tgiBlockList = new AResource.TGIBlockList(handler, value); OnRCOLChanged(this, EventArgs.Empty); } }
+            set { if (tgiBlockList != value) { tgiBlockList = new AResource.TGIBlockList(OnRCOLChanged, value); OnRCOLChanged(this, EventArgs.Empty); } }
         }
 
         public string Value

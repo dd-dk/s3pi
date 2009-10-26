@@ -40,14 +40,14 @@ namespace s3pi.GenericRCOLResource
             : base(APIversion, handler, null)
         {
             this.version = basis.version;
-            this.footprintAreas = new AreaList(handler, basis.footprintAreas);
-            this.slotAreas = new AreaList(handler, basis.slotAreas);
+            this.footprintAreas = new AreaList(OnRCOLChanged, basis.footprintAreas);
+            this.slotAreas = new AreaList(OnRCOLChanged, basis.slotAreas);
         }
         public FTPT(int APIversion, EventHandler handler)
             : base(APIversion, handler, null)
         {
-            this.footprintAreas = new AreaList(handler);
-            this.slotAreas = new AreaList(handler);
+            this.footprintAreas = new AreaList(OnRCOLChanged);
+            this.slotAreas = new AreaList(OnRCOLChanged);
         }
 
         #region ARCOLBlock
@@ -62,8 +62,8 @@ namespace s3pi.GenericRCOLResource
             if (checking) if (tag != (uint)FOURCC("FTPT"))
                     throw new InvalidDataException(String.Format("Invalid Tag read: '{0}'; expected: 'FTPT'; at 0x{1:X8}", FOURCC(tag), s.Position));
             version = r.ReadUInt32();
-            footprintAreas = new AreaList(handler, s);
-            slotAreas = new AreaList(handler, s);
+            footprintAreas = new AreaList(OnRCOLChanged, s);
+            slotAreas = new AreaList(OnRCOLChanged, s);
         }
 
         public override Stream UnParse()
@@ -73,9 +73,9 @@ namespace s3pi.GenericRCOLResource
 
             w.Write(tag);
             w.Write(version);
-            if (footprintAreas == null) footprintAreas = new AreaList(handler);
+            if (footprintAreas == null) footprintAreas = new AreaList(OnRCOLChanged);
             footprintAreas.UnParse(ms);
-            if (slotAreas == null) slotAreas = new AreaList(handler);
+            if (slotAreas == null) slotAreas = new AreaList(OnRCOLChanged);
             slotAreas.UnParse(ms);
 
             return ms;
@@ -370,8 +370,8 @@ namespace s3pi.GenericRCOLResource
 
         #region Content Fields
         public uint Version { get { return version; } set { if (version != value) { version = value; OnRCOLChanged(this, EventArgs.Empty); } } }
-        public AreaList FootprintAreas { get { return footprintAreas; } set { if (footprintAreas != value) { footprintAreas = new AreaList(handler, value); OnRCOLChanged(this, EventArgs.Empty); } } }
-        public AreaList SlotAreas { get { return slotAreas; } set { if (slotAreas != value) { slotAreas = new AreaList(handler, value); OnRCOLChanged(this, EventArgs.Empty); } } }
+        public AreaList FootprintAreas { get { return footprintAreas; } set { if (footprintAreas != value) { footprintAreas = new AreaList(OnRCOLChanged, value); OnRCOLChanged(this, EventArgs.Empty); } } }
+        public AreaList SlotAreas { get { return slotAreas; } set { if (slotAreas != value) { slotAreas = new AreaList(OnRCOLChanged, value); OnRCOLChanged(this, EventArgs.Empty); } } }
 
         public string Value
         {
