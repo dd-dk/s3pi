@@ -307,13 +307,11 @@ namespace CatalogResource
             {
                 get
                 {
-                    TypeCode01 tc1 = this as TypeCode01;
                     string s = "";
                     foreach (string f in this.ContentFields)
                     {
                         if (f.Equals("Value")) continue;
                         if (f.Equals("ControlCode") && prefix == null) continue;
-                        if (tc1 != null && f.Equals("SubType") && tc1.HasUnknown1) continue;
                         s += String.Format("{0}: {1}\n", f, "" + this[f]);
                     }
                     return s;
@@ -324,134 +322,89 @@ namespace CatalogResource
 
         public class TypeCode01 : TypeCode
         {
-            byte subType;
-            string unknown1 = "";
-            byte unknown2;
+            bool hasString;
+            bool twoBytes;
+            byte byteValue;
+            string stringValue;
+            static List<string> stringTable = new List<string>(StringTableSingleton.Table);
 
             internal TypeCode01(int APIversion, EventHandler handler, Stream s, byte[] prefix) : base(APIversion, handler, s, prefix) { }
 
-            public TypeCode01(int APIversion, EventHandler handler, byte[] prefix, string unknown1)
-                : base(APIversion, handler, prefix)
+            public TypeCode01(int APIversion, EventHandler handler, byte[] prefix, string stringValue)
+                : base(APIversion, handler, prefix) { setStringValue(stringValue); }
+
+            public TypeCode01(int APIversion, EventHandler handler, byte[] prefix, byte byteValue)
+                : base(APIversion, handler, prefix) { setByteValue(byteValue); }
+
+            private void setStringValue(string value)
             {
-                if (unknown1.Length > 0x3f)
-                    throw new ArgumentException(String.Format("String length must not exceed 0x3f: 0x{0:X}", unknown1.Length));
-                subType = (byte)(0x80 | unknown1.Length);
-                this.unknown1 = unknown1;
-                this.unknown2 = 0;
+                int index = stringTable.IndexOf(value);
+
+                if (index < 0)
+                {
+                    if (value.Length > 0xFF)
+                        throw new ArgumentLengthException("value", 0xFF);
+                    hasString = true;
+                    twoBytes = value.Length > 0x3F;
+                    stringValue = value;
+                    byteValue = (byte)stringValue.Length;
+                }
+                else setByteValue((byte)index);
             }
 
-            public TypeCode01(int APIversion, EventHandler handler, byte[] prefix, byte unknown2)
-                : base(APIversion, handler, prefix)
+            private void setByteValue(byte value)
             {
-                subType = 0x40;
-                this.unknown1 = "";
-                this.unknown2 = unknown2;
+                if (value >= stringTable.Count)
+                    throw new ArgumentOutOfRangeException("value", value, "Value must not exceed length of table: " + stringTable.Count);
+                hasString = false;
+                twoBytes = value > 0x3F;
+                byteValue = value;
             }
 
             protected override void Parse(Stream s)
             {
                 BinaryReader r = new BinaryReader(s);
-                subType = r.ReadByte();
-                if (checking) if (/*(subType & 0xC0) == 0 || */(subType & 0xC0) == 0xC0)
-                        throw new InvalidDataException(String.Format("Unexpected subType read: 0x{0:X2} at 0x{1:X8}", subType & 0xC0, s.Position));
-                unknown1 = (subType & 0x80) == 0 ? "" : new String(r.ReadChars(subType & 0x3f));
-                unknown2 = (subType & 0x40) == 0 ? (byte)0 : r.ReadByte();
+
+                byte flags = r.ReadByte();
+                twoBytes = (flags & 0x40) != 0;
+                hasString = (flags & 0x80) != 0;
+
+                byteValue = twoBytes ? r.ReadByte() : (byte)(flags & 0x3F);
+                if (hasString) stringValue = new string(r.ReadChars(byteValue));
             }
 
             internal override void UnParse(Stream s)
             {
                 base.UnParse(s);
                 BinaryWriter w = new BinaryWriter(s);
-                w.Write(subType);
-                if ((subType & 0x80) != 0) w.Write(unknown1.ToCharArray());
-                if ((subType & 0x40) != 0) w.Write(unknown2);
+
+                byte flags = 0x00;
+                if (twoBytes) flags |= 0x40;
+                if (hasString) flags |= 0x80;
+                if (!twoBytes) flags |= byteValue;
+                w.Write(flags);
+
+                if (twoBytes) w.Write(byteValue);
+                if (hasString) w.Write(stringValue.ToCharArray());
             }
 
             public override int CompareTo(TypeCode other)
             {
                 TypeCode01 tc = other as TypeCode01;
                 if (tc == null) return -1;
-                if (HasUnknown1 && tc.HasUnknown1) return unknown1.CompareTo(tc.unknown1);
-                if (HasUnknown2 && tc.HasUnknown2)
-                {
-                    int res = subType.CompareTo(tc.subType); if (res != 0) return res;
-                    return unknown2.CompareTo(tc.unknown2);
-                }
-                return subType.CompareTo(tc.subType);
+                return Data.CompareTo(tc.Data);
             }
 
-            public override int GetHashCode(TypeCode obj) { return HasUnknown1 ? unknown1.GetHashCode() : HasUnknown2 ? unknown2.GetHashCode() : -1; }
+            public override int GetHashCode(TypeCode obj) { return Data.GetHashCode(); }
 
-            public override AHandlerElement Clone(EventHandler handler)
-            {
-                if (HasUnknown1) return new TypeCode01(requestedApiVersion, handler, prefix, unknown1);
-                if (HasUnknown2) return new TypeCode01(requestedApiVersion, handler, prefix, unknown2);
-                throw new InvalidOperationException();
-            }
+            public override AHandlerElement Clone(EventHandler handler) { return new TypeCode01(requestedApiVersion, handler, prefix, Data); }
 
             public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
 
-            public bool HasUnknown1
+            public string Data
             {
-                get { return (subType & 0x80) != 0; }
-                set
-                {
-                    if (HasUnknown1 == value) return;
-                    if (HasUnknown2) throw new InvalidOperationException("This TypeCode01 has Unknown2 - remove first");
-                    subType = (byte)(value ? 0x80 : 0x00);
-                    unknown1 = "";
-                    OnElementChanged();
-                }
-            }
-            public bool HasUnknown2
-            {
-                get { return (subType & 0x40) != 0; }
-                set
-                {
-                    if (HasUnknown2 == value) return;
-                    if (HasUnknown1) throw new InvalidOperationException("This TypeCode01 has Unknown1 - remove first");
-                    subType = (byte)((value ? 0x40 : 0x00) | SubType);
-                    unknown2 = 0x00;
-                    OnElementChanged();
-                }
-            }
-
-            public string Unknown1
-            {
-                get { return unknown1; }
-                set
-                {
-                    if (!HasUnknown1) throw new InvalidOperationException("This TypeCode01 has no Unknown1");
-                    if (value.Length > 0x3f)
-                        throw new ArgumentException(String.Format("String length (0x{0:X}) must not exceed 0x3F.", value.Length));
-                    if (unknown1 != value) { unknown1 = value; OnElementChanged(); }
-                }
-            }
-            public byte Unknown2
-            {
-                get { return unknown2; }
-                set
-                {
-                    if (!HasUnknown2) throw new InvalidOperationException("This TypeCode01 has no Unknown2");
-                    if (unknown2 != value) { unknown2 = value; OnElementChanged(); }
-                }
-            }
-            public byte SubType
-            {
-                get
-                {
-                    if (HasUnknown1) throw new InvalidOperationException("This TypeCode01 has Unknown1 - cannot get SubType");
-                    return (byte)(subType & 0x3F);
-                }
-                set
-                {
-                    if (subType == value) return;
-                    if (HasUnknown1) throw new InvalidOperationException("This TypeCode01 has Unknown1 - cannot set SubType");
-                    if ((value & 0xC0) != 0) throw new ArgumentOutOfRangeException("Maximum value for SubType is 0x3F.");
-                    subType &= 0xC0;
-                    subType |= value;
-                    OnElementChanged();
-                }
+                get { return hasString ? stringValue : stringTable[byteValue]; }
+                set { if (value == Data) return; setStringValue(value); OnElementChanged(); }
             }
         }
 
