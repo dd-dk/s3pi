@@ -153,6 +153,7 @@ namespace s3pi.Interfaces
 
                 fields.Add(m.Name);
             }
+            fields.Sort();
 
             return fields;
         }
