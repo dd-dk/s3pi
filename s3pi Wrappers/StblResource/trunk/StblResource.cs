@@ -71,6 +71,7 @@ namespace StblResource
             {
                 ulong key = r.ReadUInt64();
                 string value = new string(r2.ReadChars(r.ReadInt32()));
+                if (entries.ContainsKey(key)) continue; // Patch 1.6 has problems in the STBLs (World Adventures sneaked into the DeltaBuild0 file)
                 entries.Add(key, value);
             }
         }
