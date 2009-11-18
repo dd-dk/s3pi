@@ -27,7 +27,7 @@ namespace CatalogResource
     public class FenceCatalogResource : CatalogResourceTGIBlockList
     {
         #region Attributes
-        uint unknown1;
+        MaterialList materialList = null;
         uint unknown2;
         byte unknown3;
         uint unknown4;
@@ -44,9 +44,9 @@ namespace CatalogResource
         #region Constructors
         public FenceCatalogResource(int APIversion, Stream s) : base(APIversion, s) { }
         public FenceCatalogResource(int APIversion, Stream unused, FenceCatalogResource basis)
-            : base(APIversion, basis.list)
+            : base(APIversion, basis.version, basis.list)
         {
-            this.unknown1 = basis.unknown1;
+            this.materialList = (basis.version >= 0x00000007) ? new MaterialList(OnResourceChanged, basis.materialList) : null;
             this.common = new Common(requestedApiVersion, OnResourceChanged, basis.common);
             this.unknown2 = basis.unknown2;
             this.unknown3 = basis.unknown3;
@@ -60,12 +60,20 @@ namespace CatalogResource
             this.unknown11 = basis.unknown11;
             this.unknown12 = basis.unknown12;
         }
-        public FenceCatalogResource(int APIversion, uint unknown1, Common common, uint unknown2, byte unknown3, uint unknown4,
+        public FenceCatalogResource(int APIversion, uint version, Common common, uint unknown2, byte unknown3, uint unknown4,
             byte unknown5, uint unknown6, byte unknown7, uint unknown8, uint unknown9, uint unknown10, uint unknown11, byte unknown12,
             TGIBlockList ltgib)
-            : base(APIversion, ltgib)
+            : this(APIversion, version, null, common, unknown2, unknown3, unknown4, unknown5, unknown6, unknown7, unknown8, unknown9, unknown10, unknown11, unknown12, ltgib)
         {
-            this.unknown1 = unknown1;
+            if (checking) if (version >= 0x00000007)
+                    throw new InvalidOperationException(String.Format("Constructor requires MaterialList for version {0}", version));
+        }
+        public FenceCatalogResource(int APIversion, uint version, MaterialList materialList, Common common, uint unknown2, byte unknown3, uint unknown4,
+            byte unknown5, uint unknown6, byte unknown7, uint unknown8, uint unknown9, uint unknown10, uint unknown11, byte unknown12,
+            TGIBlockList ltgib)
+            : base(APIversion, version, ltgib)
+        {
+            this.materialList = materialList != null ? new MaterialList(OnResourceChanged, materialList) : null;
             this.common = new Common(requestedApiVersion, OnResourceChanged, common);
             this.unknown2 = unknown2;
             this.unknown3 = unknown3;
@@ -84,11 +92,9 @@ namespace CatalogResource
         #region Data I/O
         protected override void Parse(Stream s)
         {
-            long tgiPosn, tgiSize;
             BinaryReader r = new BinaryReader(s);
-            this.unknown1 = r.ReadUInt32();
-            tgiPosn = r.ReadUInt32() + s.Position;
-            tgiSize = r.ReadUInt32();
+            base.Parse(s);
+            this.materialList = (this.version >= 0x00000007) ? new MaterialList(OnResourceChanged, s) : null;
             this.common = new Common(requestedApiVersion, OnResourceChanged, s);
             this.unknown2 = r.ReadUInt32();
             this.unknown3 = r.ReadByte();
@@ -107,13 +113,13 @@ namespace CatalogResource
 
         protected override Stream UnParse()
         {
-            long pos;
-            MemoryStream s = new MemoryStream();
+            Stream s = base.UnParse();
             BinaryWriter w = new BinaryWriter(s);
-            w.Write(unknown1);
-            pos = s.Position;
-            w.Write((uint)0); // tgiOffset
-            w.Write((uint)0); // tgiSize
+            if (version >= 0x00000007)
+            {
+                if (materialList == null) materialList = new MaterialList(OnResourceChanged);
+                materialList.UnParse(s);
+            }
             if (common == null) common = new Common(requestedApiVersion, OnResourceChanged);
             common.UnParse(s);
             w.Write(unknown2);
@@ -128,7 +134,7 @@ namespace CatalogResource
             w.Write(unknown11);
             w.Write(unknown12);
 
-            base.UnParse(s, pos);
+            base.UnParse(s);
 
             w.Flush();
 
@@ -136,8 +142,26 @@ namespace CatalogResource
         }
         #endregion
 
+        #region AApiVersionedFields
+        /// <summary>
+        /// The list of available field names on this API object
+        /// </summary>
+        public override List<string> ContentFields
+        {
+            get {
+                List<string> res = base.ContentFields;
+                if (this.version < 0x00000007) res.Remove("Materials");
+                return res;
+            }
+        }
+        #endregion
+
         #region Content Fields
-        public uint Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; OnResourceChanged(this, new EventArgs()); } } }
+        public MaterialList Materials
+        {
+            get { if (version < 0x00000007) throw new InvalidOperationException(); return materialList; }
+            set { if (version < 0x00000007) throw new InvalidOperationException(); if (materialList != value) { materialList = value == null ? null : new MaterialList(OnResourceChanged, value); } OnResourceChanged(this, new EventArgs()); }
+        }
         public uint Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; OnResourceChanged(this, new EventArgs()); } } }
         public byte Unknown3 { get { return unknown3; } set { if (unknown3 != value) { unknown3 = value; OnResourceChanged(this, new EventArgs()); } } }
         public uint Unknown4 { get { return unknown4; } set { if (unknown4 != value) { unknown4 = value; OnResourceChanged(this, new EventArgs()); } } }

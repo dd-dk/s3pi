@@ -27,7 +27,6 @@ namespace CatalogResource
     public class WallFloorPatternCatalogResource : CatalogResourceTGIBlockList
     {
         #region Attributes
-        uint unknown1;
         WallFloorPatternMaterialList materialList = null;
         uint unknown2;
         byte unknown3;
@@ -45,9 +44,8 @@ namespace CatalogResource
         #region Constructors
         public WallFloorPatternCatalogResource(int APIversion, Stream s) : base(APIversion, s) { }
         public WallFloorPatternCatalogResource(int APIversion, Stream unused, WallFloorPatternCatalogResource basis)
-            : base(APIversion, basis.list)
+            : base(APIversion, basis.version, basis.list)
         {
-            this.unknown1 = basis.unknown1;
             this.materialList = new WallFloorPatternMaterialList(OnResourceChanged, basis.materialList);
             this.common = new Common(requestedApiVersion, OnResourceChanged, basis.common);
             this.unknown2 = basis.unknown2;
@@ -63,13 +61,12 @@ namespace CatalogResource
             this.unknown10 = basis.unknown10;
             this.unknown11 = (byte[])basis.unknown11.Clone();
         }
-        public WallFloorPatternCatalogResource(int APIversion, uint unknown1, IList<WallFloorPatternMaterial> materialList, Common common,
+        public WallFloorPatternCatalogResource(int APIversion, uint version, IList<WallFloorPatternMaterial> materialList, Common common,
             uint unknown2, byte unknown3, uint unknown4, byte unknown5, byte unknown6, uint unknown7, uint unknown8,
             uint index1, uint unknown9, string unknown10, byte[] unknown11,
             TGIBlockList ltgib)
-            : base(APIversion, ltgib)
+            : base(APIversion, version, ltgib)
         {
-            this.unknown1 = unknown1;
             this.materialList = new WallFloorPatternMaterialList(OnResourceChanged, materialList);
             this.common = new Common(requestedApiVersion, OnResourceChanged, common);
             this.unknown2 = unknown2;
@@ -90,13 +87,10 @@ namespace CatalogResource
         #region Data I/O
         protected override void Parse(Stream s)
         {
-            long tgiPosn, tgiSize;
             BinaryReader r = new BinaryReader(s);
             BinaryReader r2 = new BinaryReader(s, System.Text.Encoding.BigEndianUnicode);
+            base.Parse(s);
 
-            this.unknown1 = r.ReadUInt32();
-            tgiPosn = r.ReadUInt32() + s.Position;
-            tgiSize = r.ReadUInt32();
             this.materialList = new WallFloorPatternMaterialList(OnResourceChanged, s);
             this.common = new Common(requestedApiVersion, OnResourceChanged, s);
             this.unknown2 = r.ReadUInt32();
@@ -118,14 +112,9 @@ namespace CatalogResource
 
         protected override Stream UnParse()
         {
-            long pos;
-            MemoryStream s = new MemoryStream();
+            Stream s = base.UnParse();
             BinaryWriter w = new BinaryWriter(s);
 
-            w.Write(unknown1);
-            pos = s.Position;
-            w.Write((uint)0); // tgiOffset
-            w.Write((uint)0); // tgiSize
             if (materialList == null) materialList = new WallFloorPatternMaterialList(OnResourceChanged);
             materialList.UnParse(s);
             if (common == null) common = new Common(requestedApiVersion, OnResourceChanged);
@@ -142,7 +131,7 @@ namespace CatalogResource
             Write7BitStr(s, unknown10, System.Text.Encoding.BigEndianUnicode);
             w.Write(unknown11);
 
-            base.UnParse(s, pos);
+            base.UnParse(s);
 
             w.Flush();
 
@@ -249,7 +238,6 @@ namespace CatalogResource
         #endregion
 
         #region Content Fields
-        public uint Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; OnResourceChanged(this, new EventArgs()); } } }
         public WallFloorPatternMaterialList Materials { get { return materialList; } set { if (materialList != value) { materialList = value == null ? null : new WallFloorPatternMaterialList(OnResourceChanged, value); } OnResourceChanged(this, new EventArgs()); } }
         public uint Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; OnResourceChanged(this, new EventArgs()); } } }
         public byte Unknown3 { get { return unknown3; } set { if (unknown3 != value) { unknown3 = value; OnResourceChanged(this, new EventArgs()); } } }

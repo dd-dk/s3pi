@@ -27,7 +27,6 @@ namespace CatalogResource
     public class TerrainGeometryWaterBrushCatalogResource : CatalogResource
     {
         #region Attributes
-        uint unknown1;
         uint unknown2;
         uint unknown3;
         byte unknown4;
@@ -47,11 +46,10 @@ namespace CatalogResource
         #region Constructors
         public TerrainGeometryWaterBrushCatalogResource(int APIversion, Stream s) : base(APIversion, s) { }
         public TerrainGeometryWaterBrushCatalogResource(int APIversion, Stream unused, TerrainGeometryWaterBrushCatalogResource basis)
-            : base(APIversion, null)
+            : base(APIversion, basis.version)
         {
-            this.unknown1 = basis.unknown1;
-            this.common = new Common(requestedApiVersion, OnResourceChanged, basis.common);
             this.unknown2 = basis.unknown2;
+            this.common = new Common(requestedApiVersion, OnResourceChanged, basis.common);
             this.unknown3 = basis.unknown3;
             this.unknown4 = basis.unknown4;
             this.unknown5 = basis.unknown5;
@@ -66,14 +64,13 @@ namespace CatalogResource
             this.unknown13 = basis.unknown13;
             this.unknown14 = (byte[])basis.unknown14.Clone();
         }
-        public TerrainGeometryWaterBrushCatalogResource(int APIversion, uint unknown1, Common common,
-            uint unknown2, byte unknown3, byte unknown4, uint unknown5, byte unknown6, byte unknown7, uint unknown8, uint unknown9, uint unknown10,
+        public TerrainGeometryWaterBrushCatalogResource(int APIversion, uint version, uint unknown2, Common common,
+            byte unknown3, byte unknown4, uint unknown5, byte unknown6, byte unknown7, uint unknown8, uint unknown9, uint unknown10,
             TGIBlock brushShape, byte[] unknown11, float unknown12, float unknown13, byte[] unknown14)
-            : base(APIversion, null)
+            : base(APIversion, version)
         {
-            this.unknown1 = unknown1;
-            this.common = new Common(requestedApiVersion, OnResourceChanged, common);
             this.unknown2 = unknown2;
+            this.common = new Common(requestedApiVersion, OnResourceChanged, common);
             this.unknown3 = unknown3;
             this.unknown4 = unknown4;
             this.unknown5 = unknown5;
@@ -97,7 +94,7 @@ namespace CatalogResource
         {
             BinaryReader r = new BinaryReader(s);
 
-            this.unknown1 = r.ReadUInt32();
+            base.Parse(s);
             this.unknown2 = r.ReadUInt32();
             this.common = new Common(requestedApiVersion, OnResourceChanged, s);
             this.unknown3 = r.ReadUInt32();
@@ -121,10 +118,9 @@ namespace CatalogResource
 
         protected override Stream UnParse()
         {
-            MemoryStream s = new MemoryStream();
+            Stream s = base.UnParse();
             BinaryWriter w = new BinaryWriter(s);
 
-            w.Write(unknown1);
             w.Write(unknown2);
             if (common == null) common = new Common(requestedApiVersion, OnResourceChanged);
             common.UnParse(s);
@@ -150,7 +146,6 @@ namespace CatalogResource
         #endregion
 
         #region Content Fields
-        public uint Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; OnResourceChanged(this, new EventArgs()); } } }
         public uint Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; OnResourceChanged(this, new EventArgs()); } } }
         public uint Unknown3 { get { return unknown3; } set { if (unknown3 != value) { unknown3 = value; OnResourceChanged(this, new EventArgs()); } } }
         public byte Unknown4 { get { return unknown4; } set { if (unknown4 != value) { unknown4 = value; OnResourceChanged(this, new EventArgs()); } } }

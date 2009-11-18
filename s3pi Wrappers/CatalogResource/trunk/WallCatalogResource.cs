@@ -27,7 +27,6 @@ namespace CatalogResource
     public class WallCatalogResource : CatalogResourceTGIBlockList
     {
         #region Attributes
-        uint unknown1;
         uint unknown2;
         uint unknown3;
         byte unknown4;
@@ -49,11 +48,10 @@ namespace CatalogResource
         #region Constructors
         public WallCatalogResource(int APIversion, Stream s) : base(APIversion, s) { }
         public WallCatalogResource(int APIversion, Stream unused, WallCatalogResource basis)
-            : base(APIversion, basis.list)
+            : base(APIversion, basis.version, basis.list)
         {
-            this.unknown1 = basis.unknown1;
-            this.common = new Common(requestedApiVersion, OnResourceChanged, basis.common);
             this.unknown2 = basis.unknown2;
+            this.common = new Common(requestedApiVersion, OnResourceChanged, basis.common);
             this.unknown3 = basis.unknown3;
             this.unknown4 = basis.unknown4;
             this.unknown5 = basis.unknown5;
@@ -70,15 +68,14 @@ namespace CatalogResource
             this.unknown16 = basis.unknown16;
             this.unknown17 = (byte[])basis.unknown17.Clone();
         }
-        public WallCatalogResource(int APIversion, uint unknown1, Common common,
-            uint unknown2, uint unknown3, byte unknown4, uint unknown5, byte unknown6, uint unknown7, byte unknown8, uint unknown9,
+        public WallCatalogResource(int APIversion, uint version, uint unknown2, Common common,
+            uint unknown3, byte unknown4, uint unknown5, byte unknown6, uint unknown7, byte unknown8, uint unknown9,
             byte[] unknown10, uint unknown11, uint unknown12, uint unknown13, uint unknown14, uint unknown15, uint unknown16, byte[] unknown17,
             TGIBlockList ltgib)
-            : base(APIversion, ltgib)
+            : base(APIversion, version, ltgib)
         {
-            this.unknown1 = unknown1;
-            this.common = new Common(requestedApiVersion, OnResourceChanged, common);
             this.unknown2 = unknown2;
+            this.common = new Common(requestedApiVersion, OnResourceChanged, common);
             this.unknown3 = unknown3;
             this.unknown4 = unknown4;
             this.unknown5 = unknown5;
@@ -102,12 +99,9 @@ namespace CatalogResource
         #region Data I/O
         protected override void Parse(Stream s)
         {
-            long tgiPosn, tgiSize;
             BinaryReader r = new BinaryReader(s);
+            base.Parse(s);
 
-            this.unknown1 = r.ReadUInt32();
-            tgiPosn = r.ReadUInt32() + s.Position;
-            tgiSize = r.ReadUInt32();
             this.unknown2 = r.ReadUInt32();
             this.common = new Common(requestedApiVersion, OnResourceChanged, s);
             this.unknown3 = r.ReadUInt32();
@@ -135,14 +129,9 @@ namespace CatalogResource
 
         protected override Stream UnParse()
         {
-            long pos;
-            MemoryStream s = new MemoryStream();
+            Stream s = base.UnParse();
             BinaryWriter w = new BinaryWriter(s);
 
-            w.Write(unknown1);
-            pos = s.Position;
-            w.Write((uint)0); // tgiOffset
-            w.Write((uint)0); // tgiSize
             w.Write(unknown2);
             if (common == null) common = new Common(requestedApiVersion, OnResourceChanged);
             common.UnParse(s);
@@ -162,7 +151,7 @@ namespace CatalogResource
             w.Write(unknown16);
             w.Write(unknown17);
 
-            base.UnParse(s, pos);
+            base.UnParse(s);
 
             w.Flush();
 
@@ -171,7 +160,6 @@ namespace CatalogResource
         #endregion
 
         #region Content Fields
-        public uint Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; OnResourceChanged(this, new EventArgs()); } } }
         public uint Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; OnResourceChanged(this, new EventArgs()); } } }
         public uint Unknown3 { get { return unknown3; } set { if (unknown3 != value) { unknown3 = value; OnResourceChanged(this, new EventArgs()); } } }
         public byte Unknown4 { get { return unknown4; } set { if (unknown4 != value) { unknown4 = value; OnResourceChanged(this, new EventArgs()); } } }

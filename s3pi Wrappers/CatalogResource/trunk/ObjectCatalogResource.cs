@@ -27,8 +27,8 @@ namespace CatalogResource
     public class ObjectCatalogResource : CatalogResourceTGIBlockList
     {
         #region Attributes
-        uint unknown1;
         MaterialList materialList = null;
+        string unknown1;
         uint unknown2;
         byte unknown3;
         uint unknown4;
@@ -61,9 +61,9 @@ namespace CatalogResource
         #region Constructors
         public ObjectCatalogResource(int APIversion, Stream s) : base(APIversion, s) { }
         public ObjectCatalogResource(int APIversion, Stream unused, ObjectCatalogResource basis)
-            : base(APIversion, basis.list)
+            : base(APIversion, basis.version, basis.list)
         {
-            this.unknown1 = basis.unknown1;
+            this.unknown1 = (this.version >= 0x00000016) ? basis.unknown1 : null;
             this.materialList = new MaterialList(OnResourceChanged, basis.materialList);
             this.common = new Common(requestedApiVersion, OnResourceChanged, basis.common);
             this.unknown2 = basis.unknown2;
@@ -95,16 +95,33 @@ namespace CatalogResource
             this.nullTGIIndex = basis.nullTGIIndex;
         }
         public ObjectCatalogResource(int APIversion,
-            uint unknown1, IList<Material> materialList, Common common, uint unknown2, byte unknown3, uint unknown4,
+            uint version, IList<Material> materialList, Common common, uint unknown2, byte unknown3, uint unknown4,
             byte unknown5, byte unknown6, byte[] unknown7, uint objkIndex, uint unknown8, uint unknown9, uint unknown10,
             uint unknown11, uint unknown12, IList<MTDoor> mtDoorList, byte unknown13, uint diagonalIndex, uint hash,
             uint roomFlags, uint functionCategoryFlags, ulong subFunctionFlags, ulong subRoomFlags, uint buildCategoryFlags,
             uint sinkDDSIndex, uint slotPlacementFlags, string materialGrouping1, string materialGrouping2, uint[] unknown15, uint nullTGIIndex,
             TGIBlockList ltgib)
-            : base(APIversion, ltgib)
+            : this(APIversion, version, materialList, null, common, unknown2, unknown3, unknown4,
+             unknown5, unknown6, unknown7, objkIndex, unknown8, unknown9, unknown10,
+             unknown11, unknown12, mtDoorList, unknown13, diagonalIndex, hash,
+             roomFlags, functionCategoryFlags, subFunctionFlags, subRoomFlags, buildCategoryFlags,
+             sinkDDSIndex, slotPlacementFlags, materialGrouping1, materialGrouping2, unknown15, nullTGIIndex,
+             ltgib)
         {
-            this.unknown1 = unknown1;
+            if (checking) if (version >= 0x00000016)
+                    throw new InvalidOperationException(String.Format("Constructor requires Unknown1 for version {0}", version));
+        }
+        public ObjectCatalogResource(int APIversion,
+            uint version, IList<Material> materialList, string unknown1, Common common, uint unknown2, byte unknown3, uint unknown4,
+            byte unknown5, byte unknown6, byte[] unknown7, uint objkIndex, uint unknown8, uint unknown9, uint unknown10,
+            uint unknown11, uint unknown12, IList<MTDoor> mtDoorList, byte unknown13, uint diagonalIndex, uint hash,
+            uint roomFlags, uint functionCategoryFlags, ulong subFunctionFlags, ulong subRoomFlags, uint buildCategoryFlags,
+            uint sinkDDSIndex, uint slotPlacementFlags, string materialGrouping1, string materialGrouping2, uint[] unknown15, uint nullTGIIndex,
+            TGIBlockList ltgib)
+            : base(APIversion, version, ltgib)
+        {
             this.materialList = new MaterialList(OnResourceChanged, materialList);
+            this.unknown1 = unknown1;
             this.common = new Common(requestedApiVersion, OnResourceChanged, common);
             this.unknown2 = unknown2;
             this.unknown3 = unknown3;
@@ -141,14 +158,12 @@ namespace CatalogResource
         #region Data I/O
         protected override void Parse(Stream s)
         {
-            long tgiPosn, tgiSize;
             BinaryReader r = new BinaryReader(s);
             BinaryReader r2 = new BinaryReader(s, System.Text.Encoding.BigEndianUnicode);
 
-            this.unknown1 = r.ReadUInt32();
-            tgiPosn = r.ReadUInt32() + s.Position;
-            tgiSize = r.ReadUInt32();
+            base.Parse(s);
             this.materialList = new MaterialList(OnResourceChanged, s);
+            this.unknown1 = (this.version >= 0x00000016) ? r2.ReadString() : null;
             this.common = new Common(requestedApiVersion, OnResourceChanged, s);
             this.unknown2 = r.ReadUInt32();
             this.unknown3 = r.ReadByte();
@@ -175,9 +190,7 @@ namespace CatalogResource
             this.buildCategoryFlags = (BuildCategory)r.ReadUInt32();
             this.sinkDDSIndex = r.ReadUInt32();
             this.slotPlacementFlags = (SlotPlacement)r.ReadUInt32();
-            //this.materialGrouping1 = System.Text.Encoding.BigEndianUnicode.GetString(r.ReadBytes(r.ReadByte()));
             this.materialGrouping1 = r2.ReadString();
-            //this.materialGrouping2 = System.Text.Encoding.BigEndianUnicode.GetString(r.ReadBytes(r.ReadByte()));
             this.materialGrouping2 = r2.ReadString();
             for (int i = 0; i < this.unknown15.Length; i++) unknown15[i] = r.ReadUInt32();
             this.nullTGIIndex = r.ReadUInt32();
@@ -187,16 +200,12 @@ namespace CatalogResource
 
         protected override Stream UnParse()
         {
-            long pos;
-            MemoryStream s = new MemoryStream();
+            Stream s = base.UnParse();
             BinaryWriter w = new BinaryWriter(s);
 
-            w.Write(unknown1);
-            pos = s.Position;
-            w.Write((uint)0); // tgiOffset
-            w.Write((uint)0); // tgiSize
             if (materialList == null) materialList = new MaterialList(OnResourceChanged);
             materialList.UnParse(s);
+            if (this.version >= 0x00000016) Write7BitStr(s, unknown1, System.Text.Encoding.BigEndianUnicode);
             if (common == null) common = new Common(requestedApiVersion, OnResourceChanged);
             common.UnParse(s);
             w.Write(unknown2);
@@ -223,20 +232,31 @@ namespace CatalogResource
             w.Write((uint)buildCategoryFlags);
             w.Write(sinkDDSIndex);
             w.Write((uint)slotPlacementFlags);
-            //w.Write((byte)(materialGrouping1.Length * 2));
-            //w.Write(System.Text.Encoding.BigEndianUnicode.GetBytes(materialGrouping1));
             Write7BitStr(s, materialGrouping1, System.Text.Encoding.BigEndianUnicode);
-            //w.Write((byte)(materialGrouping2.Length * 2));
-            //w.Write(System.Text.Encoding.BigEndianUnicode.GetBytes(materialGrouping2));
             Write7BitStr(s, materialGrouping2, System.Text.Encoding.BigEndianUnicode);
             for (int i = 0; i < this.unknown15.Length; i++) w.Write(unknown15[i]);
             w.Write(nullTGIIndex);
 
-            base.UnParse(s, pos);
+            base.UnParse(s);
 
             w.Flush();
 
             return s;
+        }
+        #endregion
+
+        #region AApiVersionedFields
+        /// <summary>
+        /// The list of available field names on this API object
+        /// </summary>
+        public override List<string> ContentFields
+        {
+            get
+            {
+                List<string> res = base.ContentFields;
+                if (this.version < 0x00000016) res.Remove("Unknown1");
+                return res;
+            }
         }
         #endregion
 
@@ -647,8 +667,12 @@ namespace CatalogResource
         #endregion
 
         #region Content Fields
-        public uint Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; OnResourceChanged(this, new EventArgs()); } } }
         public MaterialList Materials { get { return materialList; } set { if (materialList != value) { materialList = value == null ? null : new MaterialList(OnResourceChanged, value); } OnResourceChanged(this, new EventArgs()); } }
+        public string Unknown1
+        {
+            get { if (version < 0x00000016) throw new InvalidOperationException(); return unknown1; }
+            set { if (version < 0x00000016) throw new InvalidOperationException(); if (unknown1 != value) { unknown1 = value; OnResourceChanged(this, new EventArgs()); } }
+        }
         public uint Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; OnResourceChanged(this, new EventArgs()); } } }
         public byte Unknown3 { get { return unknown3; } set { if (unknown3 != value) { unknown3 = value; OnResourceChanged(this, new EventArgs()); } } }
         public uint Unknown4 { get { return unknown4; } set { if (unknown4 != value) { unknown4 = value; OnResourceChanged(this, new EventArgs()); } } }

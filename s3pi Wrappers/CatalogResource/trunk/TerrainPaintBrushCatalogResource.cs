@@ -37,11 +37,11 @@ namespace CatalogResource
         {
             this.brushTexture = (TGIBlock)basis.brushTexture.Clone(OnResourceChanged);
         }
-        public TerrainPaintBrushCatalogResource(int APIversion, uint unknown1, Common common,
-            uint unknown2, byte unknown3, byte unknown4, uint unknown5, byte unknown6, byte unknown7, uint unknown8, uint unknown9, uint unknown10,
+        public TerrainPaintBrushCatalogResource(int APIversion, uint version, uint unknown2, Common common,
+            byte unknown3, byte unknown4, uint unknown5, byte unknown6, byte unknown7, uint unknown8, uint unknown9, uint unknown10,
             TGIBlock brushShape, byte[] unknown11, float unknown12, float unknown13, byte[] unknown14,
             TGIBlock brushTexture)
-            : base(APIversion, unknown1, common, unknown2, unknown3, unknown4, unknown5, unknown6, unknown7, unknown8, unknown9, unknown10,
+            : base(APIversion, version, unknown2, common, unknown3, unknown4, unknown5, unknown6, unknown7, unknown8, unknown9, unknown10,
             brushShape, unknown11, unknown12, unknown13, unknown14)
         {
             this.brushTexture = (TGIBlock)brushTexture.Clone(OnResourceChanged);

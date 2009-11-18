@@ -27,7 +27,6 @@ namespace CatalogResource
     public class ProxyProductCatalogResource : CatalogResource
     {
         #region Attributes
-        uint unknown1;
         uint unknown2;
         byte unknown3;
         uint unknown4;
@@ -40,9 +39,8 @@ namespace CatalogResource
         #region Constructors
         public ProxyProductCatalogResource(int APIversion, Stream s) : base(APIversion, s) { }
         public ProxyProductCatalogResource(int APIversion, Stream unused, ProxyProductCatalogResource basis)
-            : base(APIversion, null)
+            : base(APIversion, basis.version)
         {
-            this.unknown1 = basis.unknown1;
             this.common = new Common(requestedApiVersion, OnResourceChanged, basis.common);
             this.unknown2 = basis.unknown2;
             this.unknown3 = basis.unknown3;
@@ -52,11 +50,10 @@ namespace CatalogResource
             this.unknown7 = basis.unknown7;
             this.unknown8 = basis.unknown8;
         }
-        public ProxyProductCatalogResource(int APIversion, uint unknown1, Common common,
+        public ProxyProductCatalogResource(int APIversion, uint version, Common common,
             uint unknown2, byte unknown3, uint unknown4, byte unknown5, uint unknown6, byte unknown7, uint unknown8)
-            : base(APIversion, null)
+            : base(APIversion, version)
         {
-            this.unknown1 = unknown1;
             this.common = new Common(requestedApiVersion, OnResourceChanged, common);
             this.unknown2 = unknown2;
             this.unknown3 = unknown3;
@@ -73,7 +70,7 @@ namespace CatalogResource
         {
             BinaryReader r = new BinaryReader(s);
 
-            this.unknown1 = r.ReadUInt32();
+            base.Parse(s);
             this.common = new Common(requestedApiVersion, OnResourceChanged, s);
             this.unknown2 = r.ReadUInt32();
             this.unknown3 = r.ReadByte();
@@ -86,10 +83,9 @@ namespace CatalogResource
 
         protected override Stream UnParse()
         {
-            MemoryStream s = new MemoryStream();
+            Stream s = base.UnParse();
             BinaryWriter w = new BinaryWriter(s);
 
-            w.Write(unknown1);
             if (common == null) common = new Common(requestedApiVersion, OnResourceChanged);
             common.UnParse(s);
             w.Write(unknown2);
@@ -107,7 +103,6 @@ namespace CatalogResource
         #endregion
 
         #region Content Fields
-        public uint Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; OnResourceChanged(this, new EventArgs()); } } }
         public uint Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; OnResourceChanged(this, new EventArgs()); } } }
         public byte Unknown3 { get { return unknown3; } set { if (unknown3 != value) { unknown3 = value; OnResourceChanged(this, new EventArgs()); } } }
         public uint Unknown4 { get { return unknown4; } set { if (unknown4 != value) { unknown4 = value; OnResourceChanged(this, new EventArgs()); } } }

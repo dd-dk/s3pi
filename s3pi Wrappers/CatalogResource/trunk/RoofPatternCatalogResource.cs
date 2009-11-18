@@ -27,7 +27,6 @@ namespace CatalogResource
     public class RoofPatternCatalogResource : CatalogResourceTGIBlockList
     {
         #region Attributes
-        uint unknown1;
         uint unknown2;
         byte unknown3;
         uint unknown4;
@@ -42,9 +41,8 @@ namespace CatalogResource
         #region Constructors
         public RoofPatternCatalogResource(int APIversion, Stream s) : base(APIversion, s) { }
         public RoofPatternCatalogResource(int APIversion, Stream unused, RoofPatternCatalogResource basis)
-            : base(APIversion, basis.list)
+            : base(APIversion, basis.version, basis.list)
         {
-            this.unknown1 = basis.unknown1;
             this.common = new Common(requestedApiVersion, OnResourceChanged, basis.common);
             this.unknown2 = basis.unknown2;
             this.unknown3 = basis.unknown3;
@@ -56,12 +54,11 @@ namespace CatalogResource
             this.vpxy_index2 = basis.vpxy_index2;
             this.unknown8 = basis.unknown8;
         }
-        public RoofPatternCatalogResource(int APIversion, uint unknown1, Common common,
+        public RoofPatternCatalogResource(int APIversion, uint version, Common common,
             uint unknown2, byte unknown3, uint unknown4, byte unknown5, uint unknown6, byte unknown7, uint index1, uint index2, uint unknown8,
             TGIBlockList ltgib)
-            : base(APIversion, ltgib)
+            : base(APIversion, version, ltgib)
         {
-            this.unknown1 = unknown1;
             this.common = new Common(requestedApiVersion, OnResourceChanged, common);
             this.unknown2 = unknown2;
             this.unknown3 = unknown3;
@@ -78,12 +75,8 @@ namespace CatalogResource
         #region Data I/O
         protected override void Parse(Stream s)
         {
-            long tgiPosn, tgiSize;
             BinaryReader r = new BinaryReader(s);
-
-            this.unknown1 = r.ReadUInt32();
-            tgiPosn = r.ReadUInt32() + s.Position;
-            tgiSize = r.ReadUInt32();
+            base.Parse(s);
             this.common = new Common(requestedApiVersion, OnResourceChanged, s);
             this.unknown2 = r.ReadUInt32();
             this.unknown3 = r.ReadByte();
@@ -100,14 +93,9 @@ namespace CatalogResource
 
         protected override Stream UnParse()
         {
-            long pos;
-            MemoryStream s = new MemoryStream();
+            Stream s = base.UnParse();
             BinaryWriter w = new BinaryWriter(s);
 
-            w.Write(unknown1);
-            pos = s.Position;
-            w.Write((uint)0); // tgiOffset
-            w.Write((uint)0); // tgiSize
             if (common == null) common = new Common(requestedApiVersion, OnResourceChanged);
             common.UnParse(s);
 
@@ -121,7 +109,7 @@ namespace CatalogResource
             w.Write(vpxy_index2);
             w.Write(unknown8);
 
-            base.UnParse(s, pos);
+            base.UnParse(s);
 
             w.Flush();
 
@@ -130,7 +118,6 @@ namespace CatalogResource
         #endregion
 
         #region Content Fields
-        public uint Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; OnResourceChanged(this, new EventArgs()); } } }
         public uint Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; OnResourceChanged(this, new EventArgs()); } } }
         public byte Unknown3 { get { return unknown3; } set { if (unknown3 != value) { unknown3 = value; OnResourceChanged(this, new EventArgs()); } } }
         public uint Unknown4 { get { return unknown4; } set { if (unknown4 != value) { unknown4 = value; OnResourceChanged(this, new EventArgs()); } } }

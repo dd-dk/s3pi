@@ -35,17 +35,28 @@ namespace CatalogResource
         protected static bool checking = s3pi.Settings.Settings.Checking;
 
         #region Attributes
+        protected uint version;
         protected Common common = null;
         #endregion
 
         #region Constructors
-        protected CatalogResource(int APIversion, Stream s) : base(APIversion, s) { if (stream == null) { stream = UnParse(); dirty = true; } stream.Position = 0; Parse(stream); }
+        protected CatalogResource(int APIversion, Stream s) : base(APIversion, s) { if (stream == null) { stream = this.UnParse(); dirty = true; } stream.Position = 0; this.Parse(stream); }
+        protected CatalogResource(int APIversion, uint version) : base(APIversion, null) { this.version = version; }
         #endregion
 
         #region Data I/O
-        protected abstract void Parse(Stream s);
+        protected virtual void Parse(Stream s)
+        {
+            BinaryReader r = new BinaryReader(s);
+            version = r.ReadUInt32();
+        }
 
-        protected abstract Stream UnParse();
+        protected virtual Stream UnParse()
+        {
+            MemoryStream s = new MemoryStream();
+            new BinaryWriter(s).Write(version);
+            return s;
+        }
         #endregion
 
         #region IResource Members
@@ -1177,6 +1188,7 @@ namespace CatalogResource
         #endregion
 
         #region Content Fields
+        public uint Version { get { return version; } set { if (version != value) { version = value; OnResourceChanged(this, new EventArgs()); } } }
         public Common CommonBlock { get { return common; } set { if (common != value) { common = new Common(requestedApiVersion, OnResourceChanged, value); OnResourceChanged(this, new EventArgs()); } } }
 
         public virtual String Value
@@ -1226,16 +1238,36 @@ namespace CatalogResource
     public abstract class CatalogResourceTGIBlockList : CatalogResource
     {
         #region Attributes
+        protected long tgiPosn, tgiSize;
         protected TGIBlockList list = null;
         #endregion
 
         #region Constructors
         public CatalogResourceTGIBlockList(int APIversion, Stream s) : base(APIversion, s) { }
-        public CatalogResourceTGIBlockList(int APIversion, IList<TGIBlock> tgibl) : base(APIversion, null) { this.list = new TGIBlockList(OnResourceChanged, tgibl); }
+        public CatalogResourceTGIBlockList(int APIversion, uint version, IList<TGIBlock> tgibl) : base(APIversion, version) { this.list = new TGIBlockList(OnResourceChanged, tgibl); }
         #endregion
 
         #region Data I/O
-        protected void UnParse(Stream s, long pos)
+        protected override void Parse(Stream s)
+        {
+            base.Parse(s);
+            BinaryReader r = new BinaryReader(s);
+            tgiPosn = r.ReadUInt32() + s.Position;
+            tgiSize = r.ReadUInt32();
+        }
+
+        private long pos;
+        protected override Stream UnParse()
+        {
+            Stream s = base.UnParse();
+            BinaryWriter w = new BinaryWriter(s);
+            pos = s.Position;
+            w.Write((uint)0); // tgiOffset
+            w.Write((uint)0); // tgiSize
+            return s;
+        }
+
+        protected virtual void UnParse(Stream s)
         {
             if (list == null) list = new TGIBlockList(OnResourceChanged);
             list.UnParse(s, pos);
