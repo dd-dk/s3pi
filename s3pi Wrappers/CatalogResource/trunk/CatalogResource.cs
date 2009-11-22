@@ -82,7 +82,7 @@ namespace CatalogResource
         public class Common : AHandlerElement
         {
             #region Attributes
-            uint unknown1;
+            uint version;
             ulong nameGUID;
             ulong descGUID;
             string name = "";
@@ -92,6 +92,7 @@ namespace CatalogResource
             byte[] unknown3 = new byte[4];
             BuildBuyProductStatus buildBuyProductStatusFlags;
             ulong pngInstance;
+            byte unknown4;
             #endregion
 
             #region Constructors
@@ -103,7 +104,7 @@ namespace CatalogResource
                 byte[] unknown3, byte unknown4, ulong pngInstance)
                 : base(APIversion, handler)
             {
-                this.unknown1 = unknown1;
+                this.version = unknown1;
                 this.nameGUID = nameGUID;
                 this.descGUID = descGUID;
                 this.name = name;
@@ -119,7 +120,7 @@ namespace CatalogResource
             public Common(int APIversion, EventHandler handler, Common basis)
                 : base(APIversion, handler)
             {
-                this.unknown1 = basis.unknown1;
+                this.version = basis.version;
                 this.nameGUID = basis.nameGUID;
                 this.descGUID = basis.descGUID;
                 this.name = basis.name;
@@ -138,7 +139,7 @@ namespace CatalogResource
                 BinaryReader r = new BinaryReader(s);
                 BinaryReader r2 = new BinaryReader(s, System.Text.Encoding.BigEndianUnicode);
 
-                unknown1 = r.ReadUInt32();
+                version = r.ReadUInt32();
                 nameGUID = r.ReadUInt64();
                 descGUID = r.ReadUInt64();
                 name = r2.ReadString();
@@ -152,12 +153,14 @@ namespace CatalogResource
                         throw new InvalidDataException(String.Format("unknown3: read {0} bytes; expected 4; at 0x{1:X8}", unknown3.Length, s.Position));
                 buildBuyProductStatusFlags = (BuildBuyProductStatus)r.ReadByte();
                 pngInstance = r.ReadUInt64();
+                if (version >= 0x0000000D)
+                    unknown4 = r.ReadByte();
             }
 
             internal void UnParse(Stream s)
             {
                 BinaryWriter w = new BinaryWriter(s);
-                w.Write(unknown1);
+                w.Write(version);
                 w.Write(nameGUID);
                 w.Write(descGUID);
                 Write7BitStr(s, name, System.Text.Encoding.BigEndianUnicode);
@@ -171,11 +174,21 @@ namespace CatalogResource
                 w.Write(unknown3);
                 w.Write((byte)buildBuyProductStatusFlags);
                 w.Write(pngInstance);
+                if (version >= 0x0000000D)
+                    w.Write(unknown4);
             }
             #endregion
 
             #region AHandlerElement
-            public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
+            public override List<string> ContentFields
+            {
+                get
+                {
+                    List<string> res = GetContentFields(requestedApiVersion, this.GetType());;
+                    if (this.version < 0x0000000D) res.Remove("Unknown4");
+                    return res;
+                }
+            }
             public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
             public override AHandlerElement Clone(EventHandler handler) { return new Common(requestedApiVersion, handler, this); }
             #endregion
@@ -197,7 +210,7 @@ namespace CatalogResource
             #endregion
 
             #region Content Fields
-            public uint Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; OnElementChanged(); } } }
+            public uint Version { get { return version; } set { if (version != value) { version = value; OnElementChanged(); } } }
 
             public ulong NameGUID { get { return nameGUID; } set { if (nameGUID != value) { nameGUID = value; OnElementChanged(); } } }
 
@@ -230,6 +243,12 @@ namespace CatalogResource
             public BuildBuyProductStatus BuildBuyProductStatusFlags { get { return buildBuyProductStatusFlags; } set { if (buildBuyProductStatusFlags != value) { buildBuyProductStatusFlags = value; OnElementChanged(); } } }
 
             public ulong PngInstance { get { return pngInstance; } set { if (pngInstance != value) { pngInstance = value; OnElementChanged(); } } }
+
+            public byte Unknown4
+            {
+                get { if (version < 0x0000000D) throw new InvalidOperationException(); return unknown4; }
+                set { if (version < 0x0000000D) throw new InvalidOperationException(); if (unknown4 != value) { unknown4 = value; OnElementChanged(); } }
+            }
 
             public String Value
             {
