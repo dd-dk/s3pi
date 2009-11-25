@@ -45,8 +45,10 @@
     <Compile Include="APackage.cs" />
     <Compile Include="AResource.cs" />
     <Compile Include="AResourceHandler.cs" />
+    <Compile Include="AResourceKey.cs" />
     <Compile Include="ElementPriorityAttribute.cs" />
     <Compile Include="IGenericAdd.cs" />
+    <Compile Include="IResourceKey.cs" />
     <Compile Include="Properties\AssemblyVersion.cs" />
     <Compile Include="IApiVersion.cs" />
     <Compile Include="IContentFields.cs" />
