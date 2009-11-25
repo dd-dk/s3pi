@@ -50,7 +50,7 @@ namespace s3pi.DemoPlugins
         static void ReadConfig()
         {
             keywords.AddRange(reserved.ToArray());
-            keywords.AddRange(AApiVersionedFields.GetContentFields(0, typeof(IResourceIndexEntry)).ToArray()); // must be correct case
+            keywords.AddRange(AApiVersionedFields.GetContentFields(0, typeof(IResourceKey)).ToArray()); // must be correct case
 
             demoPlugins = new Dictionary<string, Dictionary<string, string>>();
             if (!File.Exists(Config)) return;

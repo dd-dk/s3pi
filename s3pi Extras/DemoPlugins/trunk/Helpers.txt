@@ -10,7 +10,7 @@
 #
 # Matching is done against "Wrapper" (matches the name of the wrapper used for the resource;
 # "DefaultResource" is the wrapper used when no other one is identified)
-# and against index entry values (e.g. "ResourceType").
+# and against IResourceKey values (e.g. "ResourceType").
 # In both cases "*" can be used to mean "any".
 #
 
