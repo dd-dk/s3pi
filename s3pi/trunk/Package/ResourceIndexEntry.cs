@@ -31,7 +31,7 @@ namespace s3pi.Package
     /// </summary>
     public class ResourceIndexEntry : AResourceIndexEntry
     {
-        const Int32 recommendedApiVersion = 1;
+        const Int32 recommendedApiVersion = 2;
 
         #region AApiVersionedFields
         public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
@@ -53,9 +53,24 @@ namespace s3pi.Package
         /// <summary>
         /// The "group" the resource is part of
         /// </summary>
+        [MinimumVersion(2)]
+        [MaximumVersion(recommendedApiVersion)]
+        public override EPFlags EpFlags
+        {
+            get { if (requestedApiVersion != 0 & requestedApiVersion < 2) throw new InvalidOperationException(); return (EPFlags)(ResourceGroup32 >> 24); }
+            set { if (requestedApiVersion != 0 & requestedApiVersion < 2) throw new InvalidOperationException(); ResourceGroup32 = ResourceGroup | (uint)value << 24; }
+        }
+        /// <summary>
+        /// The "group" the resource is part of
+        /// </summary>
         [MinimumVersion(1)]
         [MaximumVersion(recommendedApiVersion)]
         public override UInt32 ResourceGroup
+        {
+            get { return (requestedApiVersion != 0 & requestedApiVersion < 2) ? ResourceGroup32 : ResourceGroup32 & 0x00FFFFFF; }
+            set { ResourceGroup32 = (requestedApiVersion != 0 & requestedApiVersion < 2) ? value : value & 0x00FFFFFF | (uint)EpFlags << 24; }
+        }
+        UInt32 ResourceGroup32
         {
             get { ms.Position = 8; return indexReader.ReadUInt32(); }
             set { ms.Position = 8; indexWriter.Write(value); OnResourceIndexEntryChanged(this, new EventArgs()); }
@@ -134,6 +149,8 @@ namespace s3pi.Package
         [MinimumVersion(1)]
         [MaximumVersion(recommendedApiVersion)]
         public override bool IsDeleted { get { return isDeleted; } set { if (isDeleted != value) { isDeleted = value; OnResourceIndexEntryChanged(this, new EventArgs()); } } }
+
+        public override AHandlerElement Clone(EventHandler handler) { return new ResourceIndexEntry(indexEntry); }
         #endregion
 
 
@@ -212,7 +229,7 @@ namespace s3pi.Package
         /// Return a new index entry as a copy of this one
         /// </summary>
         /// <returns>A copy of this index entry</returns>
-        internal ResourceIndexEntry Clone() { return new ResourceIndexEntry(indexEntry); }
+        internal ResourceIndexEntry Clone() { return (ResourceIndexEntry)this.Clone(null); }
 
         /// <summary>
         /// Flag this index entry as deleted
