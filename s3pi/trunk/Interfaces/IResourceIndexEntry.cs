@@ -25,20 +25,8 @@ namespace s3pi.Interfaces
     /// <summary>
     /// An index entry
     /// </summary>
-    public interface IResourceIndexEntry : IApiVersion, IContentFields
+    public interface IResourceIndexEntry : IApiVersion, IContentFields, IResourceKey
     {
-        /// <summary>
-        /// The "type" of the resource
-        /// </summary>
-        UInt32 ResourceType { get; set; }
-        /// <summary>
-        /// The "group" the resource is part of
-        /// </summary>
-        UInt32 ResourceGroup { get; set; }
-        /// <summary>
-        /// The "instance" number of the resource
-        /// </summary>
-        UInt64 Instance { get; set; }
         /// <summary>
         /// If the resource was read from a package, the location in the package the resource was read from
         /// </summary>
