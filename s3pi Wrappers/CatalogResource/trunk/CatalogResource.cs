@@ -429,7 +429,15 @@ namespace CatalogResource
 
             public override AHandlerElement Clone(EventHandler handler) { return new TypeCode01(requestedApiVersion, handler, prefix, Data); }
 
-            public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
+            public override List<string> ContentFields
+            {
+                get
+                {
+                    List<string> res = GetContentFields(requestedApiVersion, this.GetType());
+                    if (prefix == null) res.Remove("ControlCode");
+                    return res;
+                }
+            }
 
             public string Data
             {
