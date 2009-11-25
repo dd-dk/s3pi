@@ -67,22 +67,23 @@ namespace s3pi.Package
             {
                 for (int j = 0; j < entry.Length; j++)
                     entry[j] = r.ReadInt32();
-                this.Add(new ResourceIndexEntry(hdr, entry));
+                base.Add(new ResourceIndexEntry(hdr, entry));
             }
         }
 
-        public IResourceIndexEntry Add(uint type, uint group, ulong instance)
+        public IResourceIndexEntry Add(IResourceKey rk)
         {
             ResourceIndexEntry rc = new ResourceIndexEntry(new Int32[Hdrsize], new Int32[numFields - Hdrsize]);
 
-            rc.ResourceType = type;
-            rc.ResourceGroup = group;
-            rc.Instance = instance;
+            rc.ResourceType = rk.ResourceType;
+            rc.ResourceGroup = rk.ResourceGroup;
+            rc.EpFlags = rk.EpFlags;
+            rc.Instance = rk.Instance;
             rc.Chunkoffset = 0xffffffff;
             rc.Unknown2 = 1;
             rc.ResourceStream = null;
 
-            this.Add(rc);
+            base.Add(rc);
             return rc;
         }
 
@@ -123,7 +124,7 @@ namespace s3pi.Package
         public void Sort(string index) { base.Sort(new AApiVersionedFields.Comparer<IResourceIndexEntry>(index)); }
 
         /// <summary>
-        /// Return the index entry with the match TGI
+        /// Return the index entry with the matching TGI
         /// </summary>
         /// <param name="type">Entry type</param>
         /// <param name="group">Entry group</param>
@@ -141,5 +142,35 @@ namespace s3pi.Package
                 return null;
             }
         }
+
+        /// <summary>
+        /// Return the index entry with the matching TGI and EP
+        /// </summary>
+        /// <param name="type">Entry type</param>
+        /// <param name="group">Entry group</param>
+        /// <param name="epflags">Entry epflags</param>
+        /// <param name="instance">Entry instance</param>
+        /// <returns>Matching entry</returns>
+        public IResourceIndexEntry this[uint type, EPFlags epflags, uint group, ulong instance]
+        {
+            get
+            {
+                foreach (ResourceIndexEntry rie in this)
+                {
+                    if (rie.ResourceType != type) continue;
+                    if (rie.EpFlags != epflags) continue;
+                    if (rie.ResourceGroup != group) continue;
+                    if (rie.Instance == instance) return rie;
+                }
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Returns requested resource, ignoring EPFlags
+        /// </summary>
+        /// <param name="rk">Resource key to find</param>
+        /// <returns>Matching entry</returns>
+        public IResourceIndexEntry this[IResourceKey rk] { get { return this[rk.ResourceType, rk.ResourceGroup, rk.Instance]; } }
     }
 }

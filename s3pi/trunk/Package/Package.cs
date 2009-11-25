@@ -99,7 +99,7 @@ namespace s3pi.Package
                 if (ie.IsDeleted) continue;
 
                 ResourceIndexEntry newIE = (ie as ResourceIndexEntry).Clone();
-                newIndex.Add(newIE);
+                ((List<IResourceIndexEntry>)newIndex).Add(newIE);
                 byte[] value = packedChunk(ie as ResourceIndexEntry);
 
                 newIE.Chunkoffset = (uint)s.Position;
@@ -378,16 +378,14 @@ namespace s3pi.Package
         /// <summary>
         /// Add a resource to the package
         /// </summary>
-        /// <param name="type">ResourceType for the resource</param>
-        /// <param name="group">ResourceGroup for the resource</param>
-        /// <param name="instance">Instance for the resource</param>
+        /// <param name="rk">The resource key</param>
         /// <param name="stream">The stream that contains the resource data</param>
-        /// <param name="rejectDups">If true, fail if the type/group/instance already exists</param>
-        /// <returns>Null if rejectDups and the t/g/i exists; or the new IResourceIndexEntry</returns>
-        public override IResourceIndexEntry AddResource(uint type, uint group, ulong instance, Stream stream, bool rejectDups)
+        /// <param name="rejectDups">If true, fail if the resource key already exists</param>
+        /// <returns>Null if rejectDups and the resource key exists; else the new IResourceIndexEntry</returns>
+        public override IResourceIndexEntry AddResource(IResourceKey rk, Stream stream, bool rejectDups)
         {
-            if (rejectDups && Index[type, group, instance] != null && !Index[type, group, instance].IsDeleted) return null;
-            IResourceIndexEntry newrc = Index.Add(type, group, instance);
+            if (rejectDups && Index[rk] != null && !Index[rk].IsDeleted) return null;
+            IResourceIndexEntry newrc = Index.Add(rk);
             if (stream != null) (newrc as ResourceIndexEntry).ResourceStream = stream;
 
             return newrc;
