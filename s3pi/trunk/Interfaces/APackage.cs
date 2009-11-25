@@ -160,13 +160,11 @@ namespace s3pi.Interfaces
         /// <summary>
         /// Add a resource to the package
         /// </summary>
-        /// <param name="type">ResourceType for the resource</param>
-        /// <param name="group">ResourceGroup for the resource</param>
-        /// <param name="instance">Instance for the resource</param>
+        /// <param name="rk">The resource key</param>
         /// <param name="stream">The stream that contains the resource data</param>
-        /// <param name="rejectDups">If true, fail if the type/group/instance already exists</param>
-        /// <returns>Null if rejectDups and the t/g/i exists; or the new IResourceIndexEntry</returns>
-        public abstract IResourceIndexEntry AddResource(uint type, uint group, ulong instance, Stream stream, bool rejectDups);
+        /// <param name="rejectDups">If true, fail if the resource key already exists</param>
+        /// <returns>Null if rejectDups and the resource key exists; else the new IResourceIndexEntry</returns>
+        public abstract IResourceIndexEntry AddResource(IResourceKey rk, Stream stream, bool rejectDups);
         /// <summary>
         /// Tell the package to replace the data for the resource indexed by <paramref name="rc"/>
         /// with the data from the resource <paramref name="res"/>
