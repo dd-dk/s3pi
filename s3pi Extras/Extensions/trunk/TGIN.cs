@@ -23,6 +23,9 @@ using s3pi.Interfaces;
 
 namespace s3pi.Extensions
 {
+    // This does NOT implement IResourceKey.
+    // This is the external filename format.
+    // Splitting out the EPFlags would be WRONG.
     [Serializable]
     public struct TGIN
     {
@@ -31,28 +34,15 @@ namespace s3pi.Extensions
         public ulong ResInstance;
         public string ResName;
 
-        public static implicit operator string(TGIN value)
-        {
-            string extn = ".dat";
-            if (ExtList.Ext.ContainsKey("0x" + value.ResType.ToString("X8")))
-                extn = String.Join("", ExtList.Ext["0x" + value.ResType.ToString("X8")].ToArray());
-            else if (ExtList.Ext.ContainsKey("*"))
-                extn = String.Join("", ExtList.Ext["*"].ToArray());
-
-            return String.Format((value.ResName != null && value.ResName.Length > 0)
-                    ? "S3_{0:X8}_{1:X8}_{2:X16}_{3}%%+{4}"
-                    : "S3_{0:X8}_{1:X8}_{2:X16}%%+{4}"
-                    , value.ResType, value.ResGroup, value.ResInstance, value.ResName == null ? "" : escapeString(value.ResName), extn);
-        }
-
-        public static implicit operator TGIN(AResourceIndexEntry value)
+        public static implicit operator TGIN(AResourceKey value)
         {
             TGIN res = new TGIN();
             res.ResType = value.ResourceType;
-            res.ResGroup = value.ResourceGroup;
+            res.ResGroup = (uint)value.EpFlags << 24 | value.ResourceGroup;
             res.ResInstance = value.Instance;
             return res;
         }
+        public static implicit operator AResourceKey(TGIN value) { return new AResource.TGIBlock(0, null, value.ResType, (EPFlags)(value.ResGroup >> 24), value.ResGroup & 0x00FFFFFF, value.ResInstance); }
 
         public static implicit operator TGIN(string value)
         {
@@ -80,6 +70,19 @@ namespace s3pi.Extensions
             }
 
             return res;
+        }
+        public static implicit operator string(TGIN value)
+        {
+            string extn = ".dat";
+            if (ExtList.Ext.ContainsKey("0x" + value.ResType.ToString("X8")))
+                extn = String.Join("", ExtList.Ext["0x" + value.ResType.ToString("X8")].ToArray());
+            else if (ExtList.Ext.ContainsKey("*"))
+                extn = String.Join("", ExtList.Ext["*"].ToArray());
+
+            return String.Format((value.ResName != null && value.ResName.Length > 0)
+                    ? "S3_{0:X8}_{1:X8}_{2:X16}_{3}%%+{4}"
+                    : "S3_{0:X8}_{1:X8}_{2:X16}%%+{4}"
+                    , value.ResType, value.ResGroup, value.ResInstance, value.ResName == null ? "" : escapeString(value.ResName), extn);
         }
 
         public override string ToString() { return this; }
