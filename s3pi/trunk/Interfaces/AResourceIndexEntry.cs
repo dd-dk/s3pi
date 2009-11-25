@@ -22,8 +22,11 @@ using System.Collections.Generic;
 
 namespace s3pi.Interfaces
 {
-    public abstract class AResourceIndexEntry : AApiVersionedFields, IResourceIndexEntry
+    public abstract class AResourceIndexEntry : AResourceKey, IResourceIndexEntry
     {
+        public AResourceIndexEntry() : this(0, null) { }
+        public AResourceIndexEntry(int APIversion, EventHandler handler) : base(APIversion, handler) { }
+
         #region AApiVersionedFields
         /// <summary>
         /// The list of available field names on this API object
@@ -33,36 +36,29 @@ namespace s3pi.Interfaces
 
         #region IResourceIndexEntry Members
         /// <summary>
-        /// The "type" of the resource
-        /// </summary>
-        public abstract uint ResourceType { get; set; }
-        /// <summary>
-        /// The "group" the resource is part of
-        /// </summary>
-        public abstract uint ResourceGroup { get; set; }
-        /// <summary>
-        /// The "instance" number of the resource
-        /// </summary>
-        public abstract ulong Instance { get; set; }
-        /// <summary>
         /// If the resource was read from a package, the location in the package the resource was read from
         /// </summary>
+        [ElementPriority(5)]
         public abstract uint Chunkoffset { get; set; }
         /// <summary>
         /// The number of bytes the resource uses within the package
         /// </summary>
+        [ElementPriority(6)]
         public abstract uint Filesize { get; set; }
         /// <summary>
         /// The number of bytes the resource uses in memory
         /// </summary>
+        [ElementPriority(7)]
         public abstract uint Memsize { get; set; }
         /// <summary>
         /// 0xFFFF if Filesize != Memsize, else 0x0000
         /// </summary>
+        [ElementPriority(8)]
         public abstract ushort Compressed { get; set; }
         /// <summary>
         /// Always 0x0001
         /// </summary>
+        [ElementPriority(9)]
         public abstract ushort Unknown2 { get; set; }
 
         /// <summary>
