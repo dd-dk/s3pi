@@ -154,14 +154,11 @@ namespace s3pi.Interfaces
             public abstract void Add();
         }
 
-        public class TGIBlock : AHandlerElement, IComparable<TGIBlock>, IEqualityComparer<TGIBlock>, IEquatable<TGIBlock>
+        public class TGIBlock : AResourceKey, IEquatable<TGIBlock>
         {
             #region Attributes
             const int recommendedApiVersion = 1;
             string order = "TGI";
-            uint resourceType;
-            uint resourceGroup;
-            ulong instance;
             #endregion
 
             #region Constructors
@@ -177,40 +174,45 @@ namespace s3pi.Interfaces
             void ok(string v) { ok((Order)Enum.Parse(typeof(Order), v)); }
             void ok(Order v) { if (!Enum.IsDefined(typeof(Order), v)) throw new ArgumentException("Invalid value " + v, "order"); }
 
-            public TGIBlock(int APIversion, EventHandler handler, uint resourceType, uint resourceGroup, ulong instance)
-                : base(APIversion, handler)
-            {
-                this.resourceType = resourceType;
-                this.resourceGroup = resourceGroup;
-                this.instance = instance;
-            }
+            // With EPFlags
+            public TGIBlock(int APIversion, EventHandler handler, uint resourceType, EPFlags epflags, uint resourceGroup, ulong instance)
+                : base(APIversion, handler, resourceType, epflags, resourceGroup, instance) { }
+            public TGIBlock(int APIversion, EventHandler handler, string order, uint resourceType, EPFlags epflags, uint resourceGroup, ulong instance)
+                : this(APIversion, handler, resourceType, epflags, resourceGroup, instance) { ok(order); this.order = order; }
+            public TGIBlock(int APIversion, EventHandler handler, Order order, uint resourceType, EPFlags epflags, uint resourceGroup, ulong instance)
+                : this(APIversion, handler, resourceType, epflags, resourceGroup, instance) { ok(order); this.order = "" + order; }
 
+            // Without EPFlags... not sure about these...
+            public TGIBlock(int APIversion, EventHandler handler, uint resourceType, uint resourceGroup, ulong instance)
+                : this(APIversion, handler, resourceType, (EPFlags)(resourceGroup >> 24), resourceGroup & 0x00FFFFFF, instance) { }
             public TGIBlock(int APIversion, EventHandler handler, string order, uint resourceType, uint resourceGroup, ulong instance)
                 : this(APIversion, handler, resourceType, resourceGroup, instance) { ok(order); this.order = order; }
             public TGIBlock(int APIversion, EventHandler handler, Order order, uint resourceType, uint resourceGroup, ulong instance)
                 : this(APIversion, handler, resourceType, resourceGroup, instance) { ok(order); this.order = "" + order; }
 
-            public TGIBlock(int APIversion, EventHandler handler, TGIBlock tgib) : this(APIversion, handler, "TGI", tgib) { }
-            public TGIBlock(int APIversion, EventHandler handler, Order order, TGIBlock tgib) : this(APIversion, handler, order, tgib.resourceType, tgib.resourceGroup, tgib.instance) { }
-            public TGIBlock(int APIversion, EventHandler handler, string order, TGIBlock tgib) : this(APIversion, handler, order, tgib.resourceType, tgib.resourceGroup, tgib.instance) { }
+            public TGIBlock(int APIversion, EventHandler handler, IResourceKey rk) : base(APIversion, handler, rk) { }
+            public TGIBlock(int APIversion, EventHandler handler, string order, IResourceKey rk) : this(APIversion, handler, rk) { ok(order); this.order = order; }
+            public TGIBlock(int APIversion, EventHandler handler, Order order, IResourceKey rk) : this(APIversion, handler, rk) { ok(order); this.order = "" + order; }
 
-            // With stream, order is needed in the constructor for parsing
-            public TGIBlock(int APIversion, EventHandler handler, Stream s) : this(APIversion, handler, "TGI", s) { }
-            public TGIBlock(int APIversion, EventHandler handler, Order order, Stream s) : this(APIversion, handler, "" + order, s) { }
+            public TGIBlock(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
             public TGIBlock(int APIversion, EventHandler handler, string order, Stream s) : base(APIversion, handler) { ok(order); this.order = order; Parse(s); }
+            public TGIBlock(int APIversion, EventHandler handler, Order order, Stream s) : base(APIversion, handler) { ok(order); this.order = "" + order; Parse(s); }
             #endregion
 
             #region Data I/O
             protected void Parse(Stream s)
             {
                 BinaryReader r = new BinaryReader(s);
+                UInt32 temp = 0;
                 foreach (char c in order)
                     switch (c)
                     {
                         case 'T': resourceType = r.ReadUInt32(); break;
-                        case 'G': resourceGroup = r.ReadUInt32(); break;
+                        case 'G': temp = r.ReadUInt32(); break;
                         case 'I': instance = r.ReadUInt64(); break;
                     }
+                epFlags = (EPFlags)(temp >> 24);
+                resourceGroup = temp & 0x00FFFFFF;
             }
 
             public void UnParse(Stream s)
@@ -220,58 +222,27 @@ namespace s3pi.Interfaces
                     switch (c)
                     {
                         case 'T': w.Write(resourceType); break;
-                        case 'G': w.Write(resourceGroup); break;
+                        case 'G': w.Write((uint)epFlags << 24 | resourceGroup); break;
                         case 'I': w.Write(instance); break;
                     }
             }
             #endregion
 
-            #region IComparable<TGIBlock> Members
-
-            public int CompareTo(TGIBlock other)
-            {
-                int res = resourceType.CompareTo(other.resourceType); if (res != 0) return res;
-                res = resourceGroup.CompareTo(other.resourceGroup); if (res != 0) return res;
-                return instance.CompareTo(other.instance);
-            }
-
-            #endregion
-
-            #region IEqualityComparer<TGIBlock> Members
-
-            public bool Equals(TGIBlock x, TGIBlock y) { return x.Equals(y); }
-
-            public int GetHashCode(TGIBlock obj) { return obj.GetHashCode(); }
-
-            public override int GetHashCode() { return resourceType.GetHashCode() ^ resourceGroup.GetHashCode() ^ instance.GetHashCode(); }
-
+            #region AHandlerElement
+            public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
+            public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
+            public override AHandlerElement Clone(EventHandler handler) { return new TGIBlock(requestedApiVersion, handler, this.order, this); }
             #endregion
 
             #region IEquatable<TGIBlock> Members
 
-            public bool Equals(TGIBlock other) { return this.CompareTo(other) == 0; }
+            public bool Equals(TGIBlock other) { return this.Equals((IResourceKey)other); }
 
-            #endregion
-
-            #region AHandlerElement
-            public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
-            public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
-            public override AHandlerElement Clone(EventHandler handler) { return new TGIBlock(requestedApiVersion, handler, this); }
             #endregion
 
             #region Content Fields
-            [ElementPriority(1)]
-            public uint ResourceType { get { return resourceType; } set { if (resourceType != value) { resourceType = value; OnElementChanged(); } } }
-            [ElementPriority(2)]
-            public uint ResourceGroup { get { return resourceGroup; } set { if (resourceGroup != value) { resourceGroup = value; OnElementChanged(); } } }
-            [ElementPriority(3)]
-            public ulong Instance { get { return instance; } set { if (instance != value) { instance = value; OnElementChanged(); } } }
-
             public String Value { get { return this.ToString(); } }
             #endregion
-
-            public override string ToString() { return String.Format("0x{0:X8}-0x{1:X8}-0x{2:X16}", resourceType, resourceGroup, instance); }
-            public static implicit operator String(TGIBlock value) { return value.ToString(); }
         }
 
         /// <summary>
