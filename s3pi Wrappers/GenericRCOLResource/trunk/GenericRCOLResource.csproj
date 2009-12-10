@@ -80,6 +80,7 @@ echo /*"*/ [assembly: AssemblyVersion(%25version%25)] /*"*/
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="ARCOLBlock.cs" />
+    <Compile Include="RCOLChunkHandlers\MATD.cs" />
     <Compile Include="RCOLChunkHandlers\DefaultRCOL.cs" />
     <Compile Include="RCOLChunkHandlers\FTPT.cs" />
     <Compile Include="GenericRCOLResource.cs" />
@@ -92,8 +93,5 @@ echo /*"*/ [assembly: AssemblyVersion(%25version%25)] /*"*/
     <Content Include="RCOLResources.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="RCOLChunkHandlers\" />
   </ItemGroup>
 </Project>
