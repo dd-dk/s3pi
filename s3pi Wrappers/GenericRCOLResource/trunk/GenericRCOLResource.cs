@@ -227,7 +227,7 @@ namespace s3pi.GenericRCOLResource
                 s += "\n----";
                 s += "\nRCOL Blocks:";
                 for (int i = 0; i < blockList.Count; i++)
-                    s += "[" + i + "] " + blockList[i].Value;
+                    s += "\n[" + i + "] " + blockList[i].Value;
                 return s;
             }
         }
@@ -252,6 +252,7 @@ namespace s3pi.GenericRCOLResource
             string folder = Path.GetDirectoryName(typeof(GenericRCOLResourceHandler).Assembly.Location);
             foreach (string path in Directory.GetFiles(folder, "*.dll"))
             {
+                //Protect load of DLL
                 try
                 {
                     Assembly dotNetDll = Assembly.LoadFile(path);
@@ -260,11 +261,16 @@ namespace s3pi.GenericRCOLResource
                     {
                         if (!t.IsSubclassOf(typeof(ARCOLBlock))) continue;
 
-                        ARCOLBlock arb = (ARCOLBlock)t.GetConstructor(new Type[] { typeof(int), typeof(EventHandler), typeof(Stream), }).Invoke(new object[] { 0, null, null });
-                        if (arb == null) continue;
+                        //Protect instantiating class
+                        try
+                        {
+                            ARCOLBlock arb = (ARCOLBlock)t.GetConstructor(new Type[] { typeof(int), typeof(EventHandler), typeof(Stream), }).Invoke(new object[] { 0, null, null });
+                            if (arb == null) continue;
 
-                        if (!typeRegistry.ContainsKey(arb.ResourceType)) typeRegistry.Add(arb.ResourceType, arb.GetType());
-                        if (!tagRegistry.ContainsKey(arb.Tag)) tagRegistry.Add(arb.Tag, arb.GetType());
+                            if (!typeRegistry.ContainsKey(arb.ResourceType)) typeRegistry.Add(arb.ResourceType, arb.GetType());
+                            if (!tagRegistry.ContainsKey(arb.Tag)) tagRegistry.Add(arb.Tag, arb.GetType());
+                        }
+                        catch { }
                     }
                 }
                 catch { }
