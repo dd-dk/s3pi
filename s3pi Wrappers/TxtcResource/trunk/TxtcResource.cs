@@ -64,6 +64,8 @@ namespace TxtcResource
             if (version >= 8)
                 unknown4 = r.ReadByte();
             entries = new EntryBlockList(OnResourceChanged, count, s);
+            if (checking) if (tgiPos != s.Position)
+                    throw new InvalidDataException(string.Format("TGI Block found at 0x{0:X8}; expected position 0x{1:X8}", s.Position, tgiPos));
             tgiBlocks = new CountedTGIBlockList(OnResourceChanged, 255, "IGT", r.ReadByte(), s);
         }
 
@@ -89,8 +91,8 @@ namespace TxtcResource
                 w.Write(unknown4);
             entries.UnParse(ms);
             if (tgiBlocks == null) tgiBlocks = new CountedTGIBlockList(OnResourceChanged, 255, "IGT");
-            w.Write((byte)tgiBlocks.Count);
             long tgiPosn = ms.Position;
+            w.Write((byte)tgiBlocks.Count);
             tgiBlocks.UnParse(ms);
 
             ms.Position = osetPos;
