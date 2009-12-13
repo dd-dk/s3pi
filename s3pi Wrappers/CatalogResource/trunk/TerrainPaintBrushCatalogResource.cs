@@ -28,6 +28,8 @@ namespace CatalogResource
     {
         #region Attributes
         TGIBlock brushTexture = null;
+        uint unknown15;
+        CategoryType category = CategoryType.None;
         #endregion
 
         #region Constructors
@@ -36,15 +38,28 @@ namespace CatalogResource
             : base(APIversion, null, basis)
         {
             this.brushTexture = (TGIBlock)basis.brushTexture.Clone(OnResourceChanged);
+            this.unknown15 = basis.unknown15;
+            this.category = basis.category;
         }
-        public TerrainPaintBrushCatalogResource(int APIversion, uint version, uint unknown2, Common common,
+        public TerrainPaintBrushCatalogResource(int APIversion, uint unknown2, Common common,
             byte unknown3, byte unknown4, uint unknown5, byte unknown6, byte unknown7, uint unknown8, uint unknown9, uint unknown10,
             TGIBlock brushShape, byte[] unknown11, float unknown12, float unknown13, byte[] unknown14,
             TGIBlock brushTexture)
-            : base(APIversion, version, unknown2, common, unknown3, unknown4, unknown5, unknown6, unknown7, unknown8, unknown9, unknown10,
+            : base(APIversion, 2, unknown2, common, unknown3, unknown4, unknown5, unknown6, unknown7, unknown8, unknown9, unknown10,
             brushShape, unknown11, unknown12, unknown13, unknown14)
         {
             this.brushTexture = (TGIBlock)brushTexture.Clone(OnResourceChanged);
+        }
+        public TerrainPaintBrushCatalogResource(int APIversion, uint unknown2, Common common,
+            byte unknown3, byte unknown4, uint unknown5, byte unknown6, byte unknown7, uint unknown8, uint unknown9, uint unknown10,
+            TGIBlock brushShape, byte[] unknown11, float unknown12, float unknown13, byte[] unknown14,
+            TGIBlock brushTexture, uint unknown15, CategoryType category)
+            : base(APIversion, 4, unknown2, common, unknown3, unknown4, unknown5, unknown6, unknown7, unknown8, unknown9, unknown10,
+            brushShape, unknown11, unknown12, unknown13, unknown14)
+        {
+            this.brushTexture = (TGIBlock)brushTexture.Clone(OnResourceChanged);
+            this.unknown15 = unknown15;
+            this.category = category;
         }
         #endregion
 
@@ -53,6 +68,17 @@ namespace CatalogResource
         {
             base.Parse(s);
             this.brushTexture = new TGIBlock(requestedApiVersion, OnResourceChanged, s);
+
+            if (version >= 4)
+            {
+                BinaryReader r = new BinaryReader(s);
+                this.unknown15 = r.ReadUInt32();
+                this.category = (CategoryType)r.ReadUInt32();
+            }
+
+            if (checking) if (this.GetType().Equals(typeof(TerrainPaintBrushCatalogResource)) && s.Position != s.Length)
+                    throw new InvalidDataException(String.Format("Data stream length 0x{0:X8} is {1:X8} bytes longer than expected at {2:X8}",
+                        s.Length, s.Length - s.Position, s.Position));
         }
 
         protected override Stream UnParse()
@@ -61,7 +87,45 @@ namespace CatalogResource
             if (brushTexture == null) brushTexture = new TGIBlock(requestedApiVersion, OnResourceChanged, 0, 0, 0);
             brushTexture.UnParse(s);
 
+            if (version >= 4)
+            {
+                BinaryWriter w = new BinaryWriter(s);
+                w.Write(unknown15);
+                w.Write((uint)category);
+            }
+
             return s;
+        }
+        #endregion
+
+        #region AApiVersionedFields
+        /// <summary>
+        /// The list of available field names on this API object
+        /// </summary>
+        public override List<string> ContentFields
+        {
+            get
+            {
+                List<string> res = base.ContentFields;
+                if (this.version < 0x00000004)
+                {
+                    res.Remove("Unknown15");
+                    res.Remove("Category");
+                }
+                return res;
+            }
+        }
+        #endregion
+
+        #region Sub-classes
+        public enum CategoryType : uint
+        {
+            None = 0x00,
+            Grass = 0x01,
+            Flowers = 0x02,
+            Rock = 0x03,
+            Dirt_Sand = 0x04,
+            Other = 0x05,
         }
         #endregion
 
@@ -71,6 +135,8 @@ namespace CatalogResource
             get { return brushTexture; }
             set { if (brushTexture != value) { brushTexture = new TGIBlock(requestedApiVersion, OnResourceChanged, value); OnResourceChanged(this, new EventArgs()); } }
         }
+        public uint Unknown15 { get { if (version < 0x00000004) throw new InvalidOperationException(); return unknown15; } set { if (version < 0x00000004) throw new InvalidOperationException(); if (unknown15 != value) { unknown15 = value; OnResourceChanged(this, new EventArgs()); } } }
+        public CategoryType Category { get { if (version < 0x00000004) throw new InvalidOperationException(); return category; } set { if (version < 0x00000004) throw new InvalidOperationException(); if (category != value) { category = value; OnResourceChanged(this, new EventArgs()); } } }
         #endregion
     }
 }

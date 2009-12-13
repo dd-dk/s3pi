@@ -120,6 +120,10 @@ namespace CatalogResource
             this.catalogFence = r.ReadUInt32();
 
             list = new TGIBlockList(OnResourceChanged, s, tgiPosn, tgiSize);
+
+            if (checking) if (this.GetType().Equals(typeof(RoofStyleCatalogResource)) && s.Position != s.Length)
+                    throw new InvalidDataException(String.Format("Data stream length 0x{0:X8} is {1:X8} bytes longer than expected at {2:X8}",
+                        s.Length, s.Length - s.Position, s.Position));
         }
 
         protected override Stream UnParse()

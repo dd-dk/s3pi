@@ -114,6 +114,10 @@ namespace CatalogResource
             this.unknown14 = r.ReadBytes(5);
             if (checking) if (this.unknown14.Length != 5)
                     throw new InvalidDataException(String.Format("unknown14: read {0} bytes; expected 5 at 0x{1:X8}.", unknown14.Length, s.Position));
+
+            if (checking) if (this.GetType().Equals(typeof(TerrainGeometryWaterBrushCatalogResource)) && s.Position != s.Length)
+                    throw new InvalidDataException(String.Format("Data stream length 0x{0:X8} is {1:X8} bytes longer than expected at {2:X8}",
+                        s.Length, s.Length - s.Position, s.Position));
         }
 
         protected override Stream UnParse()
