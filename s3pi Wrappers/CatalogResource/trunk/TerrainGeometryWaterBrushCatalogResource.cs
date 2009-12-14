@@ -33,7 +33,7 @@ namespace CatalogResource
         uint unknown5;
         byte unknown6;
         byte unknown7;
-        uint unknown8;
+        uint brushIndex;
         uint unknown9;
         uint unknown10;
         TGIBlock brushShape = null;
@@ -55,7 +55,7 @@ namespace CatalogResource
             this.unknown5 = basis.unknown5;
             this.unknown6 = basis.unknown6;
             this.unknown7 = basis.unknown7;
-            this.unknown8 = basis.unknown8;
+            this.brushIndex = basis.brushIndex;
             this.unknown9 = basis.unknown9;
             this.unknown10 = basis.unknown10;
             this.brushShape = (TGIBlock)basis.brushShape.Clone(OnResourceChanged);
@@ -76,7 +76,7 @@ namespace CatalogResource
             this.unknown5 = unknown5;
             this.unknown6 = unknown6;
             this.unknown7 = unknown7;
-            this.unknown8 = unknown8;
+            this.brushIndex = unknown8;
             this.unknown9 = unknown9;
             this.unknown10 = unknown10;
             this.brushShape = (TGIBlock)brushShape.Clone(OnResourceChanged);
@@ -102,7 +102,7 @@ namespace CatalogResource
             this.unknown5 = r.ReadUInt32();
             this.unknown6 = r.ReadByte();
             this.unknown7 = r.ReadByte();
-            this.unknown8 = r.ReadUInt32();
+            this.brushIndex = r.ReadUInt32();
             this.unknown9 = r.ReadUInt32();
             this.unknown10 = r.ReadUInt32();
             this.brushShape = new TGIBlock(requestedApiVersion, OnResourceChanged, s);
@@ -133,7 +133,7 @@ namespace CatalogResource
             w.Write(unknown5);
             w.Write(unknown6);
             w.Write(unknown7);
-            w.Write(unknown8);
+            w.Write(brushIndex);
             w.Write(unknown9);
             w.Write(unknown10);
             if (brushShape == null) brushShape = new TGIBlock(requestedApiVersion, OnResourceChanged, 0, 0, 0);
@@ -156,7 +156,7 @@ namespace CatalogResource
         public uint Unknown5 { get { return unknown5; } set { if (unknown5 != value) { unknown5 = value; OnResourceChanged(this, new EventArgs()); } } }
         public byte Unknown6 { get { return unknown6; } set { if (unknown6 != value) { unknown6 = value; OnResourceChanged(this, new EventArgs()); } } }
         public byte Unknown7 { get { return unknown7; } set { if (unknown7 != value) { unknown7 = value; OnResourceChanged(this, new EventArgs()); } } }
-        public uint Unknown8 { get { return unknown8; } set { if (unknown8 != value) { unknown8 = value; OnResourceChanged(this, new EventArgs()); } } }
+        public uint BrushIndex { get { return brushIndex; } set { if (brushIndex != value) { brushIndex = value; OnResourceChanged(this, new EventArgs()); } } }
         public uint Unknown9 { get { return unknown9; } set { if (unknown9 != value) { unknown9 = value; OnResourceChanged(this, new EventArgs()); } } }
         public uint Unknown10 { get { return unknown10; } set { if (unknown10 != value) { unknown10 = value; OnResourceChanged(this, new EventArgs()); } } }
         public TGIBlock BrushShape
