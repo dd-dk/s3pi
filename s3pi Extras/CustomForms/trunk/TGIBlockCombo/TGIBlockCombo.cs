@@ -80,7 +80,7 @@ namespace System.Windows.Forms
         public int SelectedIndex
         {
             get { return cbTGIBlocks.SelectedIndex; }
-            set { if (cbTGIBlocks.SelectedIndex != value) { cbTGIBlocks.SelectedIndex = value; OnSelectedIndexChanged(this, EventArgs.Empty); } }
+            set { if (cbTGIBlocks.SelectedIndex != value) { cbTGIBlocks.SelectedIndex = value; } }
         }
 
         [DefaultValue(true)]
@@ -113,5 +113,7 @@ namespace System.Windows.Forms
 
             OnTGIBlockListChanged(this, EventArgs.Empty);
         }
+
+        private void cbTGIBlocks_SelectedIndexChanged(object sender, EventArgs e) { OnSelectedIndexChanged(this, e); }
     }
 }

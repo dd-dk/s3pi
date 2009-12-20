@@ -64,6 +64,7 @@
             this.cbTGIBlocks.Name = "cbTGIBlocks";
             this.cbTGIBlocks.Size = new System.Drawing.Size(615, 21);
             this.cbTGIBlocks.TabIndex = 0;
+            this.cbTGIBlocks.SelectedIndexChanged += new System.EventHandler(this.cbTGIBlocks_SelectedIndexChanged);
             // 
             // btnTGIBlockListEditor
             // 
