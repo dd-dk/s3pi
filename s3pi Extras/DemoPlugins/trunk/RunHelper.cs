@@ -31,6 +31,15 @@ namespace s3pi.DemoPlugins
     }
     public static class RunHelper
     {
+        static void IssueException(Exception ex)
+        {
+            string s = "";
+            for (Exception inex = ex; inex != null; inex = ex.InnerException) s += "\n" + inex.Message;
+            s += "\n-----";
+            for (Exception inex = ex; inex != null; inex = ex.InnerException) s += "\n" + inex.StackTrace;
+            CopyableMessageBox.Show(s, "Program Exception", CopyableMessageBoxButtons.OK, CopyableMessageBoxIcon.Stop);
+        }
+
         public static int Run(Type mainForm, params string[] args)
         {
             bool useClipboard = false;
@@ -99,9 +108,7 @@ namespace s3pi.DemoPlugins
                 }
                 catch (Exception ex)
                 {
-                    string s = ex.Message;
-                    for (Exception inex = ex.InnerException; inex != null; inex = ex.InnerException) s += "\n" + inex.Message;
-                    CopyableMessageBox.Show(s, "Fail", CopyableMessageBoxButtons.OK, CopyableMessageBoxIcon.Stop);
+                    IssueException(ex);
                     return -1;
                 }
             }
@@ -115,29 +122,26 @@ namespace s3pi.DemoPlugins
             {
                 Form theForm = (Form)mainForm.GetConstructor(new Type[] { typeof(Stream), }).Invoke(new object[] { ms, });
                 Application.Run(theForm);
-                if (Environment.ExitCode == 0)
-                    result = ((IRunHelper)theForm).Result;
+                if (Environment.ExitCode != 0)
+                    return 0;
+
+                result = ((IRunHelper)theForm).Result;
             }
             catch (Exception ex)
             {
-                string s = ex.Message;
-                for (Exception inex = ex.InnerException; inex != null; inex = inex.InnerException) s += "\n" + inex.Message;
-                MessageBox.Show(s, "Fail", MessageBoxButtons.OK, MessageBoxIcon.Stop);
+                IssueException(ex);
                 return -1;
             }
 
-            if (Environment.ExitCode == 0)
+            if (useClipboard)
             {
-                if (useClipboard)
-                {
-                    Clipboard.SetData(DataFormats.Serializable, new MemoryStream(result));
-                }
-                else
-                {
-                    ms.Position = 0;
-                    ms.SetLength(0);
-                    ms.Write(result, 0, result.Length);
-                }
+                Clipboard.SetData(DataFormats.Serializable, new MemoryStream(result));
+            }
+            else
+            {
+                ms.Position = 0;
+                ms.SetLength(0);
+                ms.Write(result, 0, result.Length);
             }
 
             return 0;
