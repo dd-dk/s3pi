@@ -139,9 +139,39 @@ namespace s3pi.DemoPlugins
         public string Helper1Label { get { return helperLabel("1"); } }
         public string Helper2Label { get { return helperLabel("2"); } }
 
-        bool execHelper(string hlp, IResource res) { return hasHelper(hlp) ? cmd.helpers[hlp].isReadOnly ? DoReadOnly(cmd.helpers[hlp], res) : DoReadWrite(cmd.helpers[hlp], res) : false; }
-        public bool Helper1(IResource res) { return execHelper("1", res); }
-        public bool Helper2(IResource res) { return execHelper("2", res); }
+        MemoryStream execHelper(string hlp, IResource res)
+        {
+            if (!hasHelper(hlp)) return null;
+            try
+            {
+                Cmd.Helper helper = cmd.helpers[hlp];
+                DateTime lastWriteTime = new DateTime();
+                if (helper.export)
+                    lastWriteTime = pasteTo(res, cmd.filename);
+                else
+                    Clipboard.SetData(DataFormats.Serializable, res.Stream);
+
+                bool result = Execute(res, cmd, helper.command, helper.arguments);
+                if (!helper.isReadOnly && result)
+                {
+                    if (helper.export)
+                    {
+                        return copyFrom(cmd.filename, helper.ignoreWriteTimestamp, lastWriteTime);
+                    }
+                    else if (Clipboard.ContainsData(DataFormats.Serializable))
+                    {
+                        return Clipboard.GetData(DataFormats.Serializable) as MemoryStream;
+                    }
+                }
+                return null;
+            }
+            finally
+            {
+                if (cmd.filename != null) File.Delete(cmd.filename);
+            }
+        }
+        public MemoryStream Helper1(IResource res) { return execHelper("1", res); }
+        public MemoryStream Helper2(IResource res) { return execHelper("2", res); }
 
         bool helperIsReadOnly(string hlp) { return hasHelper(hlp) ? cmd.helpers[hlp].isReadOnly : true; }
         public bool Helper1IsReadOnly { get { return helperIsReadOnly("1"); } }
@@ -207,83 +237,44 @@ namespace s3pi.DemoPlugins
         }
         string getString(string group, string key) { return demoPlugins[group].ContainsKey(key) ? demoPlugins[group][key] : ""; }
 
-        private bool DoReadOnly(Cmd.Helper helper, IResource res)
-        {
-            DateTime lastWriteTime = new DateTime();
-            if (helper.export && Clipboard.ContainsData(DataFormats.Serializable))
-                lastWriteTime = pasteTo(cmd.filename);
-
-            bool result = Execute(res, cmd, helper.command, helper.arguments);
-
-            if (File.Exists(cmd.filename))
-                File.Delete(cmd.filename);
-
-            return result;
-        }
-
-        private bool DoReadWrite(Cmd.Helper helper, IResource res)
-        {
-            DateTime lastWriteTime = new DateTime();
-            if (helper.export && Clipboard.ContainsData(DataFormats.Serializable))
-                lastWriteTime = pasteTo(cmd.filename);
-
-            bool result = Execute(res, cmd, helper.command, helper.arguments);
-
-            if (result)
-            {
-                if (helper.export)
-                    result = copyFile(cmd.filename, helper.ignoreWriteTimestamp ? new DateTime(0) : lastWriteTime);
-            }
-
-            return result;
-        }
-
-        public static bool Edit(IResourceIndexEntry key, IResource res, string command, bool wantsQuotes, bool ignoreWriteTimestamp)
+        public static MemoryStream Edit(IResourceIndexEntry key, IResource res, string command, bool wantsQuotes, bool ignoreWriteTimestamp)
         {
             string filename = Path.Combine(Path.GetTempPath(), (s3pi.Extensions.TGIN)(key as AResourceIndexEntry));
-
-            BinaryWriter bw = new BinaryWriter((new FileStream(filename, FileMode.Create, FileAccess.Write)));
-            bw.Write(res.AsBytes);
-            bw.Close();
-            DateTime lastWriteTime = ignoreWriteTimestamp ? new DateTime(0) : File.GetLastWriteTime(filename);
-
-            string quote = wantsQuotes ? new string(new char[] { '"' }) : "";
-            return Execute(res, new Cmd(), command, quote + filename + quote) && copyFile(filename, lastWriteTime);
-        }
-
-        DateTime pasteTo(string filename)
-        {
-            MemoryStream ms = Clipboard.GetData(DataFormats.Serializable) as MemoryStream;
-            if (ms != null)
+            try
             {
-                BinaryWriter bw = new BinaryWriter((new FileStream(cmd.filename, FileMode.Create, FileAccess.Write)));
-                bw.Write((new BinaryReader(ms)).ReadBytes((int)ms.Length));
-                bw.Close();
-                return File.GetLastWriteTime(cmd.filename);
+                DateTime lastWriteTime = pasteTo(res, filename);
+
+                string quote = wantsQuotes ? new string(new char[] { '"' }) : "";
+                bool result = Execute(res, new Cmd(), command, quote + filename + quote);
+                if (!result) return null;
+
+                return copyFrom(filename, ignoreWriteTimestamp, lastWriteTime);
             }
-            return new DateTime();
+            finally
+            {
+                File.Delete(filename);
+            }
         }
 
-        static bool copyFile(string filename, DateTime lastWriteTime)
+        static DateTime pasteTo(IResource res, string filename)
         {
-            if (File.Exists(filename))
-                try
-                {
-                    if (File.GetLastWriteTime(filename) != lastWriteTime)
-                    {
-                        MemoryStream ms = new MemoryStream();
-                        FileStream fs = new FileStream(filename, FileMode.Open, FileAccess.Read);
-                        (new BinaryWriter(ms)).Write((new BinaryReader(fs)).ReadBytes((int)fs.Length));
-                        fs.Close();
-                        Clipboard.SetData(DataFormats.Serializable, ms);
-                        return true;
-                    }
-                }
-                finally
-                {
-                    File.Delete(filename);
-                }
-            return false;
+            Stream ms = res.Stream;
+            BinaryWriter bw = new BinaryWriter((new FileStream(filename, FileMode.Create, FileAccess.Write)));
+            bw.Write((new BinaryReader(ms)).ReadBytes((int)ms.Length));
+            bw.Close();
+            return File.GetLastWriteTime(filename);
+        }
+        static MemoryStream copyFrom(string filename, bool ignoreWriteTimestamp, DateTime lastWriteTime)
+        {
+            if (ignoreWriteTimestamp || File.GetLastWriteTime(filename) != lastWriteTime)
+            {
+                MemoryStream ms = new MemoryStream();
+                FileStream fs = new FileStream(filename, FileMode.Open, FileAccess.Read);
+                (new BinaryWriter(ms)).Write((new BinaryReader(fs)).ReadBytes((int)fs.Length));
+                fs.Close();
+                return ms;
+            }
+            return null;
         }
 
         static bool Execute(IResource res, Cmd cmd, string command, string arguments)
