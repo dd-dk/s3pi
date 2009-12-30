@@ -258,9 +258,14 @@ namespace s3pi.DemoPlugins
 
         static DateTime pasteTo(IResource res, string filename)
         {
-            Stream ms = res.Stream;
             BinaryWriter bw = new BinaryWriter((new FileStream(filename, FileMode.Create, FileAccess.Write)));
-            bw.Write((new BinaryReader(ms)).ReadBytes((int)ms.Length));
+            MemoryStream ms = res.Stream as MemoryStream;
+            if (ms != null) bw.Write(ms.ToArray());
+            else
+            {
+                res.Stream.Position = 0;
+                bw.Write(new BinaryReader(res.Stream).ReadBytes((int)res.Stream.Length));
+            }
             bw.Close();
             return File.GetLastWriteTime(filename);
         }
