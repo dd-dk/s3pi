@@ -38,14 +38,14 @@ txt.Wrapper: TextResource
 txt.Helper1Label: Edit
 // Windows notepad is in the standard Windows PATH, so you don't need to say where it is:
 txt.Helper1Command: notepad
-txt.Helper1Arguments: {}
+txt.Helper1Arguments: "{}"
 
 // Images
 ; jpg
 jpg.ResourceType: 0x2F7D0002
 jpg.Helper1Label: Paint
 jpg.Helper1Command: mspaint
-jpg.Helper1Arguments: {}
+jpg.Helper1Arguments: "{}"
 
 ; png
 img.Wrapper: ImageResource
@@ -61,25 +61,32 @@ dds.Helper1Label: View
 dds.Helper1Command: ViewDDS.exe
 dds.Helper1ReadOnly: yes
 ; ViewDDS can process data from the clipboard in the format used by s3pe:
-dds.Helper1Arguments: /clipboard
+;dds.Helper1Arguments: /clipboard
+dds.Helper1Arguments: {}
 ;dds.Helper2Label: GIMP
 ;dds.Helper2Command: C:\Program Files\GIMP-2.0\bin\gimp-2.6.exe
 ;dds.Helper2Arguments: "{}"
+
+// all supplied editors can also use the clipboard (either pass /clipboard or no arguments)
+// we pass a file to avoid losing the user's clipboard content.
 
 // ObjKey editor, using the editor supplied with s3pe
 objk.ResourceType: 0x02DC343F
 objk.Helper1Label: Edit
 objk.Helper1Command: OBJKResourceEditor
+objk.Helper1Arguments: "{}"
 
 // String tables, using the editor supplied with s3pe
 stbl.ResourceType: 0x220557DA
 stbl.Helper1Label: Edit
 stbl.Helper1Command: STBLResourceEditor
+stbl.Helper1Arguments: "{}"
 
 // Visual proxy files, using the editor supplied with s3pe
 vpxy.ResourceType: 0x736884F1
 vpxy.Helper1Label: Edit
 vpxy.Helper1Command: VPXYResourceEditor
+vpxy.Helper1Arguments: "{}"
 
 
 // --
@@ -89,7 +96,7 @@ vpxy.Helper1Command: VPXYResourceEditor
 // Could try just running it... but we won't; the uses the OS's file associations
 ;any.Wrapper: *
 ;any.Helper1Label: Start
-;any.Helper1Command: {}
+;any.Helper1Command: "{}"
 // To avoid ever saving updates, say the helper is read-only
 ;any.Helper1ReadOnly: yes
 
@@ -97,11 +104,11 @@ vpxy.Helper1Command: VPXYResourceEditor
 ;any.Wrapper: *
 ;any.Helper1Label: Edit
 ;any.Helper1Command: notepad
-;any.Helper1Arguments: {}
+;any.Helper1Arguments: "{}"
 
 // If you have an editor that doesn't update file timestamps on save, call it like this:
 ;any.ResourceType: 0xFEEDF00D
 ;any.Helper1Label: Edit
 ;any.Helper1Command: X:\Path\To\Editor.exe
-;any.Helper1Arguments: {}
+;any.Helper1Arguments: "{}"
 ;any.Helper1IgnoreWriteTimestamp: whatever
