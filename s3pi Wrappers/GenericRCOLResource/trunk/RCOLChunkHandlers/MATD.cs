@@ -668,7 +668,30 @@ namespace s3pi.GenericRCOLResource
             protected override void WriteElement(Stream s, Entry element) { element.UnParse(s); }
             #endregion
 
-            public override void Add() { throw new NotImplementedException(); }
+            #region DependentList<Entry>
+            public override void Add()
+            {
+                switch (type)
+                {
+                    case DataType.dtFloat: this.Add((float)0); break;
+                    case DataType.dtUInt32_1:
+                    case DataType.dtUInt32_2: this.Add((uint)0); break;
+                    default:
+                        throw new InvalidOperationException(String.Format("Unknown DataType 0x{0:X8}", type));
+                }
+            }
+            protected override Type GetElementType(params object[] fields)
+            {
+                switch (type)
+                {
+                    case DataType.dtFloat: return typeof(ElementSingle);
+                    case DataType.dtUInt32_1:
+                    case DataType.dtUInt32_2: return typeof(ElementUInt32);
+                    default:
+                        throw new InvalidOperationException(String.Format("Unknown DataType 0x{0:X8}", type));
+                }
+            }
+            #endregion
 
             internal DataType SDType { get { return type; } }
         }
@@ -784,8 +807,7 @@ namespace s3pi.GenericRCOLResource
             #region Data I/O
             protected override void Parse(Stream s)
             {
-                // Can't just pass Stream to Add(..) as the element change event handler would end up null
-                for (uint i = ReadCount(s); i > 0; i--) this.Add(new ShaderData(0, elementHandler, s));
+                for (uint i = ReadCount(s); i > 0; i--) this.Add(s);
                 long pos = s.Position;
                 foreach (var i in this) i.ReadEntryList(s);
                 if (checking) if (dataLen >= 0 && dataLen != s.Position - pos)
@@ -804,7 +826,7 @@ namespace s3pi.GenericRCOLResource
             protected override void WriteElement(Stream s, ShaderData element) { throw new NotImplementedException(); }
             #endregion
 
-            public override void Add() { this.Add(new ShaderData(0, elementHandler)); }
+            public override void Add() { throw new NotSupportedException(); }
         }
         #endregion
 
