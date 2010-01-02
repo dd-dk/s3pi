@@ -28,6 +28,7 @@
         <Command type="BeforeBuild" command="preBuild.bat ${ProjectDir}\Properties\AssemblyVersion.cs" />
       </CustomCommands>
     </CustomCommands>
+    <DocumentationFile>xml\System.Custom.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -41,6 +42,7 @@
         <Command type="BeforeBuild" command="preBuild.bat ${ProjectDir}\Properties\AssemblyVersion.cs" />
       </CustomCommands>
     </CustomCommands>
+    <DocumentationFile>xml\System.Custom.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />

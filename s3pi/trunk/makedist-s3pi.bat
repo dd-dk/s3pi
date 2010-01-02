@@ -31,12 +31,13 @@ rem there shouldn't be any to delete...
 del %out%%TargetName%*%suffix%.*
 
 pushd ..
-7za a -r -t7z -mx9 -ms -xr!.?* -xr!*.suo -xr!bin -xr!obj -xr!Makefile "%out%%src%_%suffix%.7z" "CS System Classes" GetAssemblyInfo s3pi "s3pi Extras" "s3pi Wrappers"
+7za a -r -t7z -mx9 -ms -xr!.?* -xr!*.suo -xr!bin -xr!obj -xr!xml -xr!Makefile "%out%%src%_%suffix%.7z" "CS System Classes" GetAssemblyInfo s3pi "s3pi Extras" "s3pi Wrappers"
 popd
 
 
 mkdir %base%
 copy "build\bin\%ConfigurationName%\*" %base%
+copy "build\xml\*" %base%
 
 pushd %base%
 echo %suffix% >%TargetName%-Version.txt
