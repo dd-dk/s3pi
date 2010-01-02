@@ -69,6 +69,8 @@ namespace s3pi.GenericRCOLResource
                 ms.Write(data, 0, data.Length);
                 ms.Position = 0;
 
+                // Do not use generic Add(...) here as blockList's event handler is not in place
+                // - it would result in untracked changes within the list entries
                 blockList.Add(new GenericRCOLResource.ChunkEntry(requestedApiVersion, OnResourceChanged,
                     chunks[i], GenericRCOLResourceHandler.RCOLDealer(requestedApiVersion, OnResourceChanged, chunks[i].ResourceType, ms)));
             }
@@ -149,14 +151,23 @@ namespace s3pi.GenericRCOLResource
 
         public class ChunkEntry : AHandlerElement, IEquatable<ChunkEntry>
         {
+            #region Attributes
             const Int32 recommendedApiVersion = 1;
             AResource.TGIBlock tgiBlock;
             ARCOLBlock rcolBlock;
+            #endregion
+
+            public ChunkEntry(int APIversion, EventHandler handler, ChunkEntry basis)
+                : this(APIversion, handler, basis.tgiBlock, basis.rcolBlock) { }
             public ChunkEntry(int APIversion, EventHandler handler, AResource.TGIBlock tgiBlock, ARCOLBlock rcolBlock)
-                : base(APIversion, handler) { this.tgiBlock = tgiBlock; this.rcolBlock = rcolBlock; }
+                : base(APIversion, handler)
+            {
+                this.tgiBlock = (AResource.TGIBlock)tgiBlock.Clone(handler);
+                this.rcolBlock = (ARCOLBlock)rcolBlock.Clone(handler);
+            }
 
             #region AHandlerElement Members
-            public override AHandlerElement Clone(EventHandler handler) { return new ChunkEntry(requestedApiVersion, handler, this.tgiBlock, this.rcolBlock); }
+            public override AHandlerElement Clone(EventHandler handler) { return new ChunkEntry(requestedApiVersion, handler, this); }
 
             public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
 
