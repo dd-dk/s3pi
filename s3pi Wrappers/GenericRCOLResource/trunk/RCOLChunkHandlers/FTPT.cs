@@ -97,11 +97,7 @@ namespace s3pi.GenericRCOLResource
             #region Constructors
             public PolygonPoint(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
             public PolygonPoint(int APIversion, EventHandler handler, PolygonPoint basis)
-                : base(APIversion, handler)
-            {
-                this.x = basis.x;
-                this.y = basis.y;
-            }
+                : this(APIversion, handler, basis.x, basis.y) { }
             public PolygonPoint(int APIversion, EventHandler handler, float X, float Y)
                 : base(APIversion, handler)
             {
@@ -170,7 +166,7 @@ namespace s3pi.GenericRCOLResource
             protected override void WriteElement(Stream s, PolygonPoint element) { element.UnParse(s); }
             #endregion
 
-            public override void Add() { this.Add(new PolygonPoint(0, elementHandler, 0, 0)); }
+            public override void Add() { this.Add((float)0, (float)0); }
         }
 
         [Flags]
@@ -203,21 +199,9 @@ namespace s3pi.GenericRCOLResource
             #region Constructors
             public Area(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
             public Area(int APIversion, EventHandler handler, Area basis)
-                : base(APIversion, handler)
-            {
-                this.name = basis.name;
-                this.unknown1 = basis.unknown1;
-                this.areaType = basis.areaType;
-                this.closedPolygon = new PolygonPointList(handler, basis.closedPolygon);
-                this.placementFlags1 = basis.placementFlags1;
-                this.placementFlags2 = basis.placementFlags2;
-                this.placementFlags3 = basis.placementFlags3;
-                this.unknown2 = basis.unknown2;
-                this.lowerX = basis.lowerX;
-                this.lowerY = basis.lowerY;
-                this.upperX = basis.upperX;
-                this.upperY = basis.upperY;
-            }
+                : this(APIversion, handler,
+                basis.name, basis.unknown1, basis.areaType, basis.closedPolygon, basis.placementFlags1, basis.placementFlags2, basis.placementFlags3,
+                basis.unknown2, basis.lowerX, basis.lowerY, basis.upperX, basis.upperY) { }
             /*public Area(int APIversion, EventHandler handler,
                 uint name, byte unknown1, AreaType areaType, uint placementFlags1, uint placementFlags2, uint placementFlags3,
                 byte unknown2, float lowerX, float lowerY, float upperX, float upperY)
@@ -364,7 +348,9 @@ namespace s3pi.GenericRCOLResource
             protected override void WriteElement(Stream s, Area element) { element.UnParse(s); }
             #endregion
 
-            public override void Add() { this.Add(new Area(0, elementHandler, 0, 0, (AreaType)0, new List<PolygonPoint>(), 0, 0, 0, 0, 0, 0, 0, 0)); }
+            public override void Add() { this.Add((uint)0, (byte)0, (AreaType)0, new List<PolygonPoint>(),
+                (uint)0, (uint)0, (uint)0, (byte)0, (float)0, (float)0, (float)0, (float)0);
+            }
         }
         #endregion
 
