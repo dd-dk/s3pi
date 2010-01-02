@@ -22,8 +22,9 @@
 # (Note that the folder containing the config file is included in the OS search path)
 
 # Any required arguments are specified with "...Arguments: args"
-# "{}" is replaced with the filename when on ...Command or ...Arguments lines
-# "{prop}" is replaced with the selected resource's "prop" field value on ...Argument lines
+# {} is replaced with the filename when on ...Command or ...Arguments lines
+# {prop} is replaced with the selected resource's "prop" field value on ...Argument lines
+# Note: you probably want to add quotes around {} and {prop} - this isn't automatic
 
 # To flag a command as read-only (preventing any updates to the package), use "...ReadOnly: anything_here"
 # Note: if you are passing a file to your editor and it does not update the write timestamp,
@@ -52,7 +53,6 @@ img.Wrapper: ImageResource
 // This is where GIMP installs by default:
 ;img.Helper1Label: GIMP
 ;img.Helper1Command: C:\Program Files\GIMP-2.0\bin\gimp-2.6.exe
-// It likes quotes:
 ;img.Helper1Arguments: "{}"
 
 // DDS files
@@ -62,7 +62,7 @@ dds.Helper1Command: ViewDDS.exe
 dds.Helper1ReadOnly: yes
 ; ViewDDS can process data from the clipboard in the format used by s3pe:
 ;dds.Helper1Arguments: /clipboard
-dds.Helper1Arguments: {}
+dds.Helper1Arguments: "{}"
 ;dds.Helper2Label: GIMP
 ;dds.Helper2Command: C:\Program Files\GIMP-2.0\bin\gimp-2.6.exe
 ;dds.Helper2Arguments: "{}"
@@ -96,7 +96,7 @@ vpxy.Helper1Arguments: "{}"
 // Could try just running it... but we won't; the uses the OS's file associations
 ;any.Wrapper: *
 ;any.Helper1Label: Start
-;any.Helper1Command: "{}"
+;any.Helper1Command: {}
 // To avoid ever saving updates, say the helper is read-only
 ;any.Helper1ReadOnly: yes
 
