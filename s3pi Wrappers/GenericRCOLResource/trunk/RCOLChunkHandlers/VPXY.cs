@@ -42,17 +42,8 @@ namespace s3pi.GenericRCOLResource
 
         public VPXY(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler, s) { }
         public VPXY(int APIversion, EventHandler handler, VPXY basis)
-            : base(APIversion, handler, null)
-        {
-            this.version = basis.version;
-            this.entryList = new EntryList(OnRCOLChanged, basis.entryList);
-            this.boundingBox = (float[])basis.boundingBox.Clone();
-            this.unused = (byte[])basis.unused.Clone();
-            this.modular = basis.modular;
-            if (modular != 0)
-                this.ftptIndex = basis.ftptIndex;
-            this.tgiBlockList = new AResource.TGIBlockList(OnRCOLChanged, basis.tgiBlockList);
-        }
+            : this(APIversion, handler,
+            basis.version, basis.entryList, basis.boundingBox, basis.unused, basis.modular, basis.ftptIndex, basis.tgiBlockList) { }
         public VPXY(int APIversion, EventHandler handler,
             uint version, EntryList entryList, float[] boundingBox, byte[] unused, byte modular, uint ftptIndex, IList<AResource.TGIBlock> tgiBlockList)
             : base(APIversion, handler, null)
@@ -150,6 +141,7 @@ namespace s3pi.GenericRCOLResource
 
             #region Constructors
             public ElementUInt32(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
+            public ElementUInt32(int APIversion, EventHandler handler, ElementUInt32 basis) : this(APIversion, handler, basis.data) { }
             public ElementUInt32(int APIversion, EventHandler handler, UInt32 data) : base(APIversion, handler) { this.data = data; }
             #endregion
 
@@ -167,7 +159,7 @@ namespace s3pi.GenericRCOLResource
             /// </summary>
             public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
 
-            public override AHandlerElement Clone(EventHandler handler) { return new ElementUInt32(requestedApiVersion, handler, data); }
+            public override AHandlerElement Clone(EventHandler handler) { return new ElementUInt32(requestedApiVersion, handler, this); }
             #endregion
 
             #region IEquatable<Entry> Members
@@ -198,7 +190,7 @@ namespace s3pi.GenericRCOLResource
             protected override void WriteElement(Stream s, ElementUInt32 element) { element.UnParse(s); }
             #endregion
 
-            public override void Add() { this.Add(new ElementUInt32(0, elementHandler, 0)); }
+            public override void Add() { this.Add((uint)0); }
         }
 
         public abstract class Entry : AHandlerElement, IEquatable<Entry>
@@ -243,8 +235,12 @@ namespace s3pi.GenericRCOLResource
         {
             byte entryID;
             UintList tgiIndexes;
+
+            public Entry00(int APIversion, EventHandler handler, Entry00 basis)
+                : this(APIversion, handler, 0, basis.entryID, basis.tgiIndexes) { }
             public Entry00(int APIversion, EventHandler handler, byte entryType, byte entryID, IList<ElementUInt32> tgiIndexes)
                 : base(APIversion, handler) { this.entryID = entryID; this.tgiIndexes = new UintList(handler, tgiIndexes); }
+
             internal override void UnParse(Stream s)
             {
                 BinaryWriter w = new BinaryWriter(s);
@@ -260,7 +256,7 @@ namespace s3pi.GenericRCOLResource
                     (other as Entry00).entryID == entryID && (other as Entry00).tgiIndexes == tgiIndexes;
             }
 
-            public override AHandlerElement Clone(EventHandler handler) { return new Entry00(requestedApiVersion, handler, 0, entryID, tgiIndexes); }
+            public override AHandlerElement Clone(EventHandler handler) { return new Entry00(requestedApiVersion, handler, this); }
 
             #region Content Fields
             public byte EntryID { get { return entryID; } set { if (entryID != value) { entryID = value; if (handler != null) handler(this, EventArgs.Empty); } } }
@@ -281,6 +277,7 @@ namespace s3pi.GenericRCOLResource
         public class Entry01 : Entry
         {
             uint tgiIndex;
+            public Entry01(int APIversion, EventHandler handler, Entry01 basis) : this(APIversion, handler, 1, basis.tgiIndex) { }
             public Entry01(int APIversion, EventHandler handler, byte entryType, uint tgiIndex) : base(APIversion, handler) { this.tgiIndex = tgiIndex; }
             internal override void UnParse(Stream s)
             {
@@ -291,7 +288,7 @@ namespace s3pi.GenericRCOLResource
 
             public override bool Equals(Entry other) { return other.GetType() == this.GetType() && (other as Entry01).tgiIndex == tgiIndex; }
 
-            public override AHandlerElement Clone(EventHandler handler) { return new Entry01(requestedApiVersion, handler, 1, tgiIndex); }
+            public override AHandlerElement Clone(EventHandler handler) { return new Entry01(requestedApiVersion, handler, this); }
 
             #region Content Fields
             public UInt32 TGIIndex { get { return tgiIndex; } set { if (tgiIndex != value) { tgiIndex = value; if (handler != null) handler(this, EventArgs.Empty); } } }
@@ -319,6 +316,8 @@ namespace s3pi.GenericRCOLResource
 
             protected override Type GetElementType(params object[] fields)
             {
+                if (fields.Length == 1 && typeof(Entry).IsAssignableFrom(fields[0].GetType())) return fields[0].GetType();
+
                 switch ((byte)fields[0])
                 {
                     case 0x00: return typeof(Entry00);
