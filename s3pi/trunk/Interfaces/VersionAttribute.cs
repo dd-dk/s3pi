@@ -31,7 +31,7 @@ namespace s3pi.Interfaces
         /// <summary>
         /// Version number attribute (base)
         /// </summary>
-        /// <param name="Major">Major version</param>
+        /// <param name="Version">Version number</param>
         public VersionAttribute(Int32 Version) { version = Version; }
         /// <summary>
         /// Version number
@@ -43,11 +43,25 @@ namespace s3pi.Interfaces
     /// Specify the Minumum version from which a field or method is supported
     /// </summary>
     [AttributeUsage(AttributeTargets.All, AllowMultiple = false,  Inherited = true)]
-    public class MinimumVersionAttribute : VersionAttribute { public MinimumVersionAttribute(Int32 Version) : base(Version) { } }
+    public class MinimumVersionAttribute : VersionAttribute
+    {
+        /// <summary>
+        /// Specify the Minumum version from which a field or method is supported
+        /// </summary>
+        /// <param name="Version">Version number</param>
+        public MinimumVersionAttribute(Int32 Version) : base(Version) { }
+    }
 
     /// <summary>
     /// Specify the Maximum version up to which a field or method is supported
     /// </summary>
     [AttributeUsage(AttributeTargets.All, AllowMultiple = false, Inherited = true)]
-    public class MaximumVersionAttribute : VersionAttribute { public MaximumVersionAttribute(Int32 Version) : base(Version) { } }
+    public class MaximumVersionAttribute : VersionAttribute
+    {
+        /// <summary>
+        /// Specify the Maximum version up to which a field or method is supported
+        /// </summary>
+        /// <param name="Version">Version number</param>
+        public MaximumVersionAttribute(Int32 Version) : base(Version) { }
+    }
 }

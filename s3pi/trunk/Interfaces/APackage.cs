@@ -201,6 +201,7 @@ namespace s3pi.Interfaces
         /// </summary>
         /// <param name="APIversion">(unused)</param>
         /// <param name="packagePath">Fully qualified filename of the package</param>
+        /// <param name="readwrite">True to open for update</param>
         /// <returns>IPackage reference to an existing package on disk</returns>
         public static IPackage OpenPackage(int APIversion, string packagePath, bool readwrite) { throw new NotImplementedException(); }
         /// <summary>

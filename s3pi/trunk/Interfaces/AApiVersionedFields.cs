@@ -114,8 +114,8 @@ namespace s3pi.Interfaces
         }
         static Int32 MinimumVersion(Type type, string field) { return Version(typeof(MinimumVersionAttribute), type, field); }
         static Int32 MaximumVersion(Type type, string field) { return Version(typeof(MaximumVersionAttribute), type, field); }
-        protected Int32 MinimumVersion(string field) { return AApiVersionedFields.MinimumVersion(this.GetType(), field); }
-        protected Int32 MaximumVersion(string field) { return AApiVersionedFields.MaximumVersion(this.GetType(), field); }
+        //protected Int32 MinimumVersion(string field) { return AApiVersionedFields.MinimumVersion(this.GetType(), field); }
+        //protected Int32 MaximumVersion(string field) { return AApiVersionedFields.MaximumVersion(this.GetType(), field); }
         static Int32 getRecommendedApiVersion(Type t)
         {
             FieldInfo fi = t.GetField("recommendedApiVersion", BindingFlags.Static | BindingFlags.NonPublic);
@@ -158,6 +158,12 @@ namespace s3pi.Interfaces
             return fields;
         }
 
+        /// <summary>
+        /// Gets a lookup table from fieldname to type.
+        /// </summary>
+        /// <param name="APIversion">Version of API to use</param>
+        /// <param name="t">API data type to query</param>
+        /// <returns></returns>
         public static Dictionary<string, Type> GetContentFieldTypes(Int32 APIversion, Type t)
         {
             Dictionary<string, Type> types = new Dictionary<string, Type>();
@@ -249,6 +255,7 @@ namespace s3pi.Interfaces
         /// </summary>
         /// <param name="s">Stream to write to</param>
         /// <param name="value">String to write, prefixed by length, seven bits at a time</param>
+        /// <param name="enc">encoding to use on the <see cref="System.IO.BinaryWriter(System.IO.Stream, System.Text.Encoding)"/></param>
         public static void Write7BitStr(System.IO.Stream s, string value, System.Text.Encoding enc)
         {
             byte[] bytes = enc.GetBytes(value);
@@ -272,10 +279,10 @@ namespace s3pi.Interfaces
         }
 
         /// <summary>
-        /// Convert a string (up to 8 characters) to a UInt64
+        /// Convert a UInt64 to a string (up to 8 characters, high-order zeros omitted)
         /// </summary>
-        /// <param name="s">String to convert</param>
-        /// <returns>UInt64 packed representation of <paramref name="s"/></returns>
+        /// <param name="i">Bytes to convert</param>
+        /// <returns>String representation of <paramref name="i"/></returns>
         public static string FOURCC(UInt64 i)
         {
             string s = "";
@@ -310,9 +317,25 @@ namespace s3pi.Interfaces
     /// </summary>
     public abstract class AHandlerElement : AApiVersionedFields
     {
+        /// <summary>
+        /// Element change event handler
+        /// </summary>
         protected EventHandler handler;
+        /// <summary>
+        /// Initialize a new instance
+        /// </summary>
+        /// <param name="APIversion">Requested API version</param>
+        /// <param name="handler">Element change event handler</param>
         public AHandlerElement(int APIversion, EventHandler handler) { requestedApiVersion = APIversion; this.handler = handler; }
+        /// <summary>
+        /// Get a copy of this element but with a new change event handler
+        /// </summary>
+        /// <param name="handler">Element change event handler</param>
+        /// <returns>Return a copy of this element but with a new change event handler</returns>
         public abstract AHandlerElement Clone(EventHandler handler);
+        /// <summary>
+        /// Raise a change event
+        /// </summary>
         protected void OnElementChanged() { if (handler != null) handler(this, EventArgs.Empty); }
     }
 }
