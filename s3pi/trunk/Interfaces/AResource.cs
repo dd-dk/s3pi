@@ -122,11 +122,15 @@ namespace s3pi.Interfaces
             protected abstract void WriteElement(Stream s, T element);
             #endregion
 
-            public bool Add(params object[] fields)
+            public virtual bool Add(params object[] fields)
             {
                 if (fields == null) return false;
                 Type elementType = typeof(T);
-                if (fields.Length == 1 && elementType.IsAssignableFrom(fields[0].GetType())) { base.Add((T)fields[0]); return true; }
+                if (fields.Length == 1 && elementType.IsAssignableFrom(fields[0].GetType()) && !typeof(AHandlerElement).IsAssignableFrom(elementType))
+                {
+                    base.Add((T)fields[0]);
+                    return true;
+                }
 
                 if (elementType.IsAbstract) elementType = GetElementType(fields);
 
@@ -146,10 +150,14 @@ namespace s3pi.Interfaces
                 return true;
             }
 
-            protected virtual Type GetElementType(params object[] fields)
-            {
-                throw new NotImplementedException(); // Override me in lists of abstract Types
-            }
+            /// <summary>
+            /// Return the type to get the constructor from, for the given set of fields.
+            /// </summary>
+            /// <param name="fields">Constructor parameters</param>
+            /// <returns>Class on which to invoke constructor</returns>
+            /// <remarks>fields[0] could be an instance of the abstract class: it should provide a constructor that accepts a "template"
+            /// object and creates a new instance on that basis.</remarks>
+            protected virtual Type GetElementType(params object[] fields) { throw new NotImplementedException(); }
 
             public abstract void Add();
         }
@@ -173,6 +181,8 @@ namespace s3pi.Interfaces
             }
             void ok(string v) { ok((Order)Enum.Parse(typeof(Order), v)); }
             void ok(Order v) { if (!Enum.IsDefined(typeof(Order), v)) throw new ArgumentException("Invalid value " + v, "order"); }
+
+            public TGIBlock(int APIversion, EventHandler handler, TGIBlock basis) : this(APIversion, handler, basis.order, (IResourceKey)basis) { }
 
             // With EPFlags
             public TGIBlock(int APIversion, EventHandler handler, uint resourceType, EPFlags epflags, uint resourceGroup, ulong instance)
@@ -231,7 +241,7 @@ namespace s3pi.Interfaces
             #region AHandlerElement
             public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
             public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
-            public override AHandlerElement Clone(EventHandler handler) { return new TGIBlock(requestedApiVersion, handler, this.order, this); }
+            public override AHandlerElement Clone(EventHandler handler) { return new TGIBlock(requestedApiVersion, handler, this); }
             #endregion
 
             #region IEquatable<TGIBlock> Members
@@ -287,7 +297,7 @@ namespace s3pi.Interfaces
             protected override void WriteCount(Stream s, uint count) { } // creator stores
             #endregion
 
-            public override void Add() { this.Add(new TGIBlock(0, elementHandler, 0, 0, 0)); }
+            public override void Add() { this.Add((uint)0, (uint)0, (ulong)0); }
 
             #region Content Fields
             public String Value { get { string s = ""; for (int i = 0; i < Count; i++) s += string.Format("0x{0:X8}: {1}\n", i, this[i].Value); return s; } }
@@ -297,7 +307,6 @@ namespace s3pi.Interfaces
         /// <summary>
         /// A TGIBlock list class where the count and size of the list are stored separately (but managed by this class)
         /// </summary>
-        /// <typeparam name="T">Class of the parent</typeparam>
         public class TGIBlockList : DependentList<TGIBlock>
         {
 
