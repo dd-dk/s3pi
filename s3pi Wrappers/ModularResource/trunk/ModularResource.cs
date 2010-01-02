@@ -99,10 +99,11 @@ namespace ModularResource
         {
             uint element;
             public TGIIndex(int APIversion, EventHandler handler) : base(APIversion, handler) { }
+            public TGIIndex(int APIversion, EventHandler handler, TGIIndex basis) : this(APIversion, handler, basis.element) { }
             public TGIIndex(int APIversion, EventHandler handler, uint value) : base(APIversion, handler) { element = value; }
 
             #region AHandlerElement Members
-            public override AHandlerElement Clone(EventHandler handler) { return new TGIIndex(requestedApiVersion, handler, element); }
+            public override AHandlerElement Clone(EventHandler handler) { return new TGIIndex(requestedApiVersion, handler, this); }
 
             public override int RecommendedApiVersion { get { return 1; } }
 
@@ -135,7 +136,7 @@ namespace ModularResource
             protected override void WriteElement(Stream s, TGIIndex element) { (new BinaryWriter(s)).Write(element.Element); }
             #endregion
 
-            public override void Add() { this.Add(new TGIIndex(0, elementHandler));             }
+            public override void Add() { this.Add(new TGIIndex(0, elementHandler)); }
 
             #region Content Fields
             public String Value { get { string s = ""; for (int i = 0; i < Count; i++) s += string.Format("0x{0:X2}: 0x{1}\n", i, this[i].Element.ToString("X8")); return s; } }
