@@ -52,8 +52,8 @@ namespace s3pi.GenericRCOLResource
             this.unknown2 = basis.unknown2;
             if (basis.mtnf != null) mtnf = new MTNF(requestedApiVersion, handler, basis.mtnf);
         }
-        public MATD(int APIversion, EventHandler handler, uint version,
-            uint materialNameHash, ShaderType shader, MTRL mtrl)
+        public MATD(int APIversion, EventHandler handler,
+            uint version, uint materialNameHash, ShaderType shader, MTRL mtrl)
             : base(APIversion, handler, null)
         {
             if (checking) if (version >= 0x00000103)
@@ -63,8 +63,8 @@ namespace s3pi.GenericRCOLResource
             this.shader = shader;
             this.mtrl = mtrl == null ? null : new MTRL(requestedApiVersion, handler, mtrl);
         }
-        public MATD(int APIversion, EventHandler handler, uint version,
-            uint materialNameHash, ShaderType shader, uint unknown1, uint unknown2, MTNF mtnf)
+        public MATD(int APIversion, EventHandler handler,
+            uint version, uint materialNameHash, ShaderType shader, uint unknown1, uint unknown2, MTNF mtnf)
             : base(APIversion, handler, null)
         {
             if (checking) if (version < 0x00000103)
@@ -524,90 +524,6 @@ namespace s3pi.GenericRCOLResource
             #endregion
         }
 
-        public class ElementUInt32 : Entry
-        {
-            const int recommendedApiVersion = 1;
-
-            #region Attributes
-            UInt32 data;
-            #endregion
-
-            #region Constructors
-            public ElementUInt32(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
-            public ElementUInt32(int APIversion, EventHandler handler, UInt32 data) : base(APIversion, handler) { this.data = data; }
-            #endregion
-
-            #region Data I/O
-            void Parse(Stream s) { data = new BinaryReader(s).ReadUInt32(); }
-
-            internal override void UnParse(Stream s) { new BinaryWriter(s).Write(data); }
-            #endregion
-
-            #region AHandlerElement Members
-            public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
-
-            /// <summary>
-            /// The list of available field names on this API object
-            /// </summary>
-            public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
-
-            public override AHandlerElement Clone(EventHandler handler) { return new ElementUInt32(requestedApiVersion, handler, data); }
-            #endregion
-
-            #region IEquatable<Entry> Members
-
-            public override bool Equals(Entry other) { return this.GetType().Equals(other.GetType()) && this.data == ((ElementUInt32)other).data; }
-
-            #endregion
-
-            #region Content Fields
-            public UInt32 Data { get { return data; } set { if (data != value) { data = value; if (handler != null) handler(this, EventArgs.Empty); } } }
-
-            public override string Value { get { return "Data: 0x" + data.ToString("X8"); } }
-            #endregion
-        }
-        public class ElementSingle : Entry
-        {
-            const int recommendedApiVersion = 1;
-
-            #region Attributes
-            Single data;
-            #endregion
-
-            #region Constructors
-            public ElementSingle(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
-            public ElementSingle(int APIversion, EventHandler handler, Single data) : base(APIversion, handler) { this.data = data; }
-            #endregion
-
-            #region Data I/O
-            void Parse(Stream s) { data = new BinaryReader(s).ReadSingle(); }
-
-            internal override void UnParse(Stream s) { new BinaryWriter(s).Write(data); }
-            #endregion
-
-            #region AHandlerElement Members
-            public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
-
-            /// <summary>
-            /// The list of available field names on this API object
-            /// </summary>
-            public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
-
-            public override AHandlerElement Clone(EventHandler handler) { return new ElementSingle(requestedApiVersion, handler, data); }
-            #endregion
-
-            #region IEquatable<Entry> Members
-
-            public override bool Equals(Entry other) { return this.GetType().Equals(other.GetType()) && this.data == ((ElementSingle)other).data; }
-
-            #endregion
-
-            #region Content Fields
-            public Single Data { get { return data; } set { if (data != value) { data = value; if (handler != null) handler(this, EventArgs.Empty); } } }
-
-            public override string Value { get { return "Data: " + data.ToString(); } }
-            #endregion
-        }
         public abstract class Entry : AHandlerElement, IEquatable<Entry>
         {
             const int recommendedApiVersion = 1;
@@ -646,6 +562,92 @@ namespace s3pi.GenericRCOLResource
 
             public abstract string Value { get; }
         }
+        public class ElementUInt32 : Entry
+        {
+            const int recommendedApiVersion = 1;
+
+            #region Attributes
+            UInt32 data;
+            #endregion
+
+            #region Constructors
+            public ElementUInt32(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
+            public ElementUInt32(int APIversion, EventHandler handler, ElementUInt32 basis) : this(APIversion, handler, basis.data) { }
+            public ElementUInt32(int APIversion, EventHandler handler, UInt32 data) : base(APIversion, handler) { this.data = data; }
+            #endregion
+
+            #region Data I/O
+            void Parse(Stream s) { data = new BinaryReader(s).ReadUInt32(); }
+
+            internal override void UnParse(Stream s) { new BinaryWriter(s).Write(data); }
+            #endregion
+
+            #region AHandlerElement Members
+            public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
+
+            /// <summary>
+            /// The list of available field names on this API object
+            /// </summary>
+            public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
+
+            public override AHandlerElement Clone(EventHandler handler) { return new ElementUInt32(requestedApiVersion, handler, this); }
+            #endregion
+
+            #region IEquatable<Entry> Members
+
+            public override bool Equals(Entry other) { return this.GetType().Equals(other.GetType()) && this.data == ((ElementUInt32)other).data; }
+
+            #endregion
+
+            #region Content Fields
+            public UInt32 Data { get { return data; } set { if (data != value) { data = value; if (handler != null) handler(this, EventArgs.Empty); } } }
+
+            public override string Value { get { return "Data: 0x" + data.ToString("X8"); } }
+            #endregion
+        }
+        public class ElementSingle : Entry
+        {
+            const int recommendedApiVersion = 1;
+
+            #region Attributes
+            Single data;
+            #endregion
+
+            #region Constructors
+            public ElementSingle(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
+            public ElementSingle(int APIversion, EventHandler handler, ElementSingle basis) : this(APIversion, handler, basis.data) { }
+            public ElementSingle(int APIversion, EventHandler handler, Single data) : base(APIversion, handler) { this.data = data; }
+            #endregion
+
+            #region Data I/O
+            void Parse(Stream s) { data = new BinaryReader(s).ReadSingle(); }
+
+            internal override void UnParse(Stream s) { new BinaryWriter(s).Write(data); }
+            #endregion
+
+            #region AHandlerElement Members
+            public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
+
+            /// <summary>
+            /// The list of available field names on this API object
+            /// </summary>
+            public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
+
+            public override AHandlerElement Clone(EventHandler handler) { return new ElementSingle(requestedApiVersion, handler, this); }
+            #endregion
+
+            #region IEquatable<Entry> Members
+
+            public override bool Equals(Entry other) { return this.GetType().Equals(other.GetType()) && this.data == ((ElementSingle)other).data; }
+
+            #endregion
+
+            #region Content Fields
+            public Single Data { get { return data; } set { if (data != value) { data = value; if (handler != null) handler(this, EventArgs.Empty); } } }
+
+            public override string Value { get { return "Data: " + data.ToString(); } }
+            #endregion
+        }
         public class EntryList : AResource.DependentList<Entry>
         {
             DataType type = 0;
@@ -683,6 +685,8 @@ namespace s3pi.GenericRCOLResource
 
             #region Constructors
             public ShaderData(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
+            public ShaderData(int APIversion, EventHandler handler, ShaderData basis)
+                : this(APIversion, handler, basis.field, basis.sdType, basis.sdData) { }
             public ShaderData(int APIversion, EventHandler handler) : base(APIversion, handler) { }
             public ShaderData(int APIversion, EventHandler handler, FieldType field, DataType sdType, uint count, Stream s)
                 : base(APIversion, handler)
@@ -697,13 +701,6 @@ namespace s3pi.GenericRCOLResource
                 this.field = field;
                 this.sdType = sdType;
                 this.sdData = new EntryList(handler, sdType, sdData);
-            }
-            public ShaderData(int APIversion, EventHandler handler, ShaderData basis)
-                : base(APIversion, handler)
-            {
-                this.field = basis.field;
-                this.sdType = basis.sdType;
-                this.sdData = new EntryList(handler, sdType, basis.sdData);
             }
             #endregion
 
@@ -787,8 +784,8 @@ namespace s3pi.GenericRCOLResource
             #region Data I/O
             protected override void Parse(Stream s)
             {
-                base.Clear();
-                for (uint i = ReadCount(s); i > 0; i--) base.Add(new ShaderData(0, elementHandler, s));
+                // Can't just pass Stream to Add(..) as the element change event handler would end up null
+                for (uint i = ReadCount(s); i > 0; i--) this.Add(new ShaderData(0, elementHandler, s));
                 long pos = s.Position;
                 foreach (var i in this) i.ReadEntryList(s);
                 if (checking) if (dataLen >= 0 && dataLen != s.Position - pos)
