@@ -566,12 +566,7 @@ namespace CatalogResource
             #region Constructors
             public MTDoor(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
             public MTDoor(int APIversion, EventHandler handler, MTDoor basis)
-                : base(APIversion, handler) 
-            {
-                this.unknown1 = (float[])basis.unknown1.Clone();
-                this.unknown2 = basis.unknown2;
-                this.wallMaskIndex = basis.wallMaskIndex;
-            }
+                : this(APIversion, handler, basis.unknown1, basis.unknown2, basis.wallMaskIndex) { }
             public MTDoor(int APIversion, EventHandler handler, float[] unknown1, uint unknownX, uint wallMaskIndex)
                 : base(APIversion, handler) 
             {
@@ -662,7 +657,7 @@ namespace CatalogResource
             protected override void WriteElement(Stream s, MTDoor element) { element.UnParse(s); }
             #endregion
 
-            public override void Add() { this.Add(new MTDoor(0, elementHandler, new float[4], 0, 0)); }
+            public override void Add() { this.Add(new float[4], (uint)0, (uint)0); }
 
             #region Content Fields
             public String Value { get { string s = ""; for (int i = 0; i < Count; i++) s += string.Format("\n--{0}--\n", i) + this[i].Value; return s; } }
