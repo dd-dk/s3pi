@@ -135,6 +135,7 @@ namespace ObjKeyResource
         {
             Component element;
             public ComponentElement(int APIversion, EventHandler handler) : base(APIversion, handler) { }
+            public ComponentElement(int APIversion, EventHandler handler, ComponentElement basis) : this(APIversion, handler, basis.element) { }
             public ComponentElement(int APIversion, EventHandler handler, uint value) : base(APIversion, handler) { element = (Component)value; }
             public ComponentElement(int APIversion, EventHandler handler, Component element) : base(APIversion, handler) { this.element = element; }
 
@@ -150,7 +151,7 @@ namespace ObjKeyResource
             }
 
             #region AHandlerElement Members
-            public override AHandlerElement Clone(EventHandler handler) { return new ComponentElement(requestedApiVersion, handler, element); }
+            public override AHandlerElement Clone(EventHandler handler) { return new ComponentElement(requestedApiVersion, handler, this); }
 
             public override int RecommendedApiVersion { get { return 1; } }
 
@@ -290,6 +291,8 @@ namespace ObjKeyResource
             #endregion
 
             #region Constructors
+            public CDTString(int APIversion, EventHandler handler, CDTString basis)
+                : this(APIversion, handler, basis.key, basis.controlCode, basis.data) { }
             public CDTString(int APIversion, EventHandler handler, string key, byte controlCode, string data)
                 : base(APIversion, handler, key, controlCode) { this.data = data; }
             #endregion
@@ -304,7 +307,7 @@ namespace ObjKeyResource
             }
             #endregion
 
-            public override AHandlerElement Clone(EventHandler handler) { return new CDTString(requestedApiVersion, handler, key, controlCode, data); }
+            public override AHandlerElement Clone(EventHandler handler) { return new CDTString(requestedApiVersion, handler, this); }
 
             public override int CompareTo(ComponentDataType other)
             {
@@ -328,6 +331,8 @@ namespace ObjKeyResource
             #endregion
 
             #region Constructors
+            public CDTResourceKey(int APIversion, EventHandler handler, CDTResourceKey basis)
+                : this(APIversion, handler, basis.key, basis.controlCode, basis.data) { }
             public CDTResourceKey(int APIversion, EventHandler handler, string key, byte controlCode, int data)
                 : base(APIversion, handler, key, controlCode) { this.data = data; }
             #endregion
@@ -340,7 +345,7 @@ namespace ObjKeyResource
             }
             #endregion
 
-            public override AHandlerElement Clone(EventHandler handler) { return new CDTResourceKey(requestedApiVersion, handler, key, controlCode, data); }
+            public override AHandlerElement Clone(EventHandler handler) { return new CDTResourceKey(requestedApiVersion, handler, this); }
 
             public override int CompareTo(ComponentDataType other)
             {
@@ -359,19 +364,23 @@ namespace ObjKeyResource
         }
         public class CDTAssetResourceName : CDTResourceKey
         {
+            public CDTAssetResourceName(int APIversion, EventHandler handler, CDTAssetResourceName basis)
+                : base(APIversion, handler, basis) { }
             public CDTAssetResourceName(int APIversion, EventHandler handler, string key, byte controlCode, int data)
                 : base(APIversion, handler, key, controlCode, data) { }
 
-            public override AHandlerElement Clone(EventHandler handler) { return new CDTAssetResourceName(requestedApiVersion, handler, key, controlCode, data); }
+            public override AHandlerElement Clone(EventHandler handler) { return new CDTAssetResourceName(requestedApiVersion, handler, this); }
         }
         public class CDTSteeringInstance : CDTString
         {
             #region Constructors
+            public CDTSteeringInstance(int APIversion, EventHandler handler, CDTSteeringInstance basis)
+                : base(APIversion, handler, basis) { }
             public CDTSteeringInstance(int APIversion, EventHandler handler, string key, byte controlCode, string data)
                 : base(APIversion, handler, key, controlCode, data) { }
             #endregion
 
-            public override AHandlerElement Clone(EventHandler handler) { return new CDTSteeringInstance(requestedApiVersion, handler, key, controlCode, data); }
+            public override AHandlerElement Clone(EventHandler handler) { return new CDTSteeringInstance(requestedApiVersion, handler, this); }
         }
         public class CDTUInt32 : ComponentDataType
         {
@@ -380,6 +389,8 @@ namespace ObjKeyResource
             #endregion
 
             #region Constructors
+            public CDTUInt32(int APIversion, EventHandler handler, CDTUInt32 basis)
+                : this(APIversion, handler, basis.key, basis.controlCode, basis.data) { }
             public CDTUInt32(int APIversion, EventHandler handler, string key, byte controlCode, uint data)
                 : base(APIversion, handler, key, controlCode) { this.data = data; }
             #endregion
@@ -392,7 +403,8 @@ namespace ObjKeyResource
             }
             #endregion
 
-            public override AHandlerElement Clone(EventHandler handler) { return new CDTUInt32(requestedApiVersion, handler, key, controlCode, data); }
+            public override AHandlerElement Clone(EventHandler handler) { return new CDTUInt32(requestedApiVersion, handler, this); }
+
             public override int CompareTo(ComponentDataType other)
             {
                 if (this.GetType() != other.GetType()) return -1;
@@ -427,6 +439,8 @@ namespace ObjKeyResource
 
             protected override Type GetElementType(params object[] fields)
             {
+                if (fields.Length == 1 && typeof(ComponentDataType).IsAssignableFrom(fields[0].GetType())) return fields[0].GetType();
+
                 if (fields.Length != 3) throw new ArgumentException();
 
                 switch ((byte)fields[1])
