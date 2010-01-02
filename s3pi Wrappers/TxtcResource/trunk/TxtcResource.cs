@@ -139,14 +139,11 @@ namespace TxtcResource
             #region Constructors
             public SuperBlock(int APIversion, EventHandler handler) : base(APIversion, handler) { }
             public SuperBlock(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
-            public SuperBlock(int APIversion, EventHandler handler, SuperBlock basis) : base(APIversion, handler)
+            public SuperBlock(int APIversion, EventHandler handler, SuperBlock basis)
+                : this(APIversion, handler,
+                basis.id, basis.unknown1, basis.unknown2, basis.unknown3, basis.unknown4)
             {
-                this.id = basis.id;
-                this.unknown1 = basis.unknown1;
-                this.unknown2 = (byte[])basis.unknown2.Clone();
-                this.unknown3 = basis.unknown3;
                 this.entries = new EntryBlockList(handler, basis.entries);
-                this.unknown4 = basis.unknown4;
             }
             public SuperBlock(int APIversion, EventHandler handler, byte id, uint unknown1, byte[] unknown2, byte unknown3, uint unknown4)
                 : base(APIversion, handler)
@@ -388,6 +385,8 @@ namespace TxtcResource
 
         public class EntryNull : Entry
         {
+            public EntryNull(int APIversion, EventHandler handler, EntryNull basis)
+                : base(APIversion, handler, 0, 0, 0) { throw new NotImplementedException(); }
             public EntryNull(int APIversion, EventHandler handler)
                 : base(APIversion, handler, 0, 0, 0) { }
             internal override void UnParse(Stream s) { throw new NotImplementedException(); }
@@ -397,50 +396,60 @@ namespace TxtcResource
         public class EntryByte : Entry
         {
             byte data;
+            public EntryByte(int APIversion, EventHandler handler, EntryByte basis)
+                : this(APIversion, handler, basis.property, basis.unknown, basis.dataType, basis.data) { }
             public EntryByte(int APIversion, EventHandler handler, uint property, byte unknown, byte dataType, byte data)
                 : base(APIversion, handler, property, unknown, dataType) { this.data = data; }
             internal override void UnParse(Stream s) { base.UnParse(s); new BinaryWriter(s).Write(data); }
-            public override AHandlerElement Clone(EventHandler handler) { return new EntryByte(requestedApiVersion, handler, property, unknown, dataType, data); }
+            public override AHandlerElement Clone(EventHandler handler) { return new EntryByte(requestedApiVersion, handler, this); }
             public byte Data { get { return data; } set { if (data != value) { data = value; OnElementChanged(); } } }
             public override string Value { get { return base.Value + "; Data: 0x" + data.ToString("X2"); } }
         }
         public class EntryUInt16 : Entry
         {
             UInt16 data;
+            public EntryUInt16(int APIversion, EventHandler handler, EntryUInt16 basis)
+                : this(APIversion, handler, basis.property, basis.unknown, basis.dataType, basis.data) { }
             public EntryUInt16(int APIversion, EventHandler handler, uint property, byte unknown, byte dataType, UInt16 data)
                 : base(APIversion, handler, property, unknown, dataType) { this.data = data; }
             internal override void UnParse(Stream s) { base.UnParse(s); new BinaryWriter(s).Write(data); }
-            public override AHandlerElement Clone(EventHandler handler) { return new EntryUInt16(requestedApiVersion, handler, property, unknown, dataType, data); ; }
+            public override AHandlerElement Clone(EventHandler handler) { return new EntryUInt16(requestedApiVersion, handler, this); }
             public UInt16 Data { get { return data; } set { if (data != value) { data = value; OnElementChanged(); } } }
             public override string Value { get { return base.Value + "; Data: 0x" + data.ToString("X4"); } }
         }
         public class EntryUInt32 : Entry
         {
             UInt32 data;
+            public EntryUInt32(int APIversion, EventHandler handler, EntryUInt32 basis)
+                : this(APIversion, handler, basis.property, basis.unknown, basis.dataType, basis.data) { }
             public EntryUInt32(int APIversion, EventHandler handler, uint property, byte unknown, byte dataType, UInt32 data)
                 : base(APIversion, handler, property, unknown, dataType) { this.data = data; }
             internal override void UnParse(Stream s) { base.UnParse(s); new BinaryWriter(s).Write(data); }
-            public override AHandlerElement Clone(EventHandler handler) { return new EntryUInt32(requestedApiVersion, handler, property, unknown, dataType, data); ; }
+            public override AHandlerElement Clone(EventHandler handler) { return new EntryUInt32(requestedApiVersion, handler, this); }
             public UInt32 Data { get { return data; } set { if (data != value) { data = value; OnElementChanged(); } } }
             public override string Value { get { return base.Value + "; Data: 0x" + data.ToString("X8"); } }
         }
         public class EntryUInt64 : Entry
         {
             UInt64 data;
+            public EntryUInt64(int APIversion, EventHandler handler, EntryUInt64 basis)
+                : this(APIversion, handler, basis.property, basis.unknown, basis.dataType, basis.data) { }
             public EntryUInt64(int APIversion, EventHandler handler, uint property, byte unknown, byte dataType, UInt64 data)
                 : base(APIversion, handler, property, unknown, dataType) { this.data = data; }
             internal override void UnParse(Stream s) { base.UnParse(s); new BinaryWriter(s).Write(data); }
-            public override AHandlerElement Clone(EventHandler handler) { return new EntryUInt64(requestedApiVersion, handler, property, unknown, dataType, data); ; }
+            public override AHandlerElement Clone(EventHandler handler) { return new EntryUInt64(requestedApiVersion, handler, this); }
             public UInt64 Data { get { return data; } set { if (data != value) { data = value; OnElementChanged(); } } }
             public override string Value { get { return base.Value + "; Data: 0x" + data.ToString("X16"); } }
         }
         public class EntrySingle : Entry
         {
             Single data;
+            public EntrySingle(int APIversion, EventHandler handler, EntrySingle basis)
+                : this(APIversion, handler, basis.property, basis.unknown, basis.dataType, basis.data) { }
             public EntrySingle(int APIversion, EventHandler handler, uint property, byte unknown, byte dataType, Single data)
                 : base(APIversion, handler, property, unknown, dataType) { this.data = data; }
             internal override void UnParse(Stream s) { base.UnParse(s); new BinaryWriter(s).Write(data); }
-            public override AHandlerElement Clone(EventHandler handler) { return new EntrySingle(requestedApiVersion, handler, property, unknown, dataType, data); ; }
+            public override AHandlerElement Clone(EventHandler handler) { return new EntrySingle(requestedApiVersion, handler, this); }
             public Single Data { get { return data; } set { if (data != value) { data = value; OnElementChanged(); } } }
             public override string Value { get { return base.Value + "; Data: " + data.ToString(); } }
         }
@@ -449,20 +458,24 @@ namespace TxtcResource
             Single[] data = new Single[4];
             public EntrySingleArray(int APIversion, EventHandler handler, uint property, byte unknown, byte dataType, BinaryReader r)
                 : base(APIversion, handler, property, unknown, dataType) { for (int i = 0; i < data.Length; i++) data[i] = r.ReadSingle(); }
+            public EntrySingleArray(int APIversion, EventHandler handler, EntrySingleArray basis)
+                : this(APIversion, handler, basis.property, basis.unknown, basis.dataType, basis.data) { }
             public EntrySingleArray(int APIversion, EventHandler handler, uint property, byte unknown, byte dataType, Single[] data)
                 : base(APIversion, handler, property, unknown, dataType) { if (data.Length != this.data.Length) throw new ArgumentLengthException(); this.data = (Single[])data.Clone(); }
             internal override void UnParse(Stream s) { base.UnParse(s); BinaryWriter w = new BinaryWriter(s); for (int i = 0; i < data.Length; i++) w.Write(data[i]); }
-            public override AHandlerElement Clone(EventHandler handler) { return new EntrySingleArray(requestedApiVersion, handler, property, unknown, dataType, data); ; }
+            public override AHandlerElement Clone(EventHandler handler) { return new EntrySingleArray(requestedApiVersion, handler, this); }
             public Single[] Data { get { return (Single[])data.Clone(); } set { if (value.Length != this.data.Length) throw new ArgumentLengthException(); if (!ArrayCompare(data, value)) { data = (Single[])value.Clone(); OnElementChanged(); } } }
             public override string Value { get { return base.Value + "; Data: " + (new TypedValue(data.GetType(), data, "X")); } }
         }
         public class EntryString : Entry
         {
             String data;
+            public EntryString(int APIversion, EventHandler handler, EntryString basis)
+                : this(APIversion, handler, basis.property, basis.unknown, basis.dataType, basis.data) { }
             public EntryString(int APIversion, EventHandler handler, uint property, byte unknown, byte dataType, String data)
                 : base(APIversion, handler, property, unknown, dataType) { this.data = data; }
             internal override void UnParse(Stream s) { base.UnParse(s); BinaryWriter w = new BinaryWriter(s); w.Write((UInt16)data.Length); w.Write(data.ToCharArray()); }
-            public override AHandlerElement Clone(EventHandler handler) { return new EntryString(requestedApiVersion, handler, property, unknown, dataType, data); ; }
+            public override AHandlerElement Clone(EventHandler handler) { return new EntryString(requestedApiVersion, handler, this); }
             public String Data { get { return data; } set { if (data != value) { data = value; OnElementChanged(); } } }
             public override string Value { get { return base.Value + "; Data: \"" + data + "\""; } }
         }
@@ -482,6 +495,8 @@ namespace TxtcResource
 
             protected override Type GetElementType(params object[] fields)
             {
+                if (fields.Length == 1 && typeof(Entry).IsAssignableFrom(fields[0].GetType())) return fields[0].GetType();
+
                 uint property = (uint)fields[0];
                 if (property == 0) return typeof(EntryNull);
 
@@ -530,7 +545,7 @@ namespace TxtcResource
 
             public EntryBlock(int APIversion, EventHandler handler) : base(APIversion, handler) { theList = new EntryList(handler); }
             public EntryBlock(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
-            internal EntryBlock(int APIversion, EventHandler handler, EntryBlock basis) : base(APIversion, handler) { theList = new EntryList(handler, basis.theList); }
+            public EntryBlock(int APIversion, EventHandler handler, EntryBlock basis) : base(APIversion, handler) { theList = new EntryList(handler, basis.theList); }
 
             void Parse(Stream s)
             {
