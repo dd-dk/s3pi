@@ -359,7 +359,7 @@ namespace CatalogResource
                 this.hasString = basis.hasString;
                 this.twoBytes = basis.twoBytes;
                 this.byteValue = basis.byteValue;
-                this.stringValue = (string)basis.stringValue.Clone();
+                this.stringValue = basis.stringValue == null ? null : (string)basis.stringValue.Clone();
             }
 
             public TypeCode01(int APIversion, EventHandler handler, byte[] prefix, string stringValue)
