@@ -389,6 +389,7 @@ namespace s3pi.GenericRCOLResource
             #region Data I/O
             private void Parse(Stream s)
             {
+                long start = s.Position;
                 BinaryReader r = new BinaryReader(s);
                 uint mtrlTag = r.ReadUInt32();
                 if (checking) if (mtrlTag != (uint)FOURCC("MTRL"))
@@ -396,18 +397,19 @@ namespace s3pi.GenericRCOLResource
                 mtrlUnknown1 = r.ReadUInt32();
                 mtrlUnknown2 = r.ReadUInt16();
                 mtrlUnknown3 = r.ReadUInt16();
-                this.sdList = new ShaderDataList(handler, s);
+                this.sdList = new ShaderDataList(handler, s, -1, start);
             }
 
             internal void UnParse(Stream s)
             {
+                long start = s.Position;
                 BinaryWriter w = new BinaryWriter(s);
                 w.Write((uint)FOURCC("MTRL"));
                 w.Write(mtrlUnknown1);
                 w.Write(mtrlUnknown2);
                 w.Write(mtrlUnknown3);
                 if (sdList == null) sdList = new ShaderDataList(handler);
-                sdList.UnParse(s);
+                sdList.UnParse(s, start);
             }
             #endregion
 
@@ -467,23 +469,25 @@ namespace s3pi.GenericRCOLResource
             #region Data I/O
             private void Parse(Stream s)
             {
+                long start = s.Position;
                 BinaryReader r = new BinaryReader(s);
                 uint mtnfTag = r.ReadUInt32();
                 if (checking) if (mtnfTag != (uint)FOURCC("MTNF"))
                         throw new InvalidDataException(String.Format("Invalid mtnfTag read: '{0}'; expected: 'MTNF'; at 0x{1:X8}", FOURCC(mtnfTag), s.Position));
                 mtnfUnknown1 = r.ReadUInt32();
-                this.sdList = new ShaderDataList(handler, s, r.ReadInt32());
+                this.sdList = new ShaderDataList(handler, s, r.ReadInt32(), start);
             }
 
             internal void UnParse(Stream s)
             {
+                long start = s.Position;
                 BinaryWriter w = new BinaryWriter(s);
                 w.Write((uint)FOURCC("MTNF"));
                 w.Write(mtnfUnknown1);
                 long dlPos = s.Position;
                 w.Write((uint)0);//data length
                 if (sdList == null) sdList = new ShaderDataList(handler);
-                sdList.UnParse(s);
+                sdList.UnParse(s, start);
 
                 long dlEnd = s.Position;
                 s.Position = dlPos;
@@ -655,7 +659,7 @@ namespace s3pi.GenericRCOLResource
 
             #region Constructors
             public EntryList(EventHandler handler, DataType type) : base(handler) { this.type = type; }
-            public EntryList(EventHandler handler, DataType type, uint count, Stream s) : base(handler) { this.type = type; this.count = count; Parse(s); }
+            public EntryList(EventHandler handler, DataType type, uint count, Stream s) : base(null) { this.type = type; this.count = count; elementHandler = handler; Parse(s); this.handler = handler; }
             public EntryList(EventHandler handler, DataType type, IList<Entry> le) : base(handler, le) { this.type = type; }
             #endregion
 
@@ -703,6 +707,7 @@ namespace s3pi.GenericRCOLResource
             FieldType field = 0;
             DataType sdType = 0;
             uint count = 0;
+            uint offset = 0;
             long offsetPos = -1;
             EntryList sdData = null;
 
@@ -734,10 +739,16 @@ namespace s3pi.GenericRCOLResource
                 field = (FieldType)r.ReadUInt32();
                 sdType = (DataType)r.ReadUInt32();
                 count = r.ReadUInt32();
-                uint offset = r.ReadUInt32();
+                offset = r.ReadUInt32();
             }
 
-            internal void ReadEntryList(Stream s) { this.sdData = new EntryList(handler, sdType, count, s); }
+            internal void ReadEntryList(long start, Stream s)
+            {
+                if (checking) if (s.Position - start != offset)
+                        throw new InvalidDataException(String.Format("Unexpected offset 0x{0:X8} read; expected 0x{1:X8}; entry position 0x{2:X8}",
+                            offset, s.Position - start, s.Position));
+                this.sdData = new EntryList(handler, sdType, count, s);
+            }
 
             internal void UnParse(Stream s)
             {
@@ -749,13 +760,13 @@ namespace s3pi.GenericRCOLResource
                 w.Write((uint)0);
             }
 
-            internal void WriteEntryList(Stream s)
+            internal void WriteEntryList(long start, Stream s)
             {
                 if (checking) if (offsetPos < 0)
                         throw new InvalidOperationException();
                 long pos = s.Position;
                 s.Position = offsetPos;
-                new BinaryWriter(s).Write((uint)pos);
+                new BinaryWriter(s).Write((uint)(pos - start));
                 s.Position = pos;
                 this.sdData.UnParse(s);
             }
@@ -799,27 +810,28 @@ namespace s3pi.GenericRCOLResource
             internal long dataPos = -1;
             #region Constructors
             public ShaderDataList(EventHandler handler) : base(handler) { }
-            public ShaderDataList(EventHandler handler, Stream s) : base(handler, s) { }
-            public ShaderDataList(EventHandler handler, Stream s, int dataLen) : base(null) { this.dataLen = dataLen; elementHandler = handler; Parse(s); this.handler = handler; }
+            public ShaderDataList(EventHandler handler, Stream s, int dataLen, long start) : base(null) { this.dataLen = dataLen; elementHandler = handler; Parse(s, start); this.handler = handler; }
             public ShaderDataList(EventHandler handler, IList<ShaderData> lsd) : base(handler, lsd) { }
             #endregion
 
             #region Data I/O
-            protected override void Parse(Stream s)
+            protected override void Parse(Stream s) { throw new NotSupportedException(); }
+            internal void Parse(Stream s, long start)
             {
                 for (uint i = ReadCount(s); i > 0; i--) this.Add(s);
                 long pos = s.Position;
-                foreach (var i in this) i.ReadEntryList(s);
+                foreach (var i in this) i.ReadEntryList(start, s);
                 if (checking) if (dataLen >= 0 && dataLen != s.Position - pos)
                         throw new InvalidDataException(string.Format("Data length invalid.  Read 0x{0:X8} bytes; expected 0x{1:X8} bytes at 0x{2:X8}",
                             s.Position - pos, dataLen, s.Position));
             }
-            public override void UnParse(Stream s)
+            public override void UnParse(Stream s) { throw new NotSupportedException(); }
+            internal void UnParse(Stream s, long start)
             {
                 WriteCount(s, (uint)Count);
                 foreach (var element in this) element.UnParse(s);
                 dataPos = s.Position;
-                foreach (var element in this) element.WriteEntryList(s);
+                foreach (var element in this) element.WriteEntryList(start, s);
             }
 
             protected override ShaderData CreateElement(Stream s) { throw new NotImplementedException(); }
