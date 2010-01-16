@@ -102,6 +102,7 @@ namespace s3pi.GenericRCOLResource
             foreach (ChunkEntry ce in blockList)
             {
                 byte[] data = ce.RCOLBlock.AsBytes;
+                while (w.BaseStream.Position % 4 != 0) w.Write((byte)0);
                 index[j].Position = (uint)ms.Position;
                 index[j].Length = data.Length;
                 w.Write(data);
