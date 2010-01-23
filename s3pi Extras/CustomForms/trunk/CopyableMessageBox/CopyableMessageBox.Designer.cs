@@ -1,6 +1,6 @@
 ﻿namespace System.Windows.Forms
 {
-    partial class CopyableMessageBox
+    partial class CopyableMessageBoxInternal
     {
         /// <summary>
         /// Required designer variable.

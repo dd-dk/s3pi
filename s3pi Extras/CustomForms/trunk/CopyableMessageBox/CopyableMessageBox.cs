@@ -25,90 +25,16 @@ using System.Windows.Forms;
 
 namespace System.Windows.Forms
 {
-    public partial class CopyableMessageBox : Form
+    internal partial class CopyableMessageBoxInternal : Form
     {
-        public static int Show(string message)
-        {
-            return Show(message, Application.OpenForms.Count > 0 ? Application.OpenForms[0].Text : "",
-                CopyableMessageBoxIcon.None, new List<string>(new string[] { "OK" }), 0, 0);
-        }
-        public static int Show(string message, string caption)
-        {
-            return Show(message, caption, CopyableMessageBoxIcon.None, new List<string>(new string[] { "OK" }), 0, 0);
-        }
-        public static int Show(string message, string caption, CopyableMessageBoxButtons buttons)
-        {
-            int cncBtn = enumToCncBtn(buttons);
-            return Show(message, caption, CopyableMessageBoxIcon.None, enumToList(buttons), 0, cncBtn);
-        }
-        public static int Show(string message, string caption, CopyableMessageBoxButtons buttons, CopyableMessageBoxIcon icon)
-        {
-            int cncBtn = enumToCncBtn(buttons);
-            return Show(message, caption, icon, enumToList(buttons), 0, cncBtn);
-        }
-        public static int Show(string message, string caption, CopyableMessageBoxButtons buttons, CopyableMessageBoxIcon icon, int defBtn)
-        {
-            int cncBtn = enumToCncBtn(buttons);
-            return Show(message, caption, icon, enumToList(buttons), defBtn, cncBtn);
-        }
-        public static int Show(string message, string caption, CopyableMessageBoxButtons buttons, CopyableMessageBoxIcon icon, int defBtn, int cncBtn)
-        {
-            return Show(message, caption, icon, enumToList(buttons), defBtn, cncBtn);
-        }
-
-        public static int Show(string message, string caption, CopyableMessageBoxIcon icon, IList<string> buttons, int defBtn, int cncBtn)
-        {
-            return Show(Application.OpenForms.Count > 0 ? Application.OpenForms[0] : null, message, caption, icon, buttons, defBtn, cncBtn);
-        }
-
-        public static int Show(IWin32Window owner, string message, string caption, CopyableMessageBoxIcon icon, IList<string> buttons, int defBtn, int cncBtn)
-        {
-            CopyableMessageBox cmb = new CopyableMessageBox(message, caption, icon, buttons, defBtn, cncBtn);
-            if (owner != null) cmb.Icon = ((Form)owner).Icon;
-            else owner = new Form();
-
-            if (cmb.ShowDialog(owner) == DialogResult.Cancel) return cncBtn;
-            return (cmb.theButton != null) ? buttons.IndexOf(cmb.theButton.Text) : -1;
-        }
-
-
-        private static int enumToCncBtn(CopyableMessageBoxButtons buttons)
-        {
-            switch (buttons)
-            {
-                case CopyableMessageBoxButtons.OK: return 0;
-                case CopyableMessageBoxButtons.OKCancel: return 1;
-                case CopyableMessageBoxButtons.RetryCancel: return 1;
-                case CopyableMessageBoxButtons.AbortRetryIgnore: return -1;
-                case CopyableMessageBoxButtons.YesNoCancel: return 2;
-                case CopyableMessageBoxButtons.YesNo: return -1;
-                default: return -1;
-            }
-        }
-
-        private static IList<string> enumToList(CopyableMessageBoxButtons buttons)
-        {
-            switch (buttons)
-            {
-                case CopyableMessageBoxButtons.OKCancel: return new List<string>(new string[] { "&OK", "&Cancel", });
-                case CopyableMessageBoxButtons.AbortRetryIgnore: return new List<string>(new string[] { "&Abort", "&Retry", "&Ignore", });
-                case CopyableMessageBoxButtons.RetryCancel: return new List<string>(new string[] { "&Retry", "&Cancel", });
-                case CopyableMessageBoxButtons.YesNoCancel: return new List<string>(new string[] { "&Yes", "&No", "&Cancel", });
-                case CopyableMessageBoxButtons.YesNo: return new List<string>(new string[] { "&Yes", "&No", });
-                case CopyableMessageBoxButtons.OK:
-                default: return new List<string>(new string[] { "&OK", });
-            }
-        }
-
-
-        private Button theButton = null;
-        private CopyableMessageBox()
+        internal Button theButton = null;
+        private CopyableMessageBoxInternal()
         {
             InitializeComponent();
         }
 
         Label lb = new Label();
-        private CopyableMessageBox(string message, string caption, CopyableMessageBoxIcon icon, IList<string> buttons, int defBtn, int cncBtn)
+        internal CopyableMessageBoxInternal(string message, string caption, CopyableMessageBoxIcon icon, IList<string> buttons, int defBtn, int cncBtn)
             : this()
         {
             if (buttons.Count < 1)
@@ -238,4 +164,93 @@ namespace System.Windows.Forms
         RetryCancel,
     }
 
+    public static class CopyableMessageBox
+    {
+        public static int Show(string message)
+        {
+            return Show(message, Application.OpenForms.Count > 0 ? Application.OpenForms[0].Text : "",
+                CopyableMessageBoxIcon.None, new List<string>(new string[] { "OK" }), 0, 0);
+        }
+        public static int Show(string message, string caption)
+        {
+            return Show(message, caption, CopyableMessageBoxIcon.None, new List<string>(new string[] { "OK" }), 0, 0);
+        }
+        public static int Show(string message, string caption, CopyableMessageBoxButtons buttons)
+        {
+            int cncBtn = enumToCncBtn(buttons);
+            return Show(message, caption, CopyableMessageBoxIcon.None, enumToList(buttons), 0, cncBtn);
+        }
+        public static int Show(string message, string caption, CopyableMessageBoxButtons buttons, CopyableMessageBoxIcon icon)
+        {
+            int cncBtn = enumToCncBtn(buttons);
+            return Show(message, caption, icon, enumToList(buttons), 0, cncBtn);
+        }
+        public static int Show(string message, string caption, CopyableMessageBoxButtons buttons, CopyableMessageBoxIcon icon, int defBtn)
+        {
+            int cncBtn = enumToCncBtn(buttons);
+            return Show(message, caption, icon, enumToList(buttons), defBtn, cncBtn);
+        }
+        public static int Show(string message, string caption, CopyableMessageBoxButtons buttons, CopyableMessageBoxIcon icon, int defBtn, int cncBtn)
+        {
+            return Show(message, caption, icon, enumToList(buttons), defBtn, cncBtn);
+        }
+
+        public static int Show(string message, string caption, CopyableMessageBoxIcon icon, IList<string> buttons, int defBtn, int cncBtn)
+        {
+            return Show(Application.OpenForms.Count > 0 ? Application.OpenForms[0] : null, message, caption, icon, buttons, defBtn, cncBtn);
+        }
+
+        public static int Show(IWin32Window owner, string message, string caption, CopyableMessageBoxIcon icon, IList<string> buttons, int defBtn, int cncBtn)
+        {
+            CopyableMessageBoxInternal cmb = new CopyableMessageBoxInternal(message, caption, icon, buttons, defBtn, cncBtn);
+            if (owner != null) cmb.Icon = ((Form)owner).Icon;
+            else owner = new Form();
+
+            if (cmb.ShowDialog(owner) == DialogResult.Cancel) return cncBtn;
+            return (cmb.theButton != null) ? buttons.IndexOf(cmb.theButton.Text) : -1;
+        }
+
+        private static int enumToCncBtn(CopyableMessageBoxButtons buttons)
+        {
+            switch (buttons)
+            {
+                case CopyableMessageBoxButtons.OK: return 0;
+                case CopyableMessageBoxButtons.OKCancel: return 1;
+                case CopyableMessageBoxButtons.RetryCancel: return 1;
+                case CopyableMessageBoxButtons.AbortRetryIgnore: return -1;
+                case CopyableMessageBoxButtons.YesNoCancel: return 2;
+                case CopyableMessageBoxButtons.YesNo: return -1;
+                default: return -1;
+            }
+        }
+
+        private static IList<string> enumToList(CopyableMessageBoxButtons buttons)
+        {
+            switch (buttons)
+            {
+                case CopyableMessageBoxButtons.OKCancel: return new List<string>(new string[] { "&OK", "&Cancel", });
+                case CopyableMessageBoxButtons.AbortRetryIgnore: return new List<string>(new string[] { "&Abort", "&Retry", "&Ignore", });
+                case CopyableMessageBoxButtons.RetryCancel: return new List<string>(new string[] { "&Retry", "&Cancel", });
+                case CopyableMessageBoxButtons.YesNoCancel: return new List<string>(new string[] { "&Yes", "&No", "&Cancel", });
+                case CopyableMessageBoxButtons.YesNo: return new List<string>(new string[] { "&Yes", "&No", });
+                case CopyableMessageBoxButtons.OK:
+                default: return new List<string>(new string[] { "&OK", });
+            }
+        }
+
+        public static void IssueException(Exception ex) { IssueException(ex, "", "Program Exception"); }
+        public static void IssueException(Exception ex, string caption) { IssueException(ex, "", caption); }
+        public static void IssueException(Exception ex, string prefix, string caption)
+        {
+            string s = prefix;
+            for (Exception inex = ex; inex != null; inex = ex.InnerException)
+            {
+                s += "\n" + inex.Message;
+                s += "\n" + inex.StackTrace;
+                s += "\n-----";
+            }
+            CopyableMessageBox.Show(s, caption, CopyableMessageBoxButtons.OK, CopyableMessageBoxIcon.Stop);
+        }
+
+    }
 }
