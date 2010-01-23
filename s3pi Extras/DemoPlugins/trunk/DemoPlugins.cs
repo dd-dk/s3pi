@@ -40,7 +40,7 @@ namespace s3pi.DemoPlugins
         static Dictionary<string, Dictionary<string, string>> demoPlugins = null;
 
         static string config = "";
-        
+
         public static string Config
         {
             get { return config != null && config.Length > 0 ? config : Path.Combine(Path.GetDirectoryName(typeof(DemoPlugins).Assembly.Location), "Helpers.txt"); }
@@ -296,13 +296,11 @@ namespace s3pi.DemoPlugins
             p.StartInfo.UseShellExecute = false;
 
             try { p.Start(); }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                string exmsg = ex.Message;
-                for (Exception inex = ex.InnerException; inex != null; inex = inex.InnerException) exmsg += "\n" + inex.Message;
-                MessageBox.Show(String.Format("Application failed to start:\n{0}\n{1}\n{2}", command, arguments, exmsg),
-                    "Launch failed",
-                    MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
+                CopyableMessageBox.IssueException(ex,
+                    typeof(DemoPlugins).Assembly.FullName + "\n" + String.Format("Application failed to start:\n{0}\n{1}", command, arguments),
+                    "Launch failed");
                 return false;
             }
 
