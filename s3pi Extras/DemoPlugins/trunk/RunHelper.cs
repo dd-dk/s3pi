@@ -31,15 +31,6 @@ namespace s3pi.DemoPlugins
     }
     public static class RunHelper
     {
-        static void IssueException(Exception ex)
-        {
-            string s = "";
-            for (Exception inex = ex; inex != null; inex = ex.InnerException) s += "\n" + inex.Message;
-            s += "\n-----";
-            for (Exception inex = ex; inex != null; inex = ex.InnerException) s += "\n" + inex.StackTrace;
-            CopyableMessageBox.Show(s, "Program Exception", CopyableMessageBoxButtons.OK, CopyableMessageBoxIcon.Stop);
-        }
-
         public static int Run(Type mainForm, params string[] args)
         {
             bool useClipboard = false;
@@ -108,7 +99,7 @@ namespace s3pi.DemoPlugins
                 }
                 catch (Exception ex)
                 {
-                    IssueException(ex);
+                    CopyableMessageBox.IssueException(ex, files[0] + "\n" + mainForm.Assembly.FullName, "Failed to open file");
                     return -1;
                 }
             }
@@ -129,7 +120,7 @@ namespace s3pi.DemoPlugins
             }
             catch (Exception ex)
             {
-                IssueException(ex);
+                CopyableMessageBox.IssueException(ex, mainForm.Assembly.FullName, "Program exception");
                 return -1;
             }
 
