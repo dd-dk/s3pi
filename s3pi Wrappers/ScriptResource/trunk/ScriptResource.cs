@@ -201,8 +201,13 @@ namespace ScriptResource
                         }
                         catch (Exception ex)
                         {
-                            for (Exception inex = ex; inex != null; inex = inex.InnerException) s += "\n" + inex.Message;
-                            for (Exception inex = ex; inex != null; inex = inex.InnerException) s += "\n----\nStack trace:\n" + inex.StackTrace;
+                            s += this.GetType().Assembly.FullName;
+                            for (Exception inex = ex; inex != null; inex = ex.InnerException)
+                            {
+                                s += "\n" + inex.Message;
+                                s += "\n" + inex.StackTrace;
+                                s += "\n-----";
+                            }
                         }
                     }
                     else
