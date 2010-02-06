@@ -27,7 +27,7 @@ namespace CatalogResource
     /// <summary>
     /// A resource wrapper that understands Catalog Entry resources
     /// </summary>
-    public abstract class CatalogResource : AResource
+    public abstract class CatalogResource : AResourceX
     {
         protected const Int32 recommendedApiVersion = 1;
         public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
@@ -40,7 +40,7 @@ namespace CatalogResource
         #endregion
 
         #region Constructors
-        protected CatalogResource(int APIversion, Stream s) : base(APIversion, s) { if (stream == null) { stream = this.UnParse(); dirty = true; } stream.Position = 0; this.Parse(stream); }
+        protected CatalogResource(int APIversion, Stream s) : base(APIversion, s) { if (stream == null) stream = this.UnParse(); stream.Position = 0; this.Parse(stream); }
         protected CatalogResource(int APIversion, uint version) : base(APIversion, null) { this.version = version; }
         #endregion
 
@@ -51,30 +51,11 @@ namespace CatalogResource
             version = r.ReadUInt32();
         }
 
-        protected virtual Stream UnParse()
+        protected override Stream UnParse()
         {
             MemoryStream s = new MemoryStream();
             new BinaryWriter(s).Write(version);
             return s;
-        }
-        #endregion
-
-        #region IResource Members
-        /// <summary>
-        /// The resource content as a Stream
-        /// </summary>
-        public override Stream Stream
-        {
-            get
-            {
-                if (dirty)
-                {
-                    stream = UnParse();
-                    stream.Position = 0;
-                    dirty = false;
-                }
-                return stream;
-            }
         }
         #endregion
 
@@ -318,6 +299,16 @@ namespace CatalogResource
 
             #region AApiVersionedFields
             public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
+
+            public override List<string> ContentFields
+            {
+                get
+                {
+                    List<string> res = GetContentFields(requestedApiVersion, this.GetType());
+                    if (prefix == null) res.Remove("ControlCode");
+                    return res;
+                }
+            }
             #endregion
 
             #region ContentFields
@@ -433,16 +424,6 @@ namespace CatalogResource
 
             public override AHandlerElement Clone(EventHandler handler) { return new TypeCode01(requestedApiVersion, handler, this); }
 
-            public override List<string> ContentFields
-            {
-                get
-                {
-                    List<string> res = GetContentFields(requestedApiVersion, this.GetType());
-                    if (prefix == null) res.Remove("ControlCode");
-                    return res;
-                }
-            }
-
             public string Data
             {
                 get { return hasString ? stringValue : stringTable[byteValue]; }
@@ -505,8 +486,6 @@ namespace CatalogResource
 
             public override AHandlerElement Clone(EventHandler handler) { return new TypeCode02(requestedApiVersion, handler, this); }
 
-            public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
-
             public byte Red { get { return red; } set { if (red != value) { red = value; OnElementChanged(); } } }
             public byte Green { get { return green; } set { if (green != value) { green = value; OnElementChanged(); } } }
             public byte Blue { get { return blue; } set { if (blue != value) { blue = value; OnElementChanged(); } } }
@@ -555,8 +534,6 @@ namespace CatalogResource
 
             public override AHandlerElement Clone(EventHandler handler) { return new TypeCode03(requestedApiVersion, handler, this); }
 
-            public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
-
             public byte TGIIndex { get { return tgiIndex; } set { if (tgiIndex != value) { tgiIndex = value; OnElementChanged(); } } }
         }
 
@@ -601,8 +578,6 @@ namespace CatalogResource
             }
 
             public override AHandlerElement Clone(EventHandler handler) { return new TypeCode04(requestedApiVersion, handler, this); }
-
-            public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
 
             public float Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; OnElementChanged(); } } }
         }
@@ -655,8 +630,6 @@ namespace CatalogResource
             }
 
             public override AHandlerElement Clone(EventHandler handler) { return new TypeCode05(requestedApiVersion, handler, this); }
-
-            public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
 
             public float Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; OnElementChanged(); } } }
             public float Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; OnElementChanged(); } } }
@@ -714,8 +687,6 @@ namespace CatalogResource
 
             public override AHandlerElement Clone(EventHandler handler) { return new TypeCode06(requestedApiVersion, handler, this); }
 
-            public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
-
             public float Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; OnElementChanged(); } } }
             public float Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; OnElementChanged(); } } }
             public float Unknown3 { get { return unknown3; } set { if (unknown3 != value) { unknown3 = value; OnElementChanged(); } } }
@@ -761,8 +732,6 @@ namespace CatalogResource
             }
 
             public override AHandlerElement Clone(EventHandler handler) { return new TypeCode07(requestedApiVersion, handler, this); }
-
-            public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
 
             public byte Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; OnElementChanged(); } } }
         }
@@ -816,8 +785,6 @@ namespace CatalogResource
 
             public override AHandlerElement Clone(EventHandler handler) { return new TypeCode2F(requestedApiVersion, handler, this); }
 
-            public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
-
             public byte Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; OnElementChanged(); } } }
             public uint Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; OnElementChanged(); } } }
         }
@@ -867,8 +834,6 @@ namespace CatalogResource
             }
 
             public override AHandlerElement Clone(EventHandler handler) { return new TypeCode40(requestedApiVersion, handler, this); }
-
-            public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
 
             public int Length { get { return length; } set { if (length != value) { length = value; OnElementChanged(); } } }
         }
