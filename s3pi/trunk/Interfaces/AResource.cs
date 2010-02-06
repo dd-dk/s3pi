@@ -365,4 +365,41 @@ namespace s3pi.Interfaces
         /// <param name="e">(not used)</param>
         protected virtual void OnResourceChanged(object sender, EventArgs e) { dirty = true; if (ResourceChanged != null) ResourceChanged(sender, e); }
     }
+
+    public abstract class AResourceX : AResource
+    {
+        #region Constructors
+        /// <summary>
+        /// Create a new instance of the resource
+        /// </summary>
+        /// <param name="APIversion">Requested API version</param>
+        /// <param name="s">Data stream to use, or null to create from scratch</param>
+        protected AResourceX(int APIversion, Stream s) : base(APIversion, s) { }
+        #endregion
+
+        /// <summary>
+        /// AResourceX classes must supply an UnParse() method that serializes the class to a stream that is returned.
+        /// </summary>
+        /// <returns>Stream containing serialized class data.</returns>
+        protected abstract Stream UnParse();
+
+        #region IResource Members
+        /// <summary>
+        /// The resource content as a Stream
+        /// </summary>
+        public override Stream Stream
+        {
+            get
+            {
+                if (dirty)
+                {
+                    stream = UnParse();
+                    dirty = false;
+                }
+                stream.Position = 0;
+                return stream;
+            }
+        }
+        #endregion
+    }
 }
