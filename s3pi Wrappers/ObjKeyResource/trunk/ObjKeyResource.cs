@@ -27,7 +27,7 @@ namespace ObjKeyResource
     /// <summary>
     /// A resource wrapper that understands Catalog Entry resources
     /// </summary>
-    public class ObjKeyResource : AResource
+    public class ObjKeyResource : AResourceX
     {
         const int recommendedApiVersion = 1;
         public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
@@ -62,7 +62,7 @@ namespace ObjKeyResource
             tgiBlocks = new TGIBlockList(OnResourceChanged, s, tgiPosn, tgiSize);
         }
 
-        Stream UnParse()
+        protected override Stream UnParse()
         {
             long posn;
             MemoryStream s = new MemoryStream();
@@ -86,25 +86,6 @@ namespace ObjKeyResource
             s.Flush();
 
             return s;
-        }
-        #endregion
-
-        #region IResource Members
-        /// <summary>
-        /// The resource content as a Stream
-        /// </summary>
-        public override Stream Stream
-        {
-            get
-            {
-                if (dirty)
-                {
-                    stream = UnParse();
-                    stream.Position = 0;
-                    dirty = false;
-                }
-                return stream;
-            }
         }
         #endregion
 

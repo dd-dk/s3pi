@@ -27,7 +27,7 @@ namespace TxtcResource
     /// <summary>
     /// A resource wrapper that understands Texture Compositor resources
     /// </summary>
-    public class TxtcResource : AResource
+    public class TxtcResource : AResourceX
     {
         const int recommendedApiVersion = 1;
         public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
@@ -69,7 +69,7 @@ namespace TxtcResource
             tgiBlocks = new CountedTGIBlockList(OnResourceChanged, 255, "IGT", r.ReadByte(), s);
         }
 
-        Stream UnParse()
+        protected override Stream UnParse()
         {
             MemoryStream ms = new MemoryStream();
             BinaryWriter w = new BinaryWriter(ms);
@@ -100,25 +100,6 @@ namespace TxtcResource
             ms.Position = ms.Length;
 
             return ms;
-        }
-        #endregion
-
-        #region IResource Members
-        /// <summary>
-        /// The resource content as a Stream
-        /// </summary>
-        public override Stream Stream
-        {
-            get
-            {
-                if (dirty)
-                {
-                    stream = UnParse();
-                    stream.Position = 0;
-                    dirty = false;
-                }
-                return stream;
-            }
         }
         #endregion
 

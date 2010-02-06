@@ -27,7 +27,7 @@ namespace ScriptResource
     /// <summary>
     /// A resource wrapper that understands Encrypted Signed Assembly (0x073FAA07) resources
     /// </summary>
-    public class ScriptResource : AResource
+    public class ScriptResource : AResourceX
     {
         const Int32 recommendedApiVersion = 1;
         public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
@@ -96,7 +96,7 @@ namespace ScriptResource
             return w.ToArray();
         }
 
-        Stream UnParse()
+        protected override Stream UnParse()
         {
             MemoryStream ms = new MemoryStream();
             BinaryWriter bw = new BinaryWriter(ms);
@@ -135,25 +135,6 @@ namespace ScriptResource
             }
 
             return w.ToArray();
-        }
-        #endregion
-
-        #region IResource Members
-        /// <summary>
-        /// The resource content as a Stream
-        /// </summary>
-        public override Stream Stream
-        {
-            get
-            {
-                if (dirty)
-                {
-                    stream = UnParse();
-                    stream.Position = 0;
-                    dirty = false;
-                }
-                return stream;
-            }
         }
         #endregion
 

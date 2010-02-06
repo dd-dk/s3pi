@@ -27,7 +27,7 @@ namespace StblResource
     /// <summary>
     /// A resource wrapper that understands String Table resources
     /// </summary>
-    public class StblResource : AResource, IDictionary<ulong, string>, System.Collections.IDictionary
+    public class StblResource : AResourceX, IDictionary<ulong, string>, System.Collections.IDictionary
     {
         const int recommendedApiVersion = 1;
         public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
@@ -76,7 +76,7 @@ namespace StblResource
             }
         }
 
-        Stream UnParse()
+        protected override Stream UnParse()
         {
             MemoryStream ms = new MemoryStream();
 
@@ -102,25 +102,6 @@ namespace StblResource
             }
 
             return ms;
-        }
-        #endregion
-
-        #region IResource Members
-        /// <summary>
-        /// The resource content as a Stream
-        /// </summary>
-        public override Stream Stream
-        {
-            get
-            {
-                if (dirty)
-                {
-                    stream = UnParse();
-                    stream.Position = 0;
-                    dirty = false;
-                }
-                return stream;
-            }
         }
         #endregion
 

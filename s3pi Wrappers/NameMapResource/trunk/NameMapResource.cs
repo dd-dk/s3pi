@@ -27,31 +27,12 @@ namespace NameMapResource
     /// <summary>
     /// A resource wrapper that understands 0x0166038C resources
     /// </summary>
-    public class NameMapResource : AResource, IDictionary<ulong, string>, System.Collections.IDictionary
+    public class NameMapResource : AResourceX, IDictionary<ulong, string>, System.Collections.IDictionary
     {
         static bool checking = s3pi.Settings.Settings.Checking;
         const Int32 recommendedApiVersion = 1;
         uint version = 1;
         Dictionary<ulong, string> data = new Dictionary<ulong, string>();
-
-        #region IResource Members
-        /// <summary>
-        /// The resource content as a Stream
-        /// </summary>
-        public override Stream Stream
-        {
-            get
-            {
-                if (dirty)
-                {
-                    stream = UnParse();
-                    stream.Position = 0;
-                    dirty = false;
-                }
-                return stream;
-            }
-        }
-        #endregion
 
         #region AApiVersionedFields
         public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
@@ -83,7 +64,7 @@ namespace NameMapResource
                     throw new InvalidDataException(String.Format("{0}: Length {1} bytes, parsed {2} bytes", this.GetType().Name, s.Length, s.Position));
         }
 
-        Stream UnParse()
+        protected override Stream UnParse()
         {
             MemoryStream ms = new MemoryStream();
             BinaryWriter w = new BinaryWriter(ms);
