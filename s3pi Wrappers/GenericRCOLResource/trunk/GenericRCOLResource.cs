@@ -28,7 +28,7 @@ namespace s3pi.GenericRCOLResource
     /// <summary>
     /// A resource wrapper that understands generic RCOL resources
     /// </summary>
-    public class GenericRCOLResource : AResource
+    public class GenericRCOLResource : AResourceX
     {
         static bool checking = s3pi.Settings.Settings.Checking;
         const Int32 recommendedApiVersion = 1;
@@ -65,7 +65,7 @@ namespace s3pi.GenericRCOLResource
             blockList = new ChunkEntryList(requestedApiVersion, OnResourceChanged, s, chunks, index);
         }
 
-        Stream UnParse()
+        protected override Stream UnParse()
         {
             long rcolIndexPos;
 
@@ -101,25 +101,6 @@ namespace s3pi.GenericRCOLResource
             foreach (RCOLIndexEntry entry in index) { w.Write(entry.Position); w.Write(entry.Length); }
 
             return ms;
-        }
-        #endregion
-
-        #region IResource Members
-        /// <summary>
-        /// The resource content as a Stream
-        /// </summary>
-        public override Stream Stream
-        {
-            get
-            {
-                if (dirty)
-                {
-                    stream = UnParse();
-                    stream.Position = 0;
-                    dirty = false;
-                }
-                return stream;
-            }
         }
         #endregion
 
