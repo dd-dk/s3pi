@@ -33,6 +33,7 @@ namespace System.Windows.Forms.TGIBlockListEditorForm
         {
             InitializeComponent();
             tbGroup.Text = tbInstance.Text = tbEP.Text = "";
+            listView1.Items.Clear();
             btnAdd.Enabled = items != null && (items.MaxSize == -1 || listView1.Items.Count < items.MaxSize);
             btnDelete.Enabled = listView1.SelectedItems.Count > 0;
             cbType.Enabled = tbGroup.Enabled = tbInstance.Enabled = tbEP.Enabled = false;
