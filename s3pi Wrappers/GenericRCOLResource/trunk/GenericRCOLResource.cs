@@ -33,11 +33,13 @@ namespace s3pi.GenericRCOLResource
         static bool checking = s3pi.Settings.Settings.Checking;
         const Int32 recommendedApiVersion = 1;
 
+        #region Attributes
         uint version;
         uint dataType;
         uint unused;
         ChunkEntryList blockList;
         CountedTGIBlockList resources;
+        #endregion
 
         #region Constructors
         public GenericRCOLResource(int APIversion, Stream s) : base(APIversion, s) { if (stream == null) { stream = UnParse(); dirty = true; } stream.Position = 0; Parse(stream); }
@@ -60,21 +62,7 @@ namespace s3pi.GenericRCOLResource
             RCOLIndexEntry[] index = new RCOLIndexEntry[countChunks];
             for (int i = 0; i < countChunks; i++) { index[i].Position = r.ReadUInt32(); index[i].Length = r.ReadInt32(); }
 
-            blockList = new ChunkEntryList(null);
-            for (int i = 0; i < countChunks; i++)
-            {
-                s.Position = index[i].Position;
-                byte[] data = r.ReadBytes(index[i].Length);
-                MemoryStream ms = new MemoryStream();
-                ms.Write(data, 0, data.Length);
-                ms.Position = 0;
-
-                // Do not use generic Add(...) here as blockList's event handler is not in place
-                // - it would result in untracked changes within the list entries
-                blockList.Add(new GenericRCOLResource.ChunkEntry(requestedApiVersion, OnResourceChanged,
-                    chunks[i], GenericRCOLResourceHandler.RCOLDealer(requestedApiVersion, OnResourceChanged, chunks[i].ResourceType, ms)));
-            }
-            blockList.listEventHandler = OnResourceChanged;
+            blockList = new ChunkEntryList(requestedApiVersion, OnResourceChanged, s, chunks, index);
         }
 
         Stream UnParse()
@@ -144,7 +132,7 @@ namespace s3pi.GenericRCOLResource
         #endregion
 
         #region Sub-types
-        struct RCOLIndexEntry
+        internal struct RCOLIndexEntry
         {
             public uint Position;
             public int Length;
@@ -205,6 +193,25 @@ namespace s3pi.GenericRCOLResource
 
         public class ChunkEntryList : DependentList<ChunkEntry>
         {
+            internal ChunkEntryList(int requestedApiVersion, EventHandler handler, Stream s, TGIBlock[] chunks, RCOLIndexEntry[] index)
+                : base(null, -1)
+            {
+                elementHandler = handler;
+
+                BinaryReader r = new BinaryReader(s);
+                for (int i = 0; i < index.Length; i++)
+                {
+                    s.Position = index[i].Position;
+                    byte[] data = r.ReadBytes(index[i].Length);
+                    MemoryStream ms = new MemoryStream();
+                    ms.Write(data, 0, data.Length);
+                    ms.Position = 0;
+
+                    this.Add(chunks[i], GenericRCOLResourceHandler.RCOLDealer(requestedApiVersion, elementHandler, chunks[i].ResourceType, ms));
+                }
+
+                this.handler = handler;
+            }
             public ChunkEntryList(EventHandler handler) : base(handler) { }
             public ChunkEntryList(EventHandler handler, IList<ChunkEntry> ice) : base(handler, ice) { }
 
