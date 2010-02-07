@@ -24,6 +24,9 @@ using System.Reflection;
 
 namespace s3pi.Interfaces
 {
+    /// <summary>
+    /// A resource contained in a package.
+    /// </summary>
     public abstract class AResource : AApiVersionedFields, IResource
     {
         #region Attributes
@@ -62,7 +65,20 @@ namespace s3pi.Interfaces
         /// <summary>
         /// The resource content as a Stream
         /// </summary>
-        public virtual Stream Stream { get { return stream; } }
+        public virtual Stream Stream
+        {
+            get
+            {
+                if (dirty || s3pi.Settings.Settings.AsBytesWorkaround)
+                {
+                    stream = UnParse();
+                    dirty = false;
+                    //Console.WriteLine(this.GetType().Name + " flushed.");
+                }
+                stream.Position = 0;
+                return stream;
+            }
+        }
         /// <summary>
         /// The resource content as a byte array
         /// </summary>
@@ -359,47 +375,21 @@ namespace s3pi.Interfaces
         #endregion
 
         /// <summary>
-        /// Used to indicate the resource has changed
-        /// </summary>
-        /// <param name="sender">The resource that has changed</param>
-        /// <param name="e">(not used)</param>
-        protected virtual void OnResourceChanged(object sender, EventArgs e) { dirty = true; if (ResourceChanged != null) ResourceChanged(sender, e); }
-    }
-
-    public abstract class AResourceX : AResource
-    {
-        #region Constructors
-        /// <summary>
-        /// Create a new instance of the resource
-        /// </summary>
-        /// <param name="APIversion">Requested API version</param>
-        /// <param name="s">Data stream to use, or null to create from scratch</param>
-        protected AResourceX(int APIversion, Stream s) : base(APIversion, s) { }
-        #endregion
-
-        /// <summary>
-        /// AResourceX classes must supply an UnParse() method that serializes the class to a stream that is returned.
+        /// AResource classes must supply an UnParse() method that serializes the class to a stream that is returned.
         /// </summary>
         /// <returns>Stream containing serialized class data.</returns>
         protected abstract Stream UnParse();
 
-        #region IResource Members
         /// <summary>
-        /// The resource content as a Stream
+        /// Used to indicate the resource has changed
         /// </summary>
-        public override Stream Stream
+        /// <param name="sender">The resource that has changed</param>
+        /// <param name="e">(not used)</param>
+        protected virtual void OnResourceChanged(object sender, EventArgs e)
         {
-            get
-            {
-                if (dirty)
-                {
-                    stream = UnParse();
-                    dirty = false;
-                }
-                stream.Position = 0;
-                return stream;
-            }
+            dirty = true;
+            //Console.WriteLine(this.GetType().Name + " dirtied.");
+            if (ResourceChanged != null) ResourceChanged(sender, e);
         }
-        #endregion
     }
 }
