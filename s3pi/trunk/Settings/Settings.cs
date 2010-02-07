@@ -37,5 +37,11 @@ namespace s3pi.Settings
         /// When true, run extra checks as part of normal operation.
         /// </summary>
         public static bool Checking { get { return checking; } }
+
+        static bool asBytesWorkaround = true;
+        /// <summary>
+        /// When true, assume data is dirty regardless of tracking.
+        /// </summary>
+        public static bool AsBytesWorkaround { get { return asBytesWorkaround; } }
     }
 }
