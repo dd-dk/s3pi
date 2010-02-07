@@ -27,7 +27,6 @@ namespace s3pi.Interfaces
     {
         const int recommendedApiVersion = 1;
 
-        protected bool dirty;
         protected int requestedAPIversion;
         protected Stream stream;
 
@@ -35,7 +34,7 @@ namespace s3pi.Interfaces
             : base(APIversion, handler)
         {
             stream = s;
-            if (stream == null) { stream = UnParse(); dirty = true; }
+            if (stream == null) { stream = UnParse(); OnElementChanged(); }
             stream.Position = 0;
             Parse(stream);
         }
@@ -67,10 +66,11 @@ namespace s3pi.Interfaces
         {
             get
             {
-                if (dirty)
+                if (dirty || s3pi.Settings.Settings.AsBytesWorkaround)
                 {
                     stream = UnParse();
                     dirty = false;
+                    //Console.WriteLine(this.GetType().Name + " flushed.");
                 }
                 stream.Position = 0;
                 return stream;
@@ -110,7 +110,7 @@ namespace s3pi.Interfaces
         /// <summary>
         /// Used to indicate the RCOL has changed
         /// </summary>
-        protected virtual void OnRCOLChanged(object sender, EventArgs e) { dirty = true; OnElementChanged(); }
+        protected virtual void OnRCOLChanged(object sender, EventArgs e) { OnElementChanged(); }
 
         /// <summary>
         /// To allow editor import/export
