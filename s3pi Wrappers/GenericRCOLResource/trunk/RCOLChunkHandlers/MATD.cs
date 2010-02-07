@@ -42,31 +42,34 @@ namespace s3pi.GenericRCOLResource
         public MATD(int APIversion, EventHandler handler) : base(APIversion, handler, null) { }
         public MATD(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler, s) { }
         public MATD(int APIversion, EventHandler handler, MATD basis)
-            : base(APIversion, handler, null)
+            : base(APIversion, null, null)
         {
+            this.handler = handler;
             this.version = basis.version;
             this.materialNameHash = basis.materialNameHash;
             this.shader = basis.shader;
-            if (basis.mtrl != null) mtrl = new MTRL(requestedApiVersion, handler, basis.mtrl);
+            if (basis.mtrl != null) mtrl = new MTRL(requestedApiVersion, OnRCOLChanged, basis.mtrl);
             this.unknown1 = basis.unknown1;
             this.unknown2 = basis.unknown2;
-            if (basis.mtnf != null) mtnf = new MTNF(requestedApiVersion, handler, basis.mtnf);
+            if (basis.mtnf != null) mtnf = new MTNF(requestedApiVersion, OnRCOLChanged, basis.mtnf);
         }
         public MATD(int APIversion, EventHandler handler,
             uint version, uint materialNameHash, ShaderType shader, MTRL mtrl)
-            : base(APIversion, handler, null)
+            : base(APIversion, null, null)
         {
+            this.handler = handler;
             if (checking) if (version >= 0x00000103)
                     throw new ArgumentException("version must be <= 0x0103 for MTRLs");
             this.version = version;
             this.materialNameHash = materialNameHash;
             this.shader = shader;
-            this.mtrl = mtrl == null ? null : new MTRL(requestedApiVersion, handler, mtrl);
+            this.mtrl = mtrl == null ? null : new MTRL(requestedApiVersion, OnRCOLChanged, mtrl);
         }
         public MATD(int APIversion, EventHandler handler,
             uint version, uint materialNameHash, ShaderType shader, uint unknown1, uint unknown2, MTNF mtnf)
-            : base(APIversion, handler, null)
+            : base(APIversion, null, null)
         {
+            this.handler = handler;
             if (checking) if (version < 0x00000103)
                     throw new ArgumentException("version must be <= 0x0103 for MTNFs");
             this.version = version;
@@ -74,7 +77,7 @@ namespace s3pi.GenericRCOLResource
             this.shader = shader;
             this.unknown1 = unknown1;
             this.unknown2 = unknown2;
-            this.mtnf = mtnf == null ? null : new MTNF(requestedApiVersion, handler, mtnf);
+            this.mtnf = mtnf == null ? null : new MTNF(requestedApiVersion, OnRCOLChanged, mtnf);
         }
 
         #region ARCOLBlock
@@ -96,14 +99,14 @@ namespace s3pi.GenericRCOLResource
             if (version < 0x00000103)
             {
                 start = s.Position;
-                mtrl = new MTRL(requestedApiVersion, handler, s);
+                mtrl = new MTRL(requestedApiVersion, OnRCOLChanged, s);
             }
             else
             {
                 unknown1 = r.ReadUInt32();
                 unknown2 = r.ReadUInt32();
                 start = s.Position;
-                mtnf = new MTNF(requestedApiVersion, handler, s);
+                mtnf = new MTNF(requestedApiVersion, OnRCOLChanged, s);
             }
 
             if (checking) if (start + length != s.Position)
@@ -125,7 +128,7 @@ namespace s3pi.GenericRCOLResource
             if (version < 0x00000103)
             {
                 pos = ms.Position;
-                if (mtrl == null) mtrl = new MTRL(requestedApiVersion, handler);
+                if (mtrl == null) mtrl = new MTRL(requestedApiVersion, OnRCOLChanged);
                 mtrl.UnParse(ms);
             }
             else
@@ -133,7 +136,7 @@ namespace s3pi.GenericRCOLResource
                 w.Write(unknown1);
                 w.Write(unknown2);
                 pos = ms.Position;
-                if (mtnf == null) mtnf = new MTNF(requestedApiVersion, handler);
+                if (mtnf == null) mtnf = new MTNF(requestedApiVersion, OnRCOLChanged);
                 mtnf.UnParse(ms);
             }
 
@@ -604,7 +607,7 @@ namespace s3pi.GenericRCOLResource
             #endregion
 
             #region Content Fields
-            public UInt32 Data { get { return data; } set { if (data != value) { data = value; if (handler != null) handler(this, EventArgs.Empty); } } }
+            public UInt32 Data { get { return data; } set { if (data != value) { data = value; OnElementChanged(); } } }
 
             public override string Value { get { return "Data: 0x" + data.ToString("X8"); } }
             #endregion
@@ -647,7 +650,7 @@ namespace s3pi.GenericRCOLResource
             #endregion
 
             #region Content Fields
-            public Single Data { get { return data; } set { if (data != value) { data = value; if (handler != null) handler(this, EventArgs.Empty); } } }
+            public Single Data { get { return data; } set { if (data != value) { data = value; OnElementChanged(); } } }
 
             public override string Value { get { return "Data: " + data.ToString(); } }
             #endregion
