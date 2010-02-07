@@ -322,6 +322,10 @@ namespace s3pi.Interfaces
         /// </summary>
         protected EventHandler handler;
         /// <summary>
+        /// Indicates if this list element has been changed by OnElementChanged()
+        /// </summary>
+        protected bool dirty = false;
+        /// <summary>
         /// Initialize a new instance
         /// </summary>
         /// <param name="APIversion">Requested API version</param>
@@ -336,6 +340,11 @@ namespace s3pi.Interfaces
         /// <summary>
         /// Raise a change event
         /// </summary>
-        protected void OnElementChanged() { if (handler != null) handler(this, EventArgs.Empty); }
+        protected virtual void OnElementChanged()
+        {
+            dirty = true;
+            //Console.WriteLine(this.GetType().Name + " dirtied.");
+            if (handler != null) handler(this, EventArgs.Empty);
+        }
     }
 }
