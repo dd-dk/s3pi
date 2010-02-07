@@ -27,7 +27,7 @@ namespace TxtcResource
     /// <summary>
     /// A resource wrapper that understands Texture Compositor resources
     /// </summary>
-    public class TxtcResource : AResourceX
+    public class TxtcResource : AResource
     {
         const int recommendedApiVersion = 1;
         public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
@@ -46,7 +46,7 @@ namespace TxtcResource
         CountedTGIBlockList tgiBlocks;
         #endregion
 
-        public TxtcResource(int APIversion, Stream s) : base(APIversion, s) { if (stream == null) { stream = UnParse(); dirty = true; } stream.Position = 0; Parse(stream); }
+        public TxtcResource(int APIversion, Stream s) : base(APIversion, s) { if (stream == null) { stream = UnParse(); OnResourceChanged(this, new EventArgs()); } stream.Position = 0; Parse(stream); }
 
         #region Data I/O
         void Parse(Stream s)
@@ -463,8 +463,15 @@ namespace TxtcResource
 
         public class EntryList : AResource.DependentList<Entry>
         {
+            public EntryList(int APIversion, EventHandler handler, Stream s) : base(null, -1) { elementHandler = handler; Parse(APIversion, s); this.handler = handler; }
             public EntryList(EventHandler handler) : base(handler) { }
             public EntryList(EventHandler handler, IList<Entry> le) : base(handler, le) { }
+
+            protected void Parse(int requestedApiVersion, Stream s)
+            {
+                for (Entry e = Entry.CreateEntry(requestedApiVersion, elementHandler, s); e.Property != 0; e = Entry.CreateEntry(requestedApiVersion, elementHandler, s))
+                    this.Add(e);
+            }
 
             protected override uint ReadCount(Stream s) { throw new InvalidOperationException(); }
             protected override Entry CreateElement(Stream s) { throw new InvalidOperationException(); }
@@ -528,17 +535,9 @@ namespace TxtcResource
             public EntryBlock(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
             public EntryBlock(int APIversion, EventHandler handler, EntryBlock basis) : base(APIversion, handler) { theList = new EntryList(handler, basis.theList); }
 
-            void Parse(Stream s)
-            {
-                theList = new EntryList(handler);
-                for (Entry e = Entry.CreateEntry(requestedApiVersion, handler, s); e.Property != 0; e = Entry.CreateEntry(requestedApiVersion, handler, s)) theList.Add(e);
-            }
+            void Parse(Stream s) { theList = new EntryList(requestedApiVersion, handler, s); }
 
-            internal void UnParse(Stream s)
-            {
-                theList.UnParse(s);
-                (new BinaryWriter(s)).Write((uint)0);
-            }
+            internal void UnParse(Stream s) { theList.UnParse(s); (new BinaryWriter(s)).Write((uint)0); }
 
             #region AHandlerElement Members
             public override AHandlerElement Clone(EventHandler handler) { return new EntryBlock(requestedApiVersion, handler, this); }
