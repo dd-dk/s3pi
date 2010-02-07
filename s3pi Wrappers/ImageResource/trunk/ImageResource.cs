@@ -51,6 +51,13 @@ namespace ImageResource
             (new Bitmap(128, 128)).Save(stream, System.Drawing.Imaging.ImageFormat.Png);
         }
 
+        protected override Stream UnParse() { throw new NotImplementedException(); }
+
+        /// <summary>
+        /// The resource content as a Stream
+        /// </summary>
+        public override Stream Stream { get { stream.Position = 0; return stream; } }
+
         /// <summary>
         /// Return the resource data as a System.Drawing.Image (resetting stream position)
         /// </summary>

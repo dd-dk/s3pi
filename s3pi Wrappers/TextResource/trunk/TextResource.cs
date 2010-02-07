@@ -40,7 +40,14 @@ namespace TextResource
         /// </summary>
         /// <param name="APIversion">Requested API version</param>
         /// <param name="s">Data stream to use, or null to create from scratch</param>
-        public TextResource(int APIversion, Stream s) : base(APIversion, s) { if (stream == null) stream = new MemoryStream(); }
+        public TextResource(int APIversion, Stream s) : base(APIversion, s) { if (stream == null) { stream = new MemoryStream(); dirty = true; } }
+
+        protected override Stream UnParse() { throw new NotImplementedException(); }
+
+        /// <summary>
+        /// The resource content as a Stream
+        /// </summary>
+        public override Stream Stream { get { stream.Position = 0; return stream; } }
 
         /// <summary>
         /// Wrap a StreamReader around the resource stream, leaving the underlying position unchanged
@@ -111,7 +118,6 @@ namespace TextResource
                 catch { return null; }
             }
         }
-
     }
 
     public class TextResourceHandler : AResourceHandler
