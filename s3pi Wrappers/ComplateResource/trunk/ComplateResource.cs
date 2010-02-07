@@ -48,25 +48,6 @@ namespace ComplateResource
         public ComplateResource(int APIversion, Stream s) : base(APIversion, s) { if (stream == null) { stream = UnParse(); dirty = true; } stream.Position = 0; Parse(stream); }
         #endregion
 
-        #region IResource Members
-        /// <summary>
-        /// The resource content as a Stream
-        /// </summary>
-        public override Stream Stream
-        {
-            get
-            {
-                if (dirty)
-                {
-                    stream = UnParse();
-                    stream.Position = 0;
-                    dirty = false;
-                }
-                return stream;
-            }
-        }
-        #endregion
-
         #region AApiVersionedFields
         public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
 
@@ -82,7 +63,7 @@ namespace ComplateResource
             unknown2 = br.ReadUInt32();
         }
 
-        Stream UnParse()
+        protected override Stream UnParse()
         {
             MemoryStream ms = new MemoryStream();
             BinaryWriter bw = new BinaryWriter(ms);
