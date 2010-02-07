@@ -24,7 +24,7 @@ using s3pi.Interfaces;
 
 namespace ModularResource
 {
-    public class ModularResource : AResourceX
+    public class ModularResource : AResource
     {
         const int recommendedApiVersion = 1;
         public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
@@ -39,7 +39,7 @@ namespace ModularResource
         TGIBlockList tgiBlocks;
         #endregion
 
-        public ModularResource(int APIversion, Stream s) : base(APIversion, s) { if (stream == null) { stream = UnParse(); dirty = true; } stream.Position = 0; Parse(stream); }
+        public ModularResource(int APIversion, Stream s) : base(APIversion, s) { if (stream == null) { stream = UnParse(); OnResourceChanged(this, new EventArgs()); } stream.Position = 0; Parse(stream); }
 
         #region Data I/O
         void Parse(Stream s)

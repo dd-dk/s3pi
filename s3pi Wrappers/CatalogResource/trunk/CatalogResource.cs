@@ -27,7 +27,7 @@ namespace CatalogResource
     /// <summary>
     /// A resource wrapper that understands Catalog Entry resources
     /// </summary>
-    public abstract class CatalogResource : AResourceX
+    public abstract class CatalogResource : AResource
     {
         protected const Int32 recommendedApiVersion = 1;
         public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
@@ -40,7 +40,7 @@ namespace CatalogResource
         #endregion
 
         #region Constructors
-        protected CatalogResource(int APIversion, Stream s) : base(APIversion, s) { if (stream == null) stream = this.UnParse(); stream.Position = 0; this.Parse(stream); }
+        protected CatalogResource(int APIversion, Stream s) : base(APIversion, s) { if (stream == null) { stream = this.UnParse(); OnResourceChanged(this, new EventArgs()); } stream.Position = 0; this.Parse(stream); }
         protected CatalogResource(int APIversion, uint version) : base(APIversion, null) { this.version = version; }
         #endregion
 

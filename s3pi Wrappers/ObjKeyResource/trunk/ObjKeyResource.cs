@@ -27,7 +27,7 @@ namespace ObjKeyResource
     /// <summary>
     /// A resource wrapper that understands Catalog Entry resources
     /// </summary>
-    public class ObjKeyResource : AResourceX
+    public class ObjKeyResource : AResource
     {
         const int recommendedApiVersion = 1;
         public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
@@ -43,7 +43,7 @@ namespace ObjKeyResource
         TGIBlockList tgiBlocks;
         #endregion
 
-        public ObjKeyResource(int APIversion, Stream s) : base(APIversion, s) { if (stream == null) { stream = UnParse(); dirty = true; } stream.Position = 0; Parse(stream); }
+        public ObjKeyResource(int APIversion, Stream s) : base(APIversion, s) { if (stream == null) { stream = UnParse(); OnResourceChanged(this, new EventArgs()); } stream.Position = 0; Parse(stream); }
 
         #region Data I/O
         void Parse(Stream s)

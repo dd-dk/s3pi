@@ -27,7 +27,7 @@ namespace NameMapResource
     /// <summary>
     /// A resource wrapper that understands 0x0166038C resources
     /// </summary>
-    public class NameMapResource : AResourceX, IDictionary<ulong, string>, System.Collections.IDictionary
+    public class NameMapResource : AResource, IDictionary<ulong, string>, System.Collections.IDictionary
     {
         static bool checking = s3pi.Settings.Settings.Checking;
         const Int32 recommendedApiVersion = 1;
@@ -47,7 +47,7 @@ namespace NameMapResource
         /// </summary>
         /// <param name="APIversion">Requested API version</param>
         /// <param name="s">Data stream to use, or null to create from scratch</param>
-        public NameMapResource(int APIversion, Stream s) : base(APIversion, s) { if (stream == null) { stream = UnParse(); dirty = true; } stream.Position = 0; Parse(stream); }
+        public NameMapResource(int APIversion, Stream s) : base(APIversion, s) { if (stream == null) { stream = UnParse(); OnResourceChanged(this, new EventArgs()); } stream.Position = 0; Parse(stream); }
 
         void Parse(Stream s)
         {

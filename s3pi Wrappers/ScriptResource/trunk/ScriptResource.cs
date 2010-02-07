@@ -27,7 +27,7 @@ namespace ScriptResource
     /// <summary>
     /// A resource wrapper that understands Encrypted Signed Assembly (0x073FAA07) resources
     /// </summary>
-    public class ScriptResource : AResourceX
+    public class ScriptResource : AResource
     {
         const Int32 recommendedApiVersion = 1;
         public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
@@ -49,7 +49,7 @@ namespace ScriptResource
         /// </summary>
         /// <param name="APIversion">Requested API version</param>
         /// <param name="s">Data stream to use, or null to create from scratch</param>
-        public ScriptResource(int APIversion, Stream s) : base(APIversion, s) { if (stream == null) { stream = UnParse(); dirty = true; } stream.Position = 0; Parse(stream); }
+        public ScriptResource(int APIversion, Stream s) : base(APIversion, s) { if (stream == null) { stream = UnParse(); OnResourceChanged(this, new EventArgs()); } stream.Position = 0; Parse(stream); }
         #endregion
 
         #region Data I/O
