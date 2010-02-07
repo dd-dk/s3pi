@@ -37,15 +37,17 @@ namespace s3pi.GenericRCOLResource
 
         public FTPT(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler, s) { }
         public FTPT(int APIversion, EventHandler handler, FTPT basis)
-            : base(APIversion, handler, null)
+            : base(APIversion, null, null)
         {
+            this.handler = handler;
             this.version = basis.version;
             this.footprintAreas = new AreaList(OnRCOLChanged, basis.footprintAreas);
             this.slotAreas = new AreaList(OnRCOLChanged, basis.slotAreas);
         }
         public FTPT(int APIversion, EventHandler handler)
-            : base(APIversion, handler, null)
+            : base(APIversion, null, null)
         {
+            this.handler = handler;
             this.footprintAreas = new AreaList(OnRCOLChanged);
             this.slotAreas = new AreaList(OnRCOLChanged);
         }

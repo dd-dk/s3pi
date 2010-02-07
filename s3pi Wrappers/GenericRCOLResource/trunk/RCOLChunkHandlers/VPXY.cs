@@ -46,8 +46,9 @@ namespace s3pi.GenericRCOLResource
             basis.version, basis.entryList, basis.boundingBox, basis.unused, basis.modular, basis.ftptIndex, basis.tgiBlockList) { }
         public VPXY(int APIversion, EventHandler handler,
             uint version, EntryList entryList, float[] boundingBox, byte[] unused, byte modular, uint ftptIndex, IList<AResource.TGIBlock> tgiBlockList)
-            : base(APIversion, handler, null)
+            : base(APIversion, null, null)
         {
+            this.handler = handler;
             this.version = version;
             this.entryList = new EntryList(OnRCOLChanged, entryList);
             this.boundingBox = (float[])boundingBox.Clone();
@@ -58,8 +59,9 @@ namespace s3pi.GenericRCOLResource
             this.tgiBlockList = new AResource.TGIBlockList(OnRCOLChanged, tgiBlockList);
         }
         public VPXY(int APIversion, EventHandler handler)
-            : base(APIversion, handler, null)
+            : base(APIversion, null, null)
         {
+            this.handler = handler;
             entryList = new EntryList(OnRCOLChanged);
             tgiBlockList = new AResource.TGIBlockList(OnRCOLChanged);
         }

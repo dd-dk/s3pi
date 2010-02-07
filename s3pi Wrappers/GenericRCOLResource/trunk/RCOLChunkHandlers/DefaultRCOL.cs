@@ -31,7 +31,11 @@ namespace s3pi.GenericRCOLResource
         // This ARCOLBlock does not support CreateRCOLBlock
         public DefaultRCOL(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler, s) { }
         public DefaultRCOL(int APIversion, EventHandler handler, DefaultRCOL basis)
-            : base(APIversion, handler, null) { data = (byte[])basis.data.Clone(); }
+            : base(APIversion, null, null)
+        {
+                this.handler = handler;
+                data = (byte[])basis.data.Clone();
+        }
 
         protected override void Parse(System.IO.Stream s) { data = new byte[s.Length]; s.Read(data, 0, (int)s.Length); }
 
