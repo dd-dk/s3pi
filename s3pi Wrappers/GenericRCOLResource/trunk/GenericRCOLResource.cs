@@ -28,7 +28,7 @@ namespace s3pi.GenericRCOLResource
     /// <summary>
     /// A resource wrapper that understands generic RCOL resources
     /// </summary>
-    public class GenericRCOLResource : AResourceX
+    public class GenericRCOLResource : AResource
     {
         static bool checking = s3pi.Settings.Settings.Checking;
         const Int32 recommendedApiVersion = 1;
@@ -42,7 +42,7 @@ namespace s3pi.GenericRCOLResource
         #endregion
 
         #region Constructors
-        public GenericRCOLResource(int APIversion, Stream s) : base(APIversion, s) { if (stream == null) { stream = UnParse(); dirty = true; } stream.Position = 0; Parse(stream); }
+        public GenericRCOLResource(int APIversion, Stream s) : base(APIversion, s) { if (stream == null) { stream = UnParse(); OnResourceChanged(this, new EventArgs()); } stream.Position = 0; Parse(stream); }
         #endregion
 
         #region Data I/O
