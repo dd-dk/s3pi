@@ -171,7 +171,7 @@ namespace s3pi.GenericRCOLResource
             #endregion
 
             #region Content Fields
-            public UInt32 Data { get { return data; } set { if (data != value) { data = value; if (handler != null) handler(this, EventArgs.Empty); } } }
+            public UInt32 Data { get { return data; } set { if (data != value) { data = value; OnElementChanged(); } } }
 
             public string Value { get { return "Data: 0x" + data.ToString("X8"); } }
             #endregion
