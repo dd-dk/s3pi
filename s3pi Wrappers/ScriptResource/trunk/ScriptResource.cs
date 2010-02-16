@@ -158,37 +158,44 @@ namespace ScriptResource
                     if (f.Equals("Value") || f.Equals("Stream") || f.Equals("AsBytes") || f.Equals("DecryptedBytes")) continue;
                     if (f.Equals("Assembly"))
                     {
-                        try
+                        if (cleardata.Length > 0)
                         {
-                            System.Reflection.Assembly assy = System.Reflection.Assembly.Load(cleardata);
-                            string h = String.Format("\n---------\n---------\n{0}: {1}\n---------\n", assy.GetType().Name, f);
-                            string t = "---------\n";
-                            s += h;
-                            s += assy.ToString() + "\n";
-                            foreach (var p in typeof(System.Reflection.Assembly).GetProperties())
-                            {
-                                if (!p.CanRead) continue;
-                                s += string.Format("  {0}: {1}\n", p.Name, "" + p.GetValue(assy, null));
-                            }
-                            foreach (var p in assy.GetReferencedAssemblies())
-                                s += string.Format("  Ref: {0}\n", p.ToString());
                             try
                             {
-                                foreach (var p in assy.GetExportedTypes())
-                                    s += string.Format("  Type: {0}\n", p.ToString());
+                                System.Reflection.Assembly assy = System.Reflection.Assembly.Load(cleardata);
+                                string h = String.Format("\n---------\n---------\n{0}: {1}\n---------\n", assy.GetType().Name, f);
+                                string t = "---------\n";
+                                s += h;
+                                s += assy.ToString() + "\n";
+                                foreach (var p in typeof(System.Reflection.Assembly).GetProperties())
+                                {
+                                    if (!p.CanRead) continue;
+                                    s += string.Format("  {0}: {1}\n", p.Name, "" + p.GetValue(assy, null));
+                                }
+                                foreach (var p in assy.GetReferencedAssemblies())
+                                    s += string.Format("  Ref: {0}\n", p.ToString());
+                                try
+                                {
+                                    foreach (var p in assy.GetExportedTypes())
+                                        s += string.Format("  Type: {0}\n", p.ToString());
+                                }
+                                catch { }
+                                s += t;
                             }
-                            catch { }
-                            s += t;
-                        }
-                        catch (Exception ex)
-                        {
-                            s += this.GetType().Assembly.FullName;
-                            for (Exception inex = ex; inex != null; inex = ex.InnerException)
+                            catch (Exception ex)
                             {
-                                s += "\n" + inex.Message;
-                                s += "\n" + inex.StackTrace;
-                                s += "\n-----";
+                                s += this.GetType().Assembly.FullName;
+                                for (Exception inex = ex; inex != null; inex = inex.InnerException)
+                                {
+                                    s += "\n" + inex.Message;
+                                    s += "\n" + inex.StackTrace;
+                                    s += "\n-----";
+                                }
                             }
+                        }
+                        else
+                        {
+                            s += "Assembly: no data\n";
                         }
                     }
                     else
