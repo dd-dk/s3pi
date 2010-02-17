@@ -23,7 +23,7 @@ using System.Collections.Generic;
 namespace s3pi.Interfaces
 {
     /// <summary>
-    /// Versioning is not currently implemented
+    /// Element priority is used when displaying elements
     /// </summary>
     [AttributeUsage(AttributeTargets.All, AllowMultiple = false, Inherited = false)]
     public class ElementPriorityAttribute : Attribute

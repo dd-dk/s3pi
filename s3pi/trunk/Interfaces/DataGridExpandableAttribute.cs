@@ -22,6 +22,9 @@ using System.Collections.Generic;
 
 namespace s3pi.Interfaces
 {
+    /// <summary>
+    /// Indicates that the element should be expandable rather than requiring a popup
+    /// </summary>
     [AttributeUsage(AttributeTargets.All, AllowMultiple = false, Inherited = false)]
     public class DataGridExpandableAttribute : Attribute
     {
@@ -30,7 +33,14 @@ namespace s3pi.Interfaces
         /// Indicates that the element should be expandable rather than requiring a popup
         /// </summary>
         public DataGridExpandableAttribute() { dataGridExpandable = true; }
+        /// <summary>
+        /// If true, indicates that the element should be expandable rather than requiring a popup
+        /// </summary>
+        /// <param name="value">True to indicate the element should be expandable</param>
         public DataGridExpandableAttribute(bool value) { dataGridExpandable = value; }
+        /// <summary>
+        /// Indicate whether the element should be expandable (true) or not (false)
+        /// </summary>
         public bool DataGridExpandable { get { return dataGridExpandable; } set { dataGridExpandable = value; } }
     }
 }
