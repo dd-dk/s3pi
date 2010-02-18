@@ -89,6 +89,7 @@ echo /*"*/ [assembly: AssemblyVersion(%25version%25)] /*"*/
     <Compile Include="RCOLChunkHandlers\MATD.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="RCOLChunkHandlers\MTST.cs" />
     <Compile Include="RCOLChunkHandlers\VPXY.cs" />
   </ItemGroup>
   <ItemGroup>
