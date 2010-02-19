@@ -200,17 +200,17 @@ namespace s3pi.Interfaces
 
             public TGIBlock(int APIversion, EventHandler handler, TGIBlock basis) : this(APIversion, handler, basis.order, (IResourceKey)basis) { }
 
-            // With EPFlags
-            public TGIBlock(int APIversion, EventHandler handler, uint resourceType, EPFlags epflags, uint resourceGroup, ulong instance)
+            // With ContentCategoryFlags
+            public TGIBlock(int APIversion, EventHandler handler, uint resourceType, ContentCategoryFlags epflags, uint resourceGroup, ulong instance)
                 : base(APIversion, handler, resourceType, epflags, resourceGroup, instance) { }
-            public TGIBlock(int APIversion, EventHandler handler, string order, uint resourceType, EPFlags epflags, uint resourceGroup, ulong instance)
+            public TGIBlock(int APIversion, EventHandler handler, string order, uint resourceType, ContentCategoryFlags epflags, uint resourceGroup, ulong instance)
                 : this(APIversion, handler, resourceType, epflags, resourceGroup, instance) { ok(order); this.order = order; }
-            public TGIBlock(int APIversion, EventHandler handler, Order order, uint resourceType, EPFlags epflags, uint resourceGroup, ulong instance)
+            public TGIBlock(int APIversion, EventHandler handler, Order order, uint resourceType, ContentCategoryFlags epflags, uint resourceGroup, ulong instance)
                 : this(APIversion, handler, resourceType, epflags, resourceGroup, instance) { ok(order); this.order = "" + order; }
 
-            // Without EPFlags... not sure about these...
+            // Without ContentCategoryFlags... not sure about these...
             public TGIBlock(int APIversion, EventHandler handler, uint resourceType, uint resourceGroup, ulong instance)
-                : this(APIversion, handler, resourceType, (EPFlags)(resourceGroup >> 24), resourceGroup & 0x00FFFFFF, instance) { }
+                : this(APIversion, handler, resourceType, (ContentCategoryFlags)(resourceGroup >> 24), resourceGroup & 0x00FFFFFF, instance) { }
             public TGIBlock(int APIversion, EventHandler handler, string order, uint resourceType, uint resourceGroup, ulong instance)
                 : this(APIversion, handler, resourceType, resourceGroup, instance) { ok(order); this.order = order; }
             public TGIBlock(int APIversion, EventHandler handler, Order order, uint resourceType, uint resourceGroup, ulong instance)
@@ -237,7 +237,7 @@ namespace s3pi.Interfaces
                         case 'G': temp = r.ReadUInt32(); break;
                         case 'I': instance = r.ReadUInt64(); break;
                     }
-                epFlags = (EPFlags)(temp >> 24);
+                contentCategoryFlags = (ContentCategoryFlags)(temp >> 24);
                 resourceGroup = temp & 0x00FFFFFF;
             }
 
@@ -248,7 +248,7 @@ namespace s3pi.Interfaces
                     switch (c)
                     {
                         case 'T': w.Write(resourceType); break;
-                        case 'G': w.Write((uint)epFlags << 24 | resourceGroup); break;
+                        case 'G': w.Write((uint)contentCategoryFlags << 24 | resourceGroup); break;
                         case 'I': w.Write(instance); break;
                     }
             }

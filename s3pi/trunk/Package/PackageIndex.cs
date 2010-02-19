@@ -77,7 +77,7 @@ namespace s3pi.Package
 
             rc.ResourceType = rk.ResourceType;
             rc.ResourceGroup = rk.ResourceGroup;
-            rc.EpFlags = rk.EpFlags;
+            rc.ContentCategory = rk.ContentCategory;
             rc.Instance = rk.Instance;
             rc.Chunkoffset = 0xffffffff;
             rc.Unknown2 = 1;
@@ -151,14 +151,14 @@ namespace s3pi.Package
         /// <param name="epflags">Entry epflags</param>
         /// <param name="instance">Entry instance</param>
         /// <returns>Matching entry</returns>
-        public IResourceIndexEntry this[uint type, EPFlags epflags, uint group, ulong instance]
+        public IResourceIndexEntry this[uint type, ContentCategoryFlags epflags, uint group, ulong instance]
         {
             get
             {
                 foreach (ResourceIndexEntry rie in this)
                 {
                     if (rie.ResourceType != type) continue;
-                    if (rie.EpFlags != epflags) continue;
+                    if (rie.ContentCategory != epflags) continue;
                     if (rie.ResourceGroup != group) continue;
                     if (rie.Instance == instance) return rie;
                 }

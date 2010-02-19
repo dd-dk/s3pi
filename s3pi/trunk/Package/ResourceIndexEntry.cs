@@ -55,9 +55,9 @@ namespace s3pi.Package
         /// </summary>
         [MinimumVersion(2)]
         [MaximumVersion(recommendedApiVersion)]
-        public override EPFlags EpFlags
+        public override ContentCategoryFlags ContentCategory
         {
-            get { if (requestedApiVersion != 0 & requestedApiVersion < 2) throw new InvalidOperationException(); return (EPFlags)(ResourceGroup32 >> 24); }
+            get { if (requestedApiVersion != 0 & requestedApiVersion < 2) throw new InvalidOperationException(); return (ContentCategoryFlags)(ResourceGroup32 >> 24); }
             set { if (requestedApiVersion != 0 & requestedApiVersion < 2) throw new InvalidOperationException(); ResourceGroup32 = ResourceGroup | (uint)value << 24; }
         }
         /// <summary>
@@ -68,7 +68,7 @@ namespace s3pi.Package
         public override UInt32 ResourceGroup
         {
             get { return (requestedApiVersion != 0 & requestedApiVersion < 2) ? ResourceGroup32 : ResourceGroup32 & 0x00FFFFFF; }
-            set { ResourceGroup32 = (requestedApiVersion != 0 & requestedApiVersion < 2) ? value : value & 0x00FFFFFF | (uint)EpFlags << 24; }
+            set { ResourceGroup32 = (requestedApiVersion != 0 & requestedApiVersion < 2) ? value : value & 0x00FFFFFF | (uint)ContentCategory << 24; }
         }
         UInt32 ResourceGroup32
         {
