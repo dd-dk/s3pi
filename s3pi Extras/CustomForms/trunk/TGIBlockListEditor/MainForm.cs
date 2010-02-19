@@ -32,11 +32,11 @@ namespace System.Windows.Forms.TGIBlockListEditorForm
         public MainForm()
         {
             InitializeComponent();
-            tbGroup.Text = tbInstance.Text = tbCC.Text = "";
+            tbGroup.Text = tbInstance.Text = "";
             listView1.Items.Clear();
             btnAdd.Enabled = items != null && (items.MaxSize == -1 || listView1.Items.Count < items.MaxSize);
             btnDelete.Enabled = listView1.SelectedItems.Count > 0;
-            cbType.Enabled = tbGroup.Enabled = tbInstance.Enabled = tbCC.Enabled = false;
+            cbType.Enabled = tbGroup.Enabled = tbInstance.Enabled = false;
         }
 
         AResource.TGIBlockList items;
@@ -71,7 +71,6 @@ namespace System.Windows.Forms.TGIBlockListEditorForm
                 "0x" + tgib.ResourceType.ToString("X8"),
                 "0x" + tgib.ResourceGroup.ToString("X8"),
                 "0x" + tgib.Instance.ToString("X16"),
-                "0x" + ((byte)tgib.ContentCategory).ToString("X2"),
             });
             return lvi;
         }
@@ -106,7 +105,7 @@ namespace System.Windows.Forms.TGIBlockListEditorForm
             if (listView1.SelectedIndices.Count == 0)
             {
                 cbType.Value = 0;
-                tbGroup.Text = tbInstance.Text = tbCC.Text = "";
+                tbGroup.Text = tbInstance.Text = "";
             }
             else
             {
@@ -114,9 +113,8 @@ namespace System.Windows.Forms.TGIBlockListEditorForm
                 cbType.Value = item.ResourceType;
                 tbGroup.Text = "0x" + item.ResourceGroup.ToString("X8");
                 tbInstance.Text = "0x" + item.Instance.ToString("X16");
-                tbCC.Text = "0x" + ((byte)item.ContentCategory).ToString("X2");
             }
-            cbType.Enabled = tbGroup.Enabled = tbInstance.Enabled = tbCC.Enabled = btnDelete.Enabled = listView1.SelectedIndices.Count > 0;
+            cbType.Enabled = tbGroup.Enabled = tbInstance.Enabled = btnDelete.Enabled = listView1.SelectedIndices.Count > 0;
         }
 
         private void cbType_ValueChanged(object sender, EventArgs e)
@@ -192,33 +190,6 @@ namespace System.Windows.Forms.TGIBlockListEditorForm
             items[listView1.SelectedIndices[0]].Instance = res;
             ListViewItem lvi = CreateListViewItem(items[listView1.SelectedIndices[0]]);
             listView1.SelectedItems[0].SubItems[3].Text = lvi.SubItems[3].Text;
-        }
-
-        private void tbCC_Validating(object sender, CancelEventArgs e)
-        {
-            byte res;
-            string s = tbCC.Text.Trim().ToLower();
-            if (s.StartsWith("0x"))
-                e.Cancel = !byte.TryParse(s.Substring(2), System.Globalization.NumberStyles.HexNumber, null, out res);
-            else
-                e.Cancel = !byte.TryParse(s, out res);
-            if (e.Cancel) tbInstance.SelectAll();
-        }
-
-        private void tbCC_Validated(object sender, EventArgs e)
-        {
-            if (listView1.SelectedIndices.Count <= 0) return;
-
-            byte res;
-            string s = tbCC.Text.Trim().ToLower();
-            if (s.StartsWith("0x"))
-                res = byte.Parse(s.Substring(2), System.Globalization.NumberStyles.HexNumber, null);
-            else
-                res = byte.Parse(s);
-
-            items[listView1.SelectedIndices[0]].ContentCategory = (ContentCategoryFlags)res;
-            ListViewItem lvi = CreateListViewItem(items[listView1.SelectedIndices[0]]);
-            listView1.SelectedItems[0].SubItems[4].Text = lvi.SubItems[4].Text;
         }
 
         private void btnOK_Click(object sender, EventArgs e)

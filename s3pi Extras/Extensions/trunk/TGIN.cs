@@ -23,9 +23,6 @@ using s3pi.Interfaces;
 
 namespace s3pi.Extensions
 {
-    // This does NOT implement IResourceKey.
-    // This is the external filename format.
-    // Splitting out the EPFlags would be WRONG.
     [Serializable]
     public struct TGIN
     {
@@ -38,11 +35,11 @@ namespace s3pi.Extensions
         {
             TGIN res = new TGIN();
             res.ResType = value.ResourceType;
-            res.ResGroup = (uint)value.ContentCategory << 24 | value.ResourceGroup;
+            res.ResGroup = value.ResourceGroup;
             res.ResInstance = value.Instance;
             return res;
         }
-        public static implicit operator AResourceKey(TGIN value) { return new AResource.TGIBlock(0, null, value.ResType, (ContentCategoryFlags)(value.ResGroup >> 24), value.ResGroup & 0x00FFFFFF, value.ResInstance); }
+        public static implicit operator AResourceKey(TGIN value) { return new AResource.TGIBlock(0, null, value.ResType, value.ResGroup, value.ResInstance); }
 
         public static implicit operator TGIN(string value)
         {
