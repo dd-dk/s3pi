@@ -260,11 +260,13 @@ namespace ObjKeyResource
             #endregion
 
             #region Content Fields
+            [ElementPriority(1)]
             public string Key { get { return key; } set { if (key != value) { key = value; OnElementChanged(); } } }
 
-            public virtual string Value { get { return "Key: \"" + key + "\"; Control code: 0x" + controlCode.ToString("X2"); } }
+            public virtual string Value { get { return this.GetType().Name + " -- Key: \"" + key + "\"; Control code: 0x" + controlCode.ToString("X2"); } }
             #endregion
         }
+        [ConstructorParameters(new object[] { "", (byte)0x00, "", })]
         public class CDTString : ComponentDataType
         {
             #region Attributes
@@ -305,6 +307,7 @@ namespace ObjKeyResource
 
             public override string Value { get { return base.Value + "; Data: " + "\"" + data + "\""; } }
         }
+        [ConstructorParameters(new object[] { "", (byte)0x01, (Int32)0, })]
         public class CDTResourceKey : ComponentDataType
         {
             #region Attributes
@@ -343,6 +346,7 @@ namespace ObjKeyResource
 
             public override string Value { get { return base.Value + "; Data: " + "0x" + data.ToString("X8"); } }
         }
+        [ConstructorParameters(new object[] { "", (byte)0x02, (Int32)0, })]
         public class CDTAssetResourceName : CDTResourceKey
         {
             public CDTAssetResourceName(int APIversion, EventHandler handler, CDTAssetResourceName basis)
@@ -352,6 +356,7 @@ namespace ObjKeyResource
 
             public override AHandlerElement Clone(EventHandler handler) { return new CDTAssetResourceName(requestedApiVersion, handler, this); }
         }
+        [ConstructorParameters(new object[] { "", (byte)0x03, "", })]
         public class CDTSteeringInstance : CDTString
         {
             #region Constructors
@@ -363,6 +368,7 @@ namespace ObjKeyResource
 
             public override AHandlerElement Clone(EventHandler handler) { return new CDTSteeringInstance(requestedApiVersion, handler, this); }
         }
+        [ConstructorParameters(new object[] { "", (byte)0x04, (UInt32)0, })]
         public class CDTUInt32 : ComponentDataType
         {
             #region Attributes

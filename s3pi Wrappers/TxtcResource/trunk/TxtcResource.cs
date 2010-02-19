@@ -251,24 +251,57 @@ namespace TxtcResource
             public override void Add() { this.Add(new SuperBlock(0, elementHandler)); }
         }
 
+        public enum Properties : uint
+        {
+            DestinationBlend = 0x048F7567,
+            SkipShaderModel = 0x06A775CE,
+            MaskSource = 0x10DA0B6A,
+            Width = 0x182E64EB,
+            MaskSelect = 0x1F091259,
+            MinShaderModel = 0x2EDF5F53,
+            SkipDetailLevel = 0x331178DF,
+            MaskBias = 0x3A3260E6,
+            MaskKey = 0x49DE3B16,
+            Rotation = 0x49F996DB,
+            Height = 0x4C47D5C0,
+            DefaultColor = 0x64399EC5,
+            ID = 0x687720A6,
+            Description = 0x6B7119C1,
+            ImageSource = 0x8A7006DB,
+            RenderTarget = 0xA2C91332,
+            SourceRectangle = 0xA3AAFC98,
+            MinDetailLevel = 0xAE5FE82A,
+            Color = 0xB01748DA,
+            ColorWrite = 0xB07B3B93,
+            HSVShift = 0xB67C2EF8,
+            ChannelSelect = 0xD0E69002,
+            UIVisible = 0xD92A4C8B,
+            DefaultFabric = 0xDCFF6D7B,
+            SourceBlend = 0xE055EE36,
+            DestinationRectangle = 0xE1D6D01F,
+            EnableFiltering = 0xE27FE962,
+            ImageKey = 0xF6CC8471,
+            EnableBlending = 0xFBF310C7,
+        }
+
         public abstract class Entry : AHandlerElement, IEquatable<Entry>
         {
             const int recommendedApiVersion = 1;
 
             #region Attributes
-            protected uint property;
+            protected Properties property;
             protected byte unknown;
             protected byte dataType;
             #endregion
 
             #region Constructors
-            public Entry(int APIversion, EventHandler handler, uint property, byte unknown, byte dataType)
+            public Entry(int APIversion, EventHandler handler, Properties property, byte unknown, byte dataType)
                 : base(APIversion, handler) { this.property = property; this.unknown = unknown; this.dataType = dataType; }
 
             public static Entry CreateEntry(int APIversion, EventHandler handler, Stream s)
             {
                 BinaryReader r = new BinaryReader(s);
-                uint property = r.ReadUInt32();
+                Properties property = (Properties)r.ReadUInt32();
                 if (property == 0)
                     return new EntryNull(APIversion, handler);
 
@@ -318,7 +351,7 @@ namespace TxtcResource
             internal virtual void UnParse(Stream s)
             {
                 BinaryWriter w = new BinaryWriter(s);
-                w.Write(property);
+                w.Write((uint)property);
                 if (property == 0)
                     return;
                 w.Write(unknown);
@@ -346,8 +379,11 @@ namespace TxtcResource
             #endregion
 
             #region Content Fields
-            public uint Property { get { return property; } set { if (property != value) { property = value; OnElementChanged(); } } }
+            [ElementPriority(1)]
+            public Properties Property { get { return property; } set { if (property != value) { property = value; OnElementChanged(); } } }
+            [ElementPriority(2)]
             public byte Unknown { get { return unknown; } set { if (unknown != value) { unknown = value; OnElementChanged(); } } }
+            [ElementPriority(3)]
             public byte DataType { get { return dataType; } set { if (dataType != value) { dataType = value; OnElementChanged(); } } }
 
             public virtual string Value
@@ -355,7 +391,7 @@ namespace TxtcResource
                 get
                 {
                     string s = "";
-                    s += "Property: 0x" + property.ToString("X8") + (Enum.IsDefined(typeof(Properties), property) ? " (" + ((Properties)property) + ")" : "(undefined)");
+                    s += "Property: 0x" + ((uint)property).ToString("X8") + (Enum.IsDefined(typeof(Properties), property) ? " (" + ((Properties)property) + ")" : "(undefined)");
                     s += "; Unknown: 0x" + unknown.ToString("X2");
                     s += "; DataType: 0x" + dataType.ToString("X2");
                     return s;
@@ -374,89 +410,103 @@ namespace TxtcResource
             public override AHandlerElement Clone(EventHandler handler) { throw new NotImplementedException(); }
             public override string Value { get { throw new NotImplementedException(); } }
         }
+        [ConstructorParameters(new object[] { (Properties)0, (byte)0, (byte)0x00, (byte)0, })]
         public class EntryByte : Entry
         {
             byte data;
             public EntryByte(int APIversion, EventHandler handler, EntryByte basis)
                 : this(APIversion, handler, basis.property, basis.unknown, basis.dataType, basis.data) { }
-            public EntryByte(int APIversion, EventHandler handler, uint property, byte unknown, byte dataType, byte data)
+            public EntryByte(int APIversion, EventHandler handler, Properties property, byte unknown, byte dataType, byte data)
                 : base(APIversion, handler, property, unknown, dataType) { this.data = data; }
             internal override void UnParse(Stream s) { base.UnParse(s); new BinaryWriter(s).Write(data); }
             public override AHandlerElement Clone(EventHandler handler) { return new EntryByte(requestedApiVersion, handler, this); }
+            [ElementPriority(4)]
             public byte Data { get { return data; } set { if (data != value) { data = value; OnElementChanged(); } } }
             public override string Value { get { return base.Value + "; Data: 0x" + data.ToString("X2"); } }
         }
+        [ConstructorParameters(new object[] { (Properties)0, (byte)0, (byte)0x02, (UInt16)0, })]
         public class EntryUInt16 : Entry
         {
             UInt16 data;
             public EntryUInt16(int APIversion, EventHandler handler, EntryUInt16 basis)
                 : this(APIversion, handler, basis.property, basis.unknown, basis.dataType, basis.data) { }
-            public EntryUInt16(int APIversion, EventHandler handler, uint property, byte unknown, byte dataType, UInt16 data)
+            public EntryUInt16(int APIversion, EventHandler handler, Properties property, byte unknown, byte dataType, UInt16 data)
                 : base(APIversion, handler, property, unknown, dataType) { this.data = data; }
             internal override void UnParse(Stream s) { base.UnParse(s); new BinaryWriter(s).Write(data); }
             public override AHandlerElement Clone(EventHandler handler) { return new EntryUInt16(requestedApiVersion, handler, this); }
+            [ElementPriority(4)]
             public UInt16 Data { get { return data; } set { if (data != value) { data = value; OnElementChanged(); } } }
             public override string Value { get { return base.Value + "; Data: 0x" + data.ToString("X4"); } }
         }
+        [ConstructorParameters(new object[] { (Properties)0, (byte)0, (byte)0x03, (UInt32)0, })]
         public class EntryUInt32 : Entry
         {
             UInt32 data;
             public EntryUInt32(int APIversion, EventHandler handler, EntryUInt32 basis)
                 : this(APIversion, handler, basis.property, basis.unknown, basis.dataType, basis.data) { }
-            public EntryUInt32(int APIversion, EventHandler handler, uint property, byte unknown, byte dataType, UInt32 data)
+            public EntryUInt32(int APIversion, EventHandler handler, Properties property, byte unknown, byte dataType, UInt32 data)
                 : base(APIversion, handler, property, unknown, dataType) { this.data = data; }
             internal override void UnParse(Stream s) { base.UnParse(s); new BinaryWriter(s).Write(data); }
             public override AHandlerElement Clone(EventHandler handler) { return new EntryUInt32(requestedApiVersion, handler, this); }
+            [ElementPriority(4)]
             public UInt32 Data { get { return data; } set { if (data != value) { data = value; OnElementChanged(); } } }
             public override string Value { get { return base.Value + "; Data: 0x" + data.ToString("X8"); } }
         }
+        [ConstructorParameters(new object[] { (Properties)0, (byte)0, (byte)0x04, (UInt64)0, })]
         public class EntryUInt64 : Entry
         {
             UInt64 data;
             public EntryUInt64(int APIversion, EventHandler handler, EntryUInt64 basis)
                 : this(APIversion, handler, basis.property, basis.unknown, basis.dataType, basis.data) { }
-            public EntryUInt64(int APIversion, EventHandler handler, uint property, byte unknown, byte dataType, UInt64 data)
+            public EntryUInt64(int APIversion, EventHandler handler, Properties property, byte unknown, byte dataType, UInt64 data)
                 : base(APIversion, handler, property, unknown, dataType) { this.data = data; }
             internal override void UnParse(Stream s) { base.UnParse(s); new BinaryWriter(s).Write(data); }
             public override AHandlerElement Clone(EventHandler handler) { return new EntryUInt64(requestedApiVersion, handler, this); }
+            [ElementPriority(4)]
             public UInt64 Data { get { return data; } set { if (data != value) { data = value; OnElementChanged(); } } }
             public override string Value { get { return base.Value + "; Data: 0x" + data.ToString("X16"); } }
         }
+        [ConstructorParameters(new object[] { (Properties)0, (byte)0, (byte)0x09, (Single)0, })]
         public class EntrySingle : Entry
         {
             Single data;
             public EntrySingle(int APIversion, EventHandler handler, EntrySingle basis)
                 : this(APIversion, handler, basis.property, basis.unknown, basis.dataType, basis.data) { }
-            public EntrySingle(int APIversion, EventHandler handler, uint property, byte unknown, byte dataType, Single data)
+            public EntrySingle(int APIversion, EventHandler handler, Properties property, byte unknown, byte dataType, Single data)
                 : base(APIversion, handler, property, unknown, dataType) { this.data = data; }
             internal override void UnParse(Stream s) { base.UnParse(s); new BinaryWriter(s).Write(data); }
             public override AHandlerElement Clone(EventHandler handler) { return new EntrySingle(requestedApiVersion, handler, this); }
+            [ElementPriority(4)]
             public Single Data { get { return data; } set { if (data != value) { data = value; OnElementChanged(); } } }
             public override string Value { get { return base.Value + "; Data: " + data.ToString(); } }
         }
+        [ConstructorParameters(new object[] { (Properties)0, (byte)0, (byte)0x0A, new Single[] { 0, 0, 0, 0 }, })]
         public class EntrySingleArray : Entry
         {
             Single[] data = new Single[4];
-            public EntrySingleArray(int APIversion, EventHandler handler, uint property, byte unknown, byte dataType, BinaryReader r)
+            public EntrySingleArray(int APIversion, EventHandler handler, Properties property, byte unknown, byte dataType, BinaryReader r)
                 : base(APIversion, handler, property, unknown, dataType) { for (int i = 0; i < data.Length; i++) data[i] = r.ReadSingle(); }
             public EntrySingleArray(int APIversion, EventHandler handler, EntrySingleArray basis)
                 : this(APIversion, handler, basis.property, basis.unknown, basis.dataType, basis.data) { }
-            public EntrySingleArray(int APIversion, EventHandler handler, uint property, byte unknown, byte dataType, Single[] data)
+            public EntrySingleArray(int APIversion, EventHandler handler, Properties property, byte unknown, byte dataType, Single[] data)
                 : base(APIversion, handler, property, unknown, dataType) { if (data.Length != this.data.Length) throw new ArgumentLengthException(); this.data = (Single[])data.Clone(); }
             internal override void UnParse(Stream s) { base.UnParse(s); BinaryWriter w = new BinaryWriter(s); for (int i = 0; i < data.Length; i++) w.Write(data[i]); }
             public override AHandlerElement Clone(EventHandler handler) { return new EntrySingleArray(requestedApiVersion, handler, this); }
+            [ElementPriority(4)]
             public Single[] Data { get { return (Single[])data.Clone(); } set { if (value.Length != this.data.Length) throw new ArgumentLengthException(); if (!ArrayCompare(data, value)) { data = (Single[])value.Clone(); OnElementChanged(); } } }
             public override string Value { get { return base.Value + "; Data: " + (new TypedValue(data.GetType(), data, "X")); } }
         }
+        [ConstructorParameters(new object[] { (Properties)0, (byte)0, (byte)0x0D, "", })]
         public class EntryString : Entry
         {
             String data;
             public EntryString(int APIversion, EventHandler handler, EntryString basis)
                 : this(APIversion, handler, basis.property, basis.unknown, basis.dataType, basis.data) { }
-            public EntryString(int APIversion, EventHandler handler, uint property, byte unknown, byte dataType, String data)
+            public EntryString(int APIversion, EventHandler handler, Properties property, byte unknown, byte dataType, String data)
                 : base(APIversion, handler, property, unknown, dataType) { this.data = data; }
             internal override void UnParse(Stream s) { base.UnParse(s); BinaryWriter w = new BinaryWriter(s); w.Write((UInt16)data.Length); w.Write(data.ToCharArray()); }
             public override AHandlerElement Clone(EventHandler handler) { return new EntryString(requestedApiVersion, handler, this); }
+            [ElementPriority(4)]
             public String Data { get { return data; } set { if (data != value) { data = value; OnElementChanged(); } } }
             public override string Value { get { return base.Value + "; Data: \"" + data + "\""; } }
         }
@@ -485,7 +535,7 @@ namespace TxtcResource
             {
                 if (fields.Length == 1 && typeof(Entry).IsAssignableFrom(fields[0].GetType())) return fields[0].GetType();
 
-                uint property = (uint)fields[0];
+                Properties property = (Properties)fields[0];
                 if (property == 0) return typeof(EntryNull);
 
                 if (checking) if (!Enum.IsDefined(typeof(Properties), property))
@@ -572,39 +622,6 @@ namespace TxtcResource
             protected override void WriteElement(Stream s, EntryBlock element) { element.UnParse(s); }
 
             public override void Add() { this.Add(new EntryBlock(0, handler)); }
-        }
-
-        enum Properties : uint
-        {
-            DestinationBlend = 0x048F7567,
-            SkipShaderModel = 0x06A775CE,
-            MaskSource = 0x10DA0B6A,
-            Width = 0x182E64EB,
-            MaskSelect = 0x1F091259,
-            MinShaderModel = 0x2EDF5F53,
-            SkipDetailLevel = 0x331178DF,
-            MaskBias = 0x3A3260E6,
-            MaskKey = 0x49DE3B16,
-            Rotation = 0x49F996DB,
-            Height = 0x4C47D5C0,
-            DefaultColor = 0x64399EC5,
-            ID = 0x687720A6,
-            Description = 0x6B7119C1,
-            ImageSource = 0x8A7006DB,
-            RenderTarget = 0xA2C91332,
-            SourceRectangle = 0xA3AAFC98,
-            MinDetailLevel = 0xAE5FE82A,
-            Color = 0xB01748DA,
-            ColorWrite = 0xB07B3B93,
-            HSVShift = 0xB67C2EF8,
-            ChannelSelect = 0xD0E69002,
-            UIVisible = 0xD92A4C8B,
-            DefaultFabric = 0xDCFF6D7B,
-            SourceBlend = 0xE055EE36,
-            DestinationRectangle = 0xE1D6D01F,
-            EnableFiltering = 0xE27FE962,
-            ImageKey = 0xF6CC8471,
-            EnableBlending = 0xFBF310C7,
         }
         #endregion
 

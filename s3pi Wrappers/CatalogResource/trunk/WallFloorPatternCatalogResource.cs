@@ -231,7 +231,7 @@ namespace CatalogResource
             public override void Add()
             {
                 this.Add((byte)0, (uint)0, (ushort)0,
-                    new MaterialBlock(0, null, 0, new TypeCode01(0, null, null, 0), new TypeCode01(0, null, null, 0), new List<TypeCode>(), new List<MaterialBlock>()),
+                    new MaterialBlock(0, null, 0, new TCString(0, null, null, 0), new TCString(0, null, null, 0), new List<TypeCode>(), new List<MaterialBlock>()),
                     new List<TGIBlock>(), (uint)0, (uint)0, (uint)0, (uint)0);
             }
 
