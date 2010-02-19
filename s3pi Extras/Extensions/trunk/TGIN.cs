@@ -38,11 +38,11 @@ namespace s3pi.Extensions
         {
             TGIN res = new TGIN();
             res.ResType = value.ResourceType;
-            res.ResGroup = (uint)value.EpFlags << 24 | value.ResourceGroup;
+            res.ResGroup = (uint)value.ContentCategory << 24 | value.ResourceGroup;
             res.ResInstance = value.Instance;
             return res;
         }
-        public static implicit operator AResourceKey(TGIN value) { return new AResource.TGIBlock(0, null, value.ResType, (EPFlags)(value.ResGroup >> 24), value.ResGroup & 0x00FFFFFF, value.ResInstance); }
+        public static implicit operator AResourceKey(TGIN value) { return new AResource.TGIBlock(0, null, value.ResType, (ContentCategoryFlags)(value.ResGroup >> 24), value.ResGroup & 0x00FFFFFF, value.ResInstance); }
 
         public static implicit operator TGIN(string value)
         {

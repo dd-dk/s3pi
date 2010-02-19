@@ -31,7 +31,7 @@
             System.Windows.Forms.ListViewItem listViewItem1 = new System.Windows.Forms.ListViewItem(new string[] {
             "WWWW",
             "0xDDDDDDDD",
-            "0x00DDDDDD",
+            "0xDDDDDD",
             "0xDDDDDDDDDDDDDDDD",
             "0xDD"}, -1);
             this.btnOK = new System.Windows.Forms.Button();
@@ -47,12 +47,12 @@
             this.chType = new System.Windows.Forms.ColumnHeader();
             this.chGroup = new System.Windows.Forms.ColumnHeader();
             this.chInstance = new System.Windows.Forms.ColumnHeader();
-            this.chEP = new System.Windows.Forms.ColumnHeader();
+            this.chCC = new System.Windows.Forms.ColumnHeader();
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
             this.label4 = new System.Windows.Forms.Label();
-            this.tbEP = new System.Windows.Forms.TextBox();
+            this.tbCC = new System.Windows.Forms.TextBox();
             this.tableLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -117,7 +117,7 @@
             this.tableLayoutPanel1.Controls.Add(this.label2, 1, 1);
             this.tableLayoutPanel1.Controls.Add(this.label3, 1, 2);
             this.tableLayoutPanel1.Controls.Add(this.label4, 1, 3);
-            this.tableLayoutPanel1.Controls.Add(this.tbEP, 2, 3);
+            this.tableLayoutPanel1.Controls.Add(this.tbCC, 2, 3);
             this.tableLayoutPanel1.Location = new System.Drawing.Point(12, 12);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             this.tableLayoutPanel1.RowCount = 5;
@@ -148,7 +148,7 @@
             this.tbGroup.Name = "tbGroup";
             this.tbGroup.Size = new System.Drawing.Size(153, 20);
             this.tbGroup.TabIndex = 5;
-            this.tbGroup.Text = "0x00DDDDDD";
+            this.tbGroup.Text = "0xDDDDDD";
             this.tbGroup.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.tbGroup.Validated += new System.EventHandler(this.tbGroup_Validated);
             this.tbGroup.Validating += new System.ComponentModel.CancelEventHandler(this.tbGroup_Validating);
@@ -172,7 +172,7 @@
             this.chType,
             this.chGroup,
             this.chInstance,
-            this.chEP});
+            this.chCC});
             this.listView1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.listView1.FullRowSelect = true;
             this.listView1.HideSelection = false;
@@ -182,7 +182,7 @@
             this.listView1.MultiSelect = false;
             this.listView1.Name = "listView1";
             this.tableLayoutPanel1.SetRowSpan(this.listView1, 5);
-            this.listView1.Size = new System.Drawing.Size(471, 227);
+            this.listView1.Size = new System.Drawing.Size(465, 227);
             this.listView1.TabIndex = 1;
             this.listView1.UseCompatibleStateImageBehavior = false;
             this.listView1.View = System.Windows.Forms.View.Details;
@@ -208,9 +208,9 @@
             this.chInstance.Text = "Instance";
             this.chInstance.Width = 151;
             // 
-            // chEP
+            // chCC
             // 
-            this.chEP.Text = "EP";
+            this.chCC.Text = "ContCat";
             // 
             // label1
             // 
@@ -246,23 +246,23 @@
             // 
             this.label4.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(507, 82);
+            this.label4.Location = new System.Drawing.Point(474, 82);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(21, 13);
+            this.label4.Size = new System.Drawing.Size(54, 13);
             this.label4.TabIndex = 6;
-            this.label4.Text = "&EP";
+            this.label4.Text = "&Cont. Cat.";
             // 
-            // tbEP
+            // tbCC
             // 
-            this.tbEP.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbEP.Location = new System.Drawing.Point(534, 82);
-            this.tbEP.Name = "tbEP";
-            this.tbEP.Size = new System.Drawing.Size(153, 20);
-            this.tbEP.TabIndex = 7;
-            this.tbEP.Text = "0xDD";
-            this.tbEP.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.tbEP.Validated += new System.EventHandler(this.tbEP_Validated);
-            this.tbEP.Validating += new System.ComponentModel.CancelEventHandler(this.tbEP_Validating);
+            this.tbCC.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.tbCC.Location = new System.Drawing.Point(534, 82);
+            this.tbCC.Name = "tbCC";
+            this.tbCC.Size = new System.Drawing.Size(153, 20);
+            this.tbCC.TabIndex = 7;
+            this.tbCC.Text = "0xDD";
+            this.tbCC.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
+            this.tbCC.Validated += new System.EventHandler(this.tbCC_Validated);
+            this.tbCC.Validating += new System.ComponentModel.CancelEventHandler(this.tbCC_Validating);
             // 
             // MainForm
             // 
@@ -304,7 +304,7 @@
         private ColumnHeader chGroup;
         private ColumnHeader chInstance;
         private Label label4;
-        private TextBox tbEP;
-        private ColumnHeader chEP;
+        private TextBox tbCC;
+        private ColumnHeader chCC;
     }
 }
