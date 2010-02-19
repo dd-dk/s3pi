@@ -44,6 +44,7 @@
     <Compile Include="AResource.cs" />
     <Compile Include="AResourceHandler.cs" />
     <Compile Include="AResourceKey.cs" />
+    <Compile Include="ConstructorParametersAttribute.cs" />
     <Compile Include="DataGridExpandableAttribute.cs" />
     <Compile Include="ElementPriorityAttribute.cs" />
     <Compile Include="IGenericAdd.cs" />
