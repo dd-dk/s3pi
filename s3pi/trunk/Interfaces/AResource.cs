@@ -200,17 +200,8 @@ namespace s3pi.Interfaces
 
             public TGIBlock(int APIversion, EventHandler handler, TGIBlock basis) : this(APIversion, handler, basis.order, (IResourceKey)basis) { }
 
-            // With ContentCategoryFlags
-            public TGIBlock(int APIversion, EventHandler handler, uint resourceType, ContentCategoryFlags epflags, uint resourceGroup, ulong instance)
-                : base(APIversion, handler, resourceType, epflags, resourceGroup, instance) { }
-            public TGIBlock(int APIversion, EventHandler handler, string order, uint resourceType, ContentCategoryFlags epflags, uint resourceGroup, ulong instance)
-                : this(APIversion, handler, resourceType, epflags, resourceGroup, instance) { ok(order); this.order = order; }
-            public TGIBlock(int APIversion, EventHandler handler, Order order, uint resourceType, ContentCategoryFlags epflags, uint resourceGroup, ulong instance)
-                : this(APIversion, handler, resourceType, epflags, resourceGroup, instance) { ok(order); this.order = "" + order; }
-
-            // Without ContentCategoryFlags... not sure about these...
             public TGIBlock(int APIversion, EventHandler handler, uint resourceType, uint resourceGroup, ulong instance)
-                : this(APIversion, handler, resourceType, (ContentCategoryFlags)(resourceGroup >> 24), resourceGroup & 0x00FFFFFF, instance) { }
+                : base(APIversion, handler, resourceType, resourceGroup, instance) { }
             public TGIBlock(int APIversion, EventHandler handler, string order, uint resourceType, uint resourceGroup, ulong instance)
                 : this(APIversion, handler, resourceType, resourceGroup, instance) { ok(order); this.order = order; }
             public TGIBlock(int APIversion, EventHandler handler, Order order, uint resourceType, uint resourceGroup, ulong instance)
@@ -229,16 +220,13 @@ namespace s3pi.Interfaces
             protected void Parse(Stream s)
             {
                 BinaryReader r = new BinaryReader(s);
-                UInt32 temp = 0;
                 foreach (char c in order)
                     switch (c)
                     {
                         case 'T': resourceType = r.ReadUInt32(); break;
-                        case 'G': temp = r.ReadUInt32(); break;
+                        case 'G': resourceGroup = r.ReadUInt32(); break;
                         case 'I': instance = r.ReadUInt64(); break;
                     }
-                contentCategoryFlags = (ContentCategoryFlags)(temp >> 24);
-                resourceGroup = temp & 0x00FFFFFF;
             }
 
             public void UnParse(Stream s)
@@ -248,7 +236,7 @@ namespace s3pi.Interfaces
                     switch (c)
                     {
                         case 'T': w.Write(resourceType); break;
-                        case 'G': w.Write((uint)contentCategoryFlags << 24 | resourceGroup); break;
+                        case 'G': w.Write(resourceGroup); break;
                         case 'I': w.Write(instance); break;
                     }
             }

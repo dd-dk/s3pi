@@ -53,24 +53,9 @@ namespace s3pi.Package
         /// <summary>
         /// The "group" the resource is part of
         /// </summary>
-        [MinimumVersion(2)]
-        [MaximumVersion(recommendedApiVersion)]
-        public override ContentCategoryFlags ContentCategory
-        {
-            get { if (requestedApiVersion != 0 & requestedApiVersion < 2) throw new InvalidOperationException(); return (ContentCategoryFlags)(ResourceGroup32 >> 24); }
-            set { if (requestedApiVersion != 0 & requestedApiVersion < 2) throw new InvalidOperationException(); ResourceGroup32 = ResourceGroup | (uint)value << 24; }
-        }
-        /// <summary>
-        /// The "group" the resource is part of
-        /// </summary>
         [MinimumVersion(1)]
         [MaximumVersion(recommendedApiVersion)]
         public override UInt32 ResourceGroup
-        {
-            get { return (requestedApiVersion != 0 & requestedApiVersion < 2) ? ResourceGroup32 : ResourceGroup32 & 0x00FFFFFF; }
-            set { ResourceGroup32 = (requestedApiVersion != 0 & requestedApiVersion < 2) ? value : value & 0x00FFFFFF | (uint)ContentCategory << 24; }
-        }
-        UInt32 ResourceGroup32
         {
             get { ms.Position = 8; return indexReader.ReadUInt32(); }
             set { ms.Position = 8; indexWriter.Write(value); OnResourceIndexEntryChanged(this, new EventArgs()); }

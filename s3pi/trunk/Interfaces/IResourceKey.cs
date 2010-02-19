@@ -23,23 +23,6 @@ using System.IO;
 namespace s3pi.Interfaces
 {
     /// <summary>
-    /// Specifies the Content Category overlays that appear in the catalog
-    /// </summary>
-    [Flags]
-    public enum ContentCategoryFlags : byte
-    {
-        //Unk = 0x00,
-        /// <summary>
-        /// EP1: World Adventures
-        /// </summary>
-        EP1 = 0x08,
-        /// <summary>
-        /// SP1: High-end Lofts
-        /// </summary>
-        SP1 = 0x10,
-    }
-
-    /// <summary>
     /// Exposes a standard set of properties to identify a resource
     /// </summary>
     public interface IResourceKey : System.Collections.Generic.IEqualityComparer<IResourceKey>, IEquatable<IResourceKey>, IComparable<IResourceKey>
@@ -48,10 +31,6 @@ namespace s3pi.Interfaces
         /// The "type" of the resource
         /// </summary>
         UInt32 ResourceType { get; set; }
-        /// <summary>
-        /// The EP this resource belongs to
-        /// </summary>
-        ContentCategoryFlags ContentCategory { get; set; }
         /// <summary>
         /// The "group" the resource is part of
         /// </summary>

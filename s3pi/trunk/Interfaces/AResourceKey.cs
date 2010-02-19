@@ -26,25 +26,17 @@ namespace s3pi.Interfaces
     {
         #region Attributes
         protected uint resourceType;
-        protected ContentCategoryFlags contentCategoryFlags;
         protected uint resourceGroup;
         protected ulong instance;
         #endregion
 
         public AResourceKey(int APIversion, EventHandler handler) : base(APIversion, handler) { }
         public AResourceKey(int APIversion, EventHandler handler, IResourceKey basis)
-            : base(APIversion, handler)
-        {
-            this.resourceType = basis.ResourceType;
-            this.contentCategoryFlags = basis.ContentCategory;
-            this.resourceGroup = basis.ResourceGroup;
-            this.instance = basis.Instance;
-        }
-        public AResourceKey(int APIversion, EventHandler handler, uint resourceType, ContentCategoryFlags epFlags, uint resourceGroup, ulong instance)
+            : this(APIversion, handler, basis.ResourceType, basis.ResourceGroup, basis.Instance) { }
+        public AResourceKey(int APIversion, EventHandler handler, uint resourceType, uint resourceGroup, ulong instance)
             : base(APIversion, handler)
         {
             this.resourceType = resourceType;
-            this.contentCategoryFlags = epFlags;
             this.resourceGroup = resourceGroup;
             this.instance = instance;
         }
@@ -56,11 +48,6 @@ namespace s3pi.Interfaces
         [ElementPriority(1)]
         public virtual uint ResourceType { get { return resourceType; } set { if (resourceType != value) { resourceType = value; OnElementChanged(); } } }
         /// <summary>
-        /// Details about the content category (Shop item, EP/SP, etc)
-        /// </summary>
-        [ElementPriority(4)]
-        public virtual ContentCategoryFlags ContentCategory { get { return contentCategoryFlags; } set { if (contentCategoryFlags != value) { contentCategoryFlags = value; OnElementChanged(); } } }
-        /// <summary>
         /// The "group" the resource is part of
         /// </summary>
         [ElementPriority(2)]
@@ -71,12 +58,6 @@ namespace s3pi.Interfaces
         [ElementPriority(3)]
         public virtual ulong Instance { get { return instance; } set { if (instance != value) { instance = value; OnElementChanged(); } } }
         #endregion
-
-        /* IMPORTANT NOTE
-         * * * * * * * * *
-         * contentCategoryFlags is not part of what gets compared when testing for equality
-         * Callers must filter out unwanted content
-         */
 
         #region IEqualityComparer<IResourceKey> Members
 
@@ -111,7 +92,7 @@ namespace s3pi.Interfaces
         /// <param name="value">The resource key to convert</param>
         /// <returns>The 42 character string representation of this resource key,</br>
         /// of the form 0xXXXXXXXX-0xXXXXXXXX-0xXXXXXXXXXXXXXXXX.</returns>
-        public static implicit operator String(AResourceKey value) { return String.Format("0x{0:X8}-0x{1:X8}-0x{2:X16}", value.ResourceType, ((uint)value.ContentCategory << 24) | value.ResourceGroup, value.Instance); }
+        public static implicit operator String(AResourceKey value) { return String.Format("0x{0:X8}-0x{1:X8}-0x{2:X16}", value.ResourceType, value.ResourceGroup, value.Instance); }
         /// <summary>
         /// Converts to a string representation of this resource key.
         /// </summary>
