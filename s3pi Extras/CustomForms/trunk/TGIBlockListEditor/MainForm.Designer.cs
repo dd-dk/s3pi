@@ -41,6 +41,7 @@
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.tbInstance = new System.Windows.Forms.TextBox();
             this.tbGroup = new System.Windows.Forms.TextBox();
+            this.cbType = new System.Windows.Forms.ResourceTypeCombo();
             this.listView1 = new System.Windows.Forms.ListView();
             this.chTag = new System.Windows.Forms.ColumnHeader();
             this.chType = new System.Windows.Forms.ColumnHeader();
@@ -145,6 +146,18 @@
             this.tbGroup.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
             this.tbGroup.Validated += new System.EventHandler(this.tbGroup_Validated);
             this.tbGroup.Validating += new System.ComponentModel.CancelEventHandler(this.tbGroup_Validating);
+            // 
+            // cbType
+            // 
+            this.cbType.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.cbType.Location = new System.Drawing.Point(534, 3);
+            this.cbType.Name = "cbType";
+            this.cbType.Size = new System.Drawing.Size(153, 21);
+            this.cbType.TabIndex = 3;
+            this.cbType.Value = ((uint)(0u));
+            this.cbType.ValueChanged += new System.EventHandler(this.cbType_ValueChanged);
+            this.cbType.Validated += new System.EventHandler(this.cbType_Validated);
+            this.cbType.Validating += new System.ComponentModel.CancelEventHandler(this.cbType_Validating);
             // 
             // listView1
             // 
