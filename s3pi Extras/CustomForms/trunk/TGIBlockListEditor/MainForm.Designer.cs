@@ -108,6 +108,7 @@
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
             this.tableLayoutPanel1.Controls.Add(this.tbInstance, 2, 2);
             this.tableLayoutPanel1.Controls.Add(this.tbGroup, 2, 1);
+            this.tableLayoutPanel1.Controls.Add(this.cbType, 2, 0);
             this.tableLayoutPanel1.Controls.Add(this.listView1, 0, 0);
             this.tableLayoutPanel1.Controls.Add(this.label1, 1, 0);
             this.tableLayoutPanel1.Controls.Add(this.label2, 1, 1);
