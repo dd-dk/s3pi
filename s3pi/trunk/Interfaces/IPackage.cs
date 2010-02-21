@@ -112,7 +112,7 @@ namespace s3pi.Interfaces
 
         /// <summary>
         /// Searches for an element that matches the conditions defined by <paramref name="flags"/> and <paramref name="values"/>,
-        /// and returns the first occurrence within the entire <typeparamref name="IList%lt;IResourceIndexEntry&gt;"/>.
+        /// and returns the first occurrence within the entire IPackage.
         /// </summary>
         /// <param name="flags">True bits enable matching against numerically equivalent <paramref name="values"/> entry</param>
         /// <param name="values">Fields to compare against</param>
@@ -121,7 +121,7 @@ namespace s3pi.Interfaces
 
         /// <summary>
         /// Searches for an element that matches the conditions defined by <paramref name="names"/> and <paramref name="values"/>,
-        /// and returns the first occurrence within the entire <typeparamref name="IList%lt;IResourceIndexEntry&gt;"/>.
+        /// and returns the first occurrence within the entire IPackage.
         /// </summary>
         /// <param name="names">Names of fields to compare</param>
         /// <param name="values">Fields to compare against</param>
@@ -130,20 +130,20 @@ namespace s3pi.Interfaces
 
         /// <summary>
         /// Searches for all element that matches the conditions defined by <paramref name="flags"/> and <paramref name="values"/>,
-        /// within the entire <typeparamref name="IList%lt;IResourceIndexEntry&gt;"/>.
+        /// within the entire IPackage.
         /// </summary>
         /// <param name="flags">True bits enable matching against numerically equivalent <paramref name="values"/> entry</param>
         /// <param name="values">Fields to compare against</param>
-        /// <returns><typeparamref name="IList"/> of zero or more matches.</returns>
+        /// <returns>Zero or more matches.</returns>
         IList<IResourceIndexEntry> FindAll(uint flags, IResourceIndexEntry values);
 
         /// <summary>
         /// Searches for all element that matches the conditions defined by <paramref name="names"/> and <paramref name="values"/>,
-        /// within the entire <typeparamref name="IList%lt;IResourceIndexEntry&gt;"/>.
+        /// within the entire IPackage.
         /// </summary>
         /// <param name="names">Names of fields to compare</param>
         /// <param name="values">Fields to compare against</param>
-        /// <returns><typeparamref name="IList"/> of zero or more matches.</returns>
+        /// <returns>Zero or more matches.</returns>
         IList<IResourceIndexEntry> FindAll(string[] names, TypedValue[] values);
         #endregion
 

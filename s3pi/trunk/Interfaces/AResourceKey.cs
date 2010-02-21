@@ -90,13 +90,13 @@ namespace s3pi.Interfaces
         /// Converts to a string representation of this resource key.
         /// </summary>
         /// <param name="value">The resource key to convert</param>
-        /// <returns>The 42 character string representation of this resource key,</br>
+        /// <returns>The 42 character string representation of this resource key,<br/>
         /// of the form 0xXXXXXXXX-0xXXXXXXXX-0xXXXXXXXXXXXXXXXX.</returns>
         public static implicit operator String(AResourceKey value) { return String.Format("0x{0:X8}-0x{1:X8}-0x{2:X16}", value.ResourceType, value.ResourceGroup, value.Instance); }
         /// <summary>
         /// Converts to a string representation of this resource key.
         /// </summary>
-        /// <returns>The 42 character string representation of this resource key,</br>
+        /// <returns>The 42 character string representation of this resource key,<br/>
         /// of the form 0xXXXXXXXX-0xXXXXXXXX-0xXXXXXXXXXXXXXXXX.</returns>
         public override string ToString() { return this; }
     }
