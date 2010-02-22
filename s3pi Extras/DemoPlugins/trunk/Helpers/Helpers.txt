@@ -1,0 +1,61 @@
+#
+# Comments start with "#", "//" or ";" anywhere on the line
+# Block comments /* */ are allowed, too.
+#
+
+#
+# Matching is done against "Wrapper" (matches the name of the wrapper used for the resource;
+# "DefaultResource" is the wrapper used when no other one is identified)
+# and against IResourceKey values (e.g. "ResourceType").
+# In both cases "*" can be used to mean "any".
+#
+
+# You can specify a description with "Desc: text"
+
+# You can specify the label for the button with "Label: labeltext"
+
+# The command to run is specified with "Command: exename" (with path, if needed)
+# (Note that the folder containing the config file is included in the OS search path)
+
+# Any required arguments are specified with "Arguments: args"
+# {} is replaced with the filename when on Command or Arguments lines
+# {prop} is replaced with the selected resource's "prop" field value on Argument line
+# Note: you probably want to add quotes around {} and {prop} - this isn't automatic
+
+# To flag a command as read-only (preventing any updates to the package), use "ReadOnly: anything_here"
+# Note: if you are passing a file to your editor and it does not update the write timestamp,
+# use "IgnoreWriteTimestamp: anything_here".
+
+// --
+// Here are some other examples - you would only have one per file
+// --
+
+// Could try just running it... but we won't; the uses the OS's file associations
+;Wrapper: *
+;Desc: Just run it
+;Label: Start
+;Command: {}
+// To avoid ever saving updates, say the helper is read-only
+;ReadOnly: yes
+
+// Or you might want to use Notepad on everything not handled above
+;Wrapper: *
+;Desc: Try Notepad
+;Label: Edit
+;Command: notepad
+;Arguments: "{}"
+
+// If you have an editor that doesn't update file timestamps on save, call it like this:
+;ResourceType: 0xFEEDF00D
+;Desc: Super feedf00d editor
+;Label: Edit
+;Command: X:\Path\To\Editor.exe
+;Arguments: "{}"
+;IgnoreWriteTimestamp: whatever
+
+; png
+;Wrapper: ImageResource
+// This is where GIMP installs by default:
+;Label: GIMP
+;Command: C:\Program Files\GIMP-2.0\bin\gimp-2.6.exe
+;Arguments: "{}"

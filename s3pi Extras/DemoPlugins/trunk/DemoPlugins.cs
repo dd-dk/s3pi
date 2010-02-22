@@ -1,5 +1,5 @@
 ﻿/***************************************************************************
- *  Copyright (C) 2009 by Peter L Jones                                    *
+ *  Copyright (C) 2009, 2010 by Peter L Jones                              *
  *  pljones@users.sf.net                                                   *
  *                                                                         *
  *  This file is part of the Sims 3 Package Interface (s3pi)               *
@@ -29,134 +29,170 @@ namespace s3pi.DemoPlugins
     /// <summary>
     /// Use this class to turn {IPackage, IResourceIndexEntry} tuples into commands to be executed
     /// </summary>
-    public class DemoPlugins
+    public class DemoPlugins : List<DemoPlugins.Helper>
     {
-        static List<string> reserved = new List<string>(new string[] { // must be lower case; currently fixed at two helpers
-                "helper1label", "helper1command", "helper1arguments", "helper1readonly", "helper1ignorewritetimestamp",
-                "helper2label", "helper2command", "helper2arguments", "helper2readonly", "helper2ignorewritetimestamp",
-                "wrapper",
+        static List<string> reserved = new List<string>(new string[] { // must be lower case
+                "wrapper", "label", "desc", "command", "arguments", "readonly", "ignorewritetimestamp",
             });
         static List<string> keywords = new List<string>();
-        static Dictionary<string, Dictionary<string, string>> demoPlugins = null;
-
-        static string config = "";
-
-        public static string Config
-        {
-            get { return config != null && config.Length > 0 ? config : Path.Combine(Path.GetDirectoryName(typeof(DemoPlugins).Assembly.Location), "Helpers.txt"); }
-            set { if (config != value) { config = value; demoPlugins = null; } }
-        }
+        static Dictionary<string, Dictionary<string, string>> helpers = null;
 
         static void ReadConfig()
         {
             keywords.AddRange(reserved.ToArray());
             keywords.AddRange(AApiVersionedFields.GetContentFields(0, typeof(IResourceKey)).ToArray()); // must be correct case
 
-            demoPlugins = new Dictionary<string, Dictionary<string, string>>();
-            if (!File.Exists(Config)) return;
+            helpers = new Dictionary<string, Dictionary<string, string>>();
 
-            StreamReader sr = new StreamReader(new FileStream(Config, FileMode.Open, FileAccess.Read, FileShare.Read));
+            // Parse *.helper in Helpers/ in folder where this assembly lives.
 
-            bool inCommentBlock = false;
-
-            for (string s = sr.ReadLine(); s != null; s = sr.ReadLine())
+            string folder = Path.Combine(Path.GetDirectoryName(typeof(DemoPlugins).Module.FullyQualifiedName), "Helpers");
+            foreach (string file in Directory.GetFiles(folder, "*.helper"))
             {
-                s = s.Trim();
+                StreamReader sr = new StreamReader(new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read));
+                Dictionary<string, string> target = new Dictionary<string, string>();
+                target.Add("file", Path.GetFileNameWithoutExtension(file));
 
-                #region Comments
-                if (inCommentBlock)
+                bool inCommentBlock = false;
+
+                for (string s = sr.ReadLine(); s != null; s = sr.ReadLine())
                 {
-                    int i = s.IndexOf("*/");
-                    if (i > -1)
+                    s = s.Trim();
+
+                    #region Comments
+                    if (inCommentBlock)
                     {
-                        s = s.Substring(i + 2).Trim();
-                        inCommentBlock = false;
+                        int i = s.IndexOf("*/");
+                        if (i > -1)
+                        {
+                            s = s.Substring(i + 2).Trim();
+                            inCommentBlock = false;
+                        }
+                    }
+
+                    string[] commentMarks = { "#", ";", "//" };
+                    for (int i = 0; s.Length > 0 && i < commentMarks.Length; i++)
+                    {
+                        int j = s.IndexOf(commentMarks[i]);
+                        if (j > -1) s = s.Substring(0, j).Trim();
+                    }
+
+                    if (inCommentBlock || s.Length == 0) continue;
+
+                    if (s.Contains("/*"))
+                    {
+                        s = s.Substring(0, s.IndexOf("/*")).Trim();
+                        inCommentBlock = true;
+                    }
+                    #endregion
+
+                    string[] headtail = s.Trim().Split(new char[] { ':', '=' }, 2);
+                    if (headtail.Length != 2) continue;
+                    string keyword = headtail[0].Trim();
+                    if (reserved.Contains(keyword.ToLower())) keyword = keyword.ToLower();
+                    if (!keywords.Contains(keyword)) continue;
+                    if (target.ContainsKey(keyword)) continue;
+                    target.Add(keyword, headtail[1].Trim());
+                }
+
+                sr.Close();
+
+                if (target.Count > 0 && target.ContainsKey("command"))
+                    helpers.Add(Path.GetFileNameWithoutExtension(file), target);
+            }
+        }
+
+        public static void Reload() { helpers = null; }
+
+
+        public struct Helper
+        {
+            public readonly string id;
+            public readonly string label;
+            public readonly string desc;
+            public readonly string command;
+            public readonly string arguments;
+            public readonly bool isReadOnly;
+            public readonly bool ignoreWriteTimestamp;
+            public readonly bool export;
+            public readonly string filename;
+            public readonly IResource res;
+            public Helper(Dictionary<string, string> match, s3pi.Extensions.TGIN tgin, IResource res)
+            {
+                id = getString(match, "file");
+                label = getString(match, "label");
+                desc = getString(match, "desc");
+                command = getString(match, "command");
+                arguments = getString(match, "arguments");
+                isReadOnly = getString(match, "readonly").Length > 0;
+                export = command.IndexOf("{}") >= 0 || arguments.IndexOf("{}") >= 0;
+                ignoreWriteTimestamp = export && getString(match, "ignorewritetimestamp").Length > 0;
+                filename = export ? Path.Combine(Path.GetTempPath(), tgin) : null;
+                this.res = res;
+            }
+            static string getString(Dictionary<string, string> cfg, string key) { return cfg.ContainsKey(key) ? cfg[key] : ""; }
+        }
+        bool hasID(string id) { foreach (Helper helper in this) if (helper.id.Equals(id)) return true; return false; }
+        Helper getID(string id) { foreach (Helper helper in this) if (helper.id.Equals(id)) return helper; throw new ArgumentOutOfRangeException(); }
+
+        /// <summary>
+        /// Initialise a new helpers list for a given resource
+        /// </summary>
+        /// <param name="key">The resource index entry</param>
+        /// <param name="res">The resource</param>
+        public DemoPlugins(IResourceIndexEntry key, IResource res)
+        {
+            if (helpers == null) ReadConfig();
+
+            if (res == null || key == null) return;
+
+            string wrapper = res.GetType().Name.ToLower();
+
+            foreach (string cfg in helpers.Keys)
+            {
+                Dictionary<string, string> match = null;
+
+                foreach (string kwd in helpers[cfg].Keys)
+                {
+                    if (kwd.Equals("wrapper"))
+                    {
+                        if ((new List<string>(helpers[cfg]["wrapper"].Split(' '))).Contains("*")) { match = helpers[cfg]; goto matched; }
+                        if ((new List<string>(helpers[cfg]["wrapper"].ToLower().Split(' '))).Contains(wrapper)) { match = helpers[cfg]; goto matched; }
+                        continue;
+                    }
+
+                    if (reserved.Contains(kwd)) continue;
+
+                    if (keywords.Contains(kwd))
+                    {
+                        if ((new List<string>(helpers[cfg][kwd].Split(' '))).Contains("" + key[kwd])) { match = helpers[cfg]; goto matched; }
+                        if ((new List<string>(helpers[cfg][kwd].Split(' '))).Contains("*")) { match = helpers[cfg]; goto matched; }
+                        continue;
                     }
                 }
-
-                string[] commentMarks = { "#", ";", "//" };
-                for (int i = 0; s.Length > 0 && i < commentMarks.Length; i++)
-                {
-                    int j = s.IndexOf(commentMarks[i]);
-                    if (j > -1) s = s.Substring(0, j).Trim();
-                }
-
-                if (inCommentBlock || s.Length == 0) continue;
-
-                if (s.Contains("/*"))
-                {
-                    s = s.Substring(0, s.IndexOf("/*")).Trim();
-                    inCommentBlock = true;
-                }
-                #endregion
-
-                string[] headtail = s.Split(new char[] { '.' }, 2);
-                if (headtail.Length != 2) continue;
-                Dictionary<string, string> target;
-                if (demoPlugins.ContainsKey(headtail[0].Trim())) target = demoPlugins[headtail[0].Trim()];
-                else { target = new Dictionary<string, string>(); demoPlugins.Add(headtail[0].Trim(), target); }
-
-                headtail = headtail[1].Trim().Split(new char[] { ':', '=' }, 2);
-                if (headtail.Length != 2) continue;
-                string keyword = headtail[0].Trim();
-                if (reserved.Contains(keyword.ToLower())) keyword = keyword.ToLower();
-                if (!keywords.Contains(keyword)) continue;
-                if (target.ContainsKey(keyword)) continue;
-                target.Add(keyword, headtail[1].Trim());
+            matched:
+                if (match != null)
+                    this.Add(new Helper(match, (s3pi.Extensions.TGIN)(key as AResourceIndexEntry), res));
             }
-
-            sr.Close();
-
-            List<string> toDelete = new List<string>();
-            foreach (string group in demoPlugins.Keys)
-                if (!(demoPlugins[group].ContainsKey("helper1command") || demoPlugins[group].ContainsKey("helper2command")))
-                    toDelete.Add(group);
-            foreach (string group in toDelete) demoPlugins.Remove(group);
         }
 
-        struct Cmd
+        public MemoryStream execHelper(int i)
         {
-            public struct Helper
-            {
-                public string label;
-                public string command;
-                public string arguments;
-                public bool isReadOnly;
-                public bool ignoreWriteTimestamp;
-                public bool export;
-            }
-            public string group;
-            public string filename;
-            public Dictionary<string, Helper> helpers;
-        }
-        Cmd cmd = new Cmd();
-
-        bool hasHelper(string hlp) { return cmd.helpers == null || cmd.helpers.Count == 0 ? false : cmd.helpers.ContainsKey(hlp); }
-        public bool HasHelper1 { get { return hasHelper("1"); } }
-        public bool HasHelper2 { get { return hasHelper("2"); } }
-
-        string helperLabel(string hlp) { return hasHelper(hlp) ? cmd.helpers[hlp].label : ""; }
-        public string Helper1Label { get { return helperLabel("1"); } }
-        public string Helper2Label { get { return helperLabel("2"); } }
-
-        MemoryStream execHelper(string hlp, IResource res)
-        {
-            if (!hasHelper(hlp)) return null;
+            Helper helper = this[i];
             try
             {
-                Cmd.Helper helper = cmd.helpers[hlp];
                 DateTime lastWriteTime = new DateTime();
                 if (helper.export)
-                    lastWriteTime = pasteTo(res, cmd.filename);
+                    lastWriteTime = pasteTo(helper.res, helper.filename);
                 else
-                    Clipboard.SetData(DataFormats.Serializable, res.Stream);
+                    Clipboard.SetData(DataFormats.Serializable, helper.res.Stream);
 
-                bool result = Execute(res, cmd, helper.command, helper.arguments);
+                bool result = Execute(helper.res, helper, helper.command, helper.arguments);
                 if (!helper.isReadOnly && result)
                 {
                     if (helper.export)
                     {
-                        return copyFrom(cmd.filename, helper.ignoreWriteTimestamp, lastWriteTime);
+                        return copyFrom(helper.filename, helper.ignoreWriteTimestamp, lastWriteTime);
                     }
                     else if (Clipboard.ContainsData(DataFormats.Serializable))
                     {
@@ -167,75 +203,9 @@ namespace s3pi.DemoPlugins
             }
             finally
             {
-                if (cmd.filename != null) File.Delete(cmd.filename);
+                if (helper.filename != null) File.Delete(helper.filename);
             }
         }
-        public MemoryStream Helper1(IResource res) { return execHelper("1", res); }
-        public MemoryStream Helper2(IResource res) { return execHelper("2", res); }
-
-        bool helperIsReadOnly(string hlp) { return hasHelper(hlp) ? cmd.helpers[hlp].isReadOnly : true; }
-        public bool Helper1IsReadOnly { get { return helperIsReadOnly("1"); } }
-        public bool Helper2IsReadOnly { get { return helperIsReadOnly("2"); } }
-
-        /// <summary>
-        /// Initialise a new Cmd structure for a given resource
-        /// </summary>
-        /// <param name="key">The resource index entry</param>
-        /// <param name="res">The resource</param>
-        public DemoPlugins(IResourceIndexEntry key, IResource res)
-        {
-            if (demoPlugins == null) ReadConfig();
-
-            if (res == null || key == null) return;
-
-            string wrapper = res.GetType().Name.ToLower();
-
-            bool match = false;
-
-            foreach (string g in demoPlugins.Keys)
-            {
-                foreach (string kwd in demoPlugins[g].Keys)
-                {
-                    if (kwd.Equals("wrapper"))
-                    {
-                        if ((new List<string>(demoPlugins[g]["wrapper"].ToLower().Split(' '))).Contains(wrapper)) { cmd.group = g; match = true; goto matched; }
-                        if ((new List<string>(demoPlugins[g]["wrapper"].Split(' '))).Contains("*")) { cmd.group = g; match = true; goto matched; }
-                        continue;
-                    }
-
-                    if (reserved.Contains(kwd)) continue;
-
-                    if (keywords.Contains(kwd))
-                    {
-                        if ((new List<string>(demoPlugins[g][kwd].Split(' '))).Contains("" + key[kwd])) { cmd.group = g; match = true; goto matched; }
-                        if ((new List<string>(demoPlugins[g][kwd].Split(' '))).Contains("*")) { cmd.group = g; match = true; goto matched; }
-                        continue;
-                    }
-                }
-            }
-        matched:
-            if (!match) return;
-
-            cmd.helpers = new Dictionary<string, Cmd.Helper>();
-
-            bool wantFilename = false;
-            foreach (string hlp in new string[] { "1", "2", })
-            {
-                if (!demoPlugins[cmd.group].ContainsKey("helper" + hlp + "command")) continue;
-                Cmd.Helper helper = new Cmd.Helper();
-                helper.label = getString(cmd.group, "helper" + hlp + "label");
-                helper.command = getString(cmd.group, "helper" + hlp + "command");
-                helper.arguments = getString(cmd.group, "helper" + hlp + "arguments");
-                helper.isReadOnly = getString(cmd.group, "helper" + hlp + "readonly").Length > 0;
-                helper.export = helper.command.IndexOf("{}") >= 0 || helper.arguments.IndexOf("{}") >= 0;
-                helper.ignoreWriteTimestamp = helper.export && getString(cmd.group, "helper" + hlp + "ignorewritetimestamp").Length > 0;
-                cmd.helpers.Add(hlp, helper);
-                if (helper.export) wantFilename = true;
-            }
-            if (wantFilename)
-                cmd.filename = Path.Combine(Path.GetTempPath(), (s3pi.Extensions.TGIN)(key as AResourceIndexEntry));
-        }
-        string getString(string group, string key) { return demoPlugins[group].ContainsKey(key) ? demoPlugins[group][key] : ""; }
 
         public static MemoryStream Edit(IResourceIndexEntry key, IResource res, string command, bool wantsQuotes, bool ignoreWriteTimestamp)
         {
@@ -245,7 +215,7 @@ namespace s3pi.DemoPlugins
                 DateTime lastWriteTime = pasteTo(res, filename);
 
                 string quote = wantsQuotes ? new string(new char[] { '"' }) : "";
-                bool result = Execute(res, new Cmd(), command, quote + filename + quote);
+                bool result = Execute(res, new Helper(), command, quote + filename + quote);
                 if (!result) return null;
 
                 return copyFrom(filename, ignoreWriteTimestamp, lastWriteTime);
@@ -282,10 +252,10 @@ namespace s3pi.DemoPlugins
             return null;
         }
 
-        static bool Execute(IResource res, Cmd cmd, string command, string arguments)
+        static bool Execute(IResource res, Helper helper, string command, string arguments)
         {
-            command = command.Replace("{}", cmd.filename);
-            arguments = arguments.Replace("{}", cmd.filename);
+            command = command.Replace("{}", helper.filename);
+            arguments = arguments.Replace("{}", helper.filename);
             foreach (string prop in res.ContentFields)
                 if (arguments.IndexOf("{" + prop.ToLower() + "}") >= 0) arguments = arguments.Replace("{" + prop.ToLower() + "}", "" + res[prop]);
 
