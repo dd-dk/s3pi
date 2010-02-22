@@ -103,6 +103,21 @@ namespace s3pi.DemoPlugins
         }
 
         public static void Reload() { helpers = null; }
+        static List<Helper> allHelpers = null;
+        public static List<Helper> Helpers
+        {
+            get
+            {
+                if (helpers == null) { ReadConfig(); allHelpers = null; }
+                if (allHelpers == null)
+                {
+                    allHelpers = new List<Helper>();
+                    foreach (string key in helpers.Keys)
+                        allHelpers.Add(new Helper(helpers[key], new s3pi.Extensions.TGIN(), null));
+                }
+                return allHelpers;
+            }
+        }
 
 
         public struct Helper
