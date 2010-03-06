@@ -55,7 +55,7 @@ namespace CatalogResource
         string materialGrouping1 = "";
         string materialGrouping2 = "";
         uint[] unknown15 = new uint[13];
-        uint nullTGIIndex;
+        uint fallbackIndex;
         #endregion
 
         #region Constructors
@@ -92,7 +92,7 @@ namespace CatalogResource
             this.materialGrouping1 = basis.materialGrouping1;
             this.materialGrouping2 = basis.materialGrouping2;
             this.unknown15 = (uint[])basis.unknown15.Clone();
-            this.nullTGIIndex = basis.nullTGIIndex;
+            this.fallbackIndex = basis.fallbackIndex;
         }
         public ObjectCatalogResource(int APIversion,
             uint version, IList<Material> materialList, Common common, uint unknown2, byte unknown3, uint unknown4,
@@ -151,7 +151,7 @@ namespace CatalogResource
             this.materialGrouping2 = materialGrouping2;
             if (unknown15.Length != this.unknown15.Length) throw new ArgumentLengthException("unknown15", this.unknown15.Length);
             this.unknown15 = (uint[])unknown15.Clone();
-            this.nullTGIIndex = nullTGIIndex;
+            this.fallbackIndex = nullTGIIndex;
         }
         #endregion
 
@@ -193,7 +193,7 @@ namespace CatalogResource
             this.materialGrouping1 = r2.ReadString();
             this.materialGrouping2 = r2.ReadString();
             for (int i = 0; i < this.unknown15.Length; i++) unknown15[i] = r.ReadUInt32();
-            this.nullTGIIndex = r.ReadUInt32();
+            this.fallbackIndex = r.ReadUInt32();
 
             list = new TGIBlockList(OnResourceChanged, s, tgiPosn, tgiSize);
 
@@ -239,7 +239,7 @@ namespace CatalogResource
             Write7BitStr(s, materialGrouping1, System.Text.Encoding.BigEndianUnicode);
             Write7BitStr(s, materialGrouping2, System.Text.Encoding.BigEndianUnicode);
             for (int i = 0; i < this.unknown15.Length; i++) w.Write(unknown15[i]);
-            w.Write(nullTGIIndex);
+            w.Write(fallbackIndex);
 
             base.UnParse(s);
 
@@ -714,7 +714,7 @@ namespace CatalogResource
                 if (!ArrayCompare(unknown15, value)) { unknown15 = (uint[])value.Clone(); OnResourceChanged(this, new EventArgs()); }
             }
         }
-        public uint NullTGIIndex { get { return nullTGIIndex; } set { if (nullTGIIndex != value) { nullTGIIndex = value; OnResourceChanged(this, new EventArgs()); } } }
+        public uint FallbackIndex { get { return fallbackIndex; } set { if (fallbackIndex != value) { fallbackIndex = value; OnResourceChanged(this, new EventArgs()); } } }
         #endregion
     }
 }
