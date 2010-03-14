@@ -153,10 +153,49 @@ namespace s3pi.Interfaces
 
                 fields.Add(m.Name);
             }
-            fields.Sort();
+            fields.Sort(new PriorityComparer(t));
 
             return fields;
         }
+
+        /// <summary>
+        /// Return the ElementPriority value for a Content Field
+        /// </summary>
+        /// <param name="t">Type on which Content Field exists</param>
+        /// <param name="index">Content Field name</param>
+        /// <returns>Int32.MaxValue if no ElementPriorityAttribute or Content Field not found;
+        /// otherwise the value of the ElementPriorityAttribute Priority field.</returns>
+        public static Int32 GetPriority(Type t, string index)
+        {
+            Int32 priority = Int32.MaxValue;
+            System.Reflection.PropertyInfo pi = t.GetProperty(index);
+
+            if (pi != null)
+                foreach (var attr in pi.GetCustomAttributes(typeof(ElementPriorityAttribute), true))
+                    priority = (attr as ElementPriorityAttribute).Priority;
+
+            return priority;
+        }
+
+        class PriorityComparer : IComparer<string>
+        {
+            Type t;
+            public PriorityComparer(Type t) { this.t = t; }
+            public int Compare(string x, string y)
+            {
+                int res = GetPriority(t, x).CompareTo(GetPriority(t, y));
+                if (res == 0) res = x.CompareTo(y);
+                return res;
+            }
+        }
+
+        /// <summary>
+        /// Sorts Content Field names by their ElementPriority (if set)
+        /// </summary>
+        /// <param name="x">First content field name</param>
+        /// <param name="y">Second content field name</param>
+        /// <returns>A signed number indicating the relative values of this instance and value.</returns>
+        public int CompareByPriority(string x, string y) { return new PriorityComparer(this.GetType()).Compare(x, y); }
 
         /// <summary>
         /// Gets a lookup table from fieldname to type.
@@ -263,6 +302,11 @@ namespace s3pi.Interfaces
             for (int i = bytes.Length; true; ) { w.Write((byte)((i & 0x7F) | (i > 0x7F ? 0x80 : 0))); i = i >> 7; if (i == 0) break; }
             w.Write(bytes);
         }
+        /// <summary>
+        /// Write a 7BITSTR value to a stream with Default encoding
+        /// </summary>
+        /// <param name="s">Stream to write to</param>
+        /// <param name="value">String to write, prefixed by length, seven bits at a time</param>
         public static void Write7BitStr(System.IO.Stream s, string value) { Write7BitStr(s, value, System.Text.Encoding.Default); }
 
         /// <summary>
