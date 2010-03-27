@@ -70,8 +70,8 @@ namespace System.Windows.Forms
         {
             string s = "";
             if (ExtList.Ext.ContainsKey("0x" + tgib.ResourceType.ToString("X8")))
-                s += "(" + ExtList.Ext["0x" + tgib.ResourceType.ToString("X8")][0] + ") ";
-            return s + tgib;
+                s += " (" + ExtList.Ext["0x" + tgib.ResourceType.ToString("X8")][0] + ")";
+            return tgib + s;
         }
 
         public event EventHandler SelectedIndexChanged;
