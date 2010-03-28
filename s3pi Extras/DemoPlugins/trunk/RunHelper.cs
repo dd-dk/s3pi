@@ -112,11 +112,14 @@ namespace s3pi.DemoPlugins
             try
             {
                 Form theForm = (Form)mainForm.GetConstructor(new Type[] { typeof(Stream), }).Invoke(new object[] { ms, });
+                Environment.ExitCode = 1;
                 Application.Run(theForm);
                 if (Environment.ExitCode != 0)
                     return 0;
 
                 result = ((IRunHelper)theForm).Result;
+                if (result == null)
+                    return 0;
             }
             catch (Exception ex)
             {
