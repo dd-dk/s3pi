@@ -149,7 +149,7 @@ namespace ModularResource
     }
 
     /// <summary>
-    /// ResourceHandler for TxtcResource wrapper
+    /// ResourceHandler for ModularResource wrapper
     /// </summary>
     public class ModularResourceHandler : AResourceHandler
     {
