@@ -34,6 +34,9 @@ namespace s3pi.Package
         const Int32 recommendedApiVersion = 2;
 
         #region AApiVersionedFields
+        /// <summary>
+        /// The version of the API in use
+        /// </summary>
         public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
 
         //No ContentFields override as we don't want to make anything more public than AResourceIndexEntry provides
@@ -135,6 +138,13 @@ namespace s3pi.Package
         [MaximumVersion(recommendedApiVersion)]
         public override bool IsDeleted { get { return isDeleted; } set { if (isDeleted != value) { isDeleted = value; OnResourceIndexEntryChanged(this, new EventArgs()); } } }
 
+        /// <summary>
+        /// Get a copy of this element but with a new change event handler
+        /// </summary>
+        /// <param name="handler">Element change event handler</param>
+        /// <returns>Return a copy of this element but with a new change event handler</returns>
+        [MinimumVersion(1)]
+        [MaximumVersion(recommendedApiVersion)]
         public override AHandlerElement Clone(EventHandler handler) { return new ResourceIndexEntry(indexEntry); }
         #endregion
 

@@ -23,6 +23,9 @@ using System.IO;
 
 namespace s3pi.Interfaces
 {
+    /// <summary>
+    /// Representation of a package
+    /// </summary>
     public interface IPackage : IApiVersion, IContentFields
     {
         #region Whole package

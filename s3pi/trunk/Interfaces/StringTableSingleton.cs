@@ -22,9 +22,16 @@ using System.Collections.Generic;
 
 namespace s3pi.Interfaces
 {
+    /// <summary>
+    /// Strings used in a number of places in the game.
+    /// Currently only in CatalogResource
+    /// </summary>
     public static class StringTableSingleton
     {
         static string[] stringTable = null;
+        /// <summary>
+        /// Table of defined strings.
+        /// </summary>
         public static String[] Table
         {
             get

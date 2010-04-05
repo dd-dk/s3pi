@@ -23,6 +23,9 @@ using System.IO;
 
 namespace s3pi.Interfaces
 {
+    /// <summary>
+    /// Abstract definition of a package
+    /// </summary>
     public abstract class APackage : AApiVersionedFields, IPackage
     {
         #region AApiVersionedFields

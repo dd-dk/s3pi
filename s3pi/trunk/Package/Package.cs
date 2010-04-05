@@ -35,6 +35,9 @@ namespace s3pi.Package
         const Int32 recommendedApiVersion = 1;
 
         #region AApiVersionedFields
+        /// <summary>
+        /// The version of the API in use
+        /// </summary>
         public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
 
         //No ContentFields override as we don't want to make anything more public than APackage provides
@@ -156,13 +159,16 @@ namespace s3pi.Package
         /// <param name="APIversion">(unused)</param>
         /// <param name="packagePath">Fully qualified filename of the package</param>
         /// <returns>IPackage reference to an existing package on disk</returns>
+        /// <exception cref="InvalidDataException">Thrown if the package header is malformed.</exception>
         public static new IPackage OpenPackage(int APIversion, string packagePath) { return OpenPackage(APIversion, packagePath, false); }
         /// <summary>
         /// Open an existing package by filename, optionally readwrite
         /// </summary>
         /// <param name="APIversion">(unused)</param>
-        /// <param name="packagePath">Fully qualified filename of the package</param>
+        /// <param name="PackagePath">Fully qualified filename of the package</param>
+        /// <param name="readwrite">True to indicate read/write access required</param>
         /// <returns>IPackage reference to an existing package on disk</returns>
+        /// <exception cref="InvalidDataException">Thrown if the package header is malformed.</exception>
         public static new IPackage OpenPackage(int APIversion, string PackagePath, bool readwrite)
         {
             return new Package(APIversion, new FileStream(PackagePath, FileMode.Open, readwrite ? FileAccess.ReadWrite : FileAccess.Read, FileShare.ReadWrite));
@@ -318,7 +324,7 @@ namespace s3pi.Package
 
         /// <summary>
         /// Searches for an element that matches the conditions defined by <paramref name="flags"/> and <paramref name="values"/>,
-        /// and returns the first occurrence within the entire <typeparamref name="IList%lt;IResourceIndexEntry&gt;"/>.
+        /// and returns the first occurrence within the package index./>.
         /// </summary>
         /// <param name="flags">True bits enable matching against numerically equivalent <paramref name="values"/> entry</param>
         /// <param name="values">Fields to compare against</param>
@@ -332,7 +338,7 @@ namespace s3pi.Package
 
         /// <summary>
         /// Searches for an element that matches the conditions defined by <paramref name="names"/> and <paramref name="values"/>,
-        /// and returns the first occurrence within the entire <typeparamref name="IList%lt;IResourceIndexEntry&gt;"/>.
+        /// and returns the first occurrence within the package index./>.
         /// </summary>
         /// <param name="names">Names of fields to compare</param>
         /// <param name="values">Fields to compare against</param>
@@ -345,12 +351,12 @@ namespace s3pi.Package
         }
 
         /// <summary>
-        /// Searches for all element that matches the conditions defined by <paramref name="flags"/> and <paramref name="values"/>,
-        /// within the entire <typeparamref name="IList%lt;IResourceIndexEntry&gt;"/>.
+        /// Searches for any element that matches the conditions defined by <paramref name="flags"/> and <paramref name="values"/>,
+        /// and returns all occurences within the package index./>.
         /// </summary>
         /// <param name="flags">True bits enable matching against numerically equivalent <paramref name="values"/> entry</param>
         /// <param name="values">Fields to compare against</param>
-        /// <returns><typeparamref name="IList"/> of zero or more matches.</returns>
+        /// <returns>Zero or more matches.</returns>
         [MinimumVersion(1)]
         [MaximumVersion(recommendedApiVersion)]
         public override IList<IResourceIndexEntry> FindAll(uint flags, IResourceIndexEntry values)
@@ -359,12 +365,12 @@ namespace s3pi.Package
         }
 
         /// <summary>
-        /// Searches for all element that matches the conditions defined by <paramref name="names"/> and <paramref name="values"/>,
-        /// within the entire <typeparamref name="IList%lt;IResourceIndexEntry&gt;"/>.
+        /// Searches for any element that matches the conditions defined by <paramref name="names"/> and <paramref name="values"/>,
+        /// and returns all occurences within the package index./>.
         /// </summary>
         /// <param name="names">Names of fields to compare</param>
         /// <param name="values">Fields to compare against</param>
-        /// <returns><typeparamref name="IList"/> of zero or more matches.</returns>
+        /// <returns>Zero or more matches.</returns>
         [MinimumVersion(1)]
         [MaximumVersion(recommendedApiVersion)]
         public override IList<IResourceIndexEntry> FindAll(string[] names, TypedValue[] values)
@@ -525,7 +531,7 @@ namespace s3pi.Package
         /// <summary>
         /// Used by WrapperDealer to get the data for a resource
         /// </summary>
-        /// <param name="rie">IResourceIndexEntry of resource</param>
+        /// <param name="rc">IResourceIndexEntry of resource</param>
         /// <returns>The resource data (uncompressed, if necessary)</returns>
         public override Stream GetResource(IResourceIndexEntry rc)
         {
