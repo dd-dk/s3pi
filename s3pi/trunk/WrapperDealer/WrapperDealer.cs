@@ -82,8 +82,7 @@ namespace s3pi.WrapperDealer
                     {
                         if (!t.IsSubclassOf(typeof(AResourceHandler))) continue;
 
-                        AResourceHandler arh = (AResourceHandler)dotNetDll.CreateInstance(t.FullName, false, BindingFlags.CreateInstance, null,
-                            new object[] { }, null, null);
+                        AResourceHandler arh = (AResourceHandler)t.GetConstructor(new Type[] { }).Invoke(new object[] { });
 
                         if (arh == null) continue;
 
