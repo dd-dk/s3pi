@@ -282,7 +282,7 @@ namespace s3pi.GenericRCOLResource
             while ((s = sr.ReadLine()) != null)
             {
                 if (s.StartsWith(";")) continue;
-                string[] t = s.Split(new char[] { ' ' }, 4);
+                string[] t = s.Split(new char[] { ' ' }, 4, StringSplitOptions.RemoveEmptyEntries);
                 if (t[2].Equals("Y")) resourceTypes.Add(t[0]);
             }
         }
