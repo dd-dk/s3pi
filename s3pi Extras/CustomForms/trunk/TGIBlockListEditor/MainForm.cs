@@ -145,7 +145,6 @@ namespace System.Windows.Forms.TGIBlockListEditorForm
                 e.Cancel = !uint.TryParse(s.Substring(2), System.Globalization.NumberStyles.HexNumber, null, out res);
             else
                 e.Cancel = !uint.TryParse(s, out res);
-            e.Cancel = (res & 0x00FFFFFF) != res;
             if (e.Cancel) tbGroup.SelectAll();
         }
 
