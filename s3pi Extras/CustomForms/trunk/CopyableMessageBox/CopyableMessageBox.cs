@@ -243,7 +243,7 @@ namespace System.Windows.Forms
         public static void IssueException(Exception ex, string prefix, string caption)
         {
             string s = prefix;
-            for (Exception inex = ex; inex != null; inex = ex.InnerException)
+            for (Exception inex = ex; inex != null; inex = inex.InnerException)
             {
                 s += "\n" + inex.Message;
                 s += "\n" + inex.StackTrace;
