@@ -4,6 +4,7 @@ set ConfigurationName=Release
 set base=%TargetName%
 rem -%ConfigurationName%
 set src=%TargetName%-Source
+set help=..\s3pi Doc\Help\s3piHelp.chm
 
 set out=S:\Sims3\Tools\s3pi\
 
@@ -37,6 +38,7 @@ popd
 
 mkdir %base%
 copy "build\bin\%ConfigurationName%\*" %base%
+if exist "%help%" copy "%help%" %base%
 
 pushd %base%
 echo %suffix% >%TargetName%-Version.txt
