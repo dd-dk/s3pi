@@ -105,7 +105,11 @@ namespace s3pi.Interfaces
         public abstract class DependentList<T> : AHandlerList<T>, IGenericAdd
             where T : IEquatable<T>
         {
-            protected EventHandler elementHandler; // Work around list event handler triggering during stream constructor
+            /// <summary>
+            /// The element change event handler delegate.
+            /// </summary>
+            /// <remarks>Work around for list event handler triggering during stream constructor.</remarks>
+            protected EventHandler elementHandler;
 
             #region Constructors
             // base class constructors...
