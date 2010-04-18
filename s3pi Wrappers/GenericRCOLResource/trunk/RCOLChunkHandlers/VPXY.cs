@@ -36,7 +36,7 @@ namespace s3pi.GenericRCOLResource
         float[] boundingBox = new float[6];
         byte[] unused = new byte[4];
         byte modular;
-        uint ftptIndex;
+        int ftptIndex;
         AResource.TGIBlockList tgiBlockList;
         #endregion
 
@@ -45,7 +45,7 @@ namespace s3pi.GenericRCOLResource
             : this(APIversion, handler,
             basis.version, basis.entryList, basis.boundingBox, basis.unused, basis.modular, basis.ftptIndex, basis.tgiBlockList) { }
         public VPXY(int APIversion, EventHandler handler,
-            uint version, EntryList entryList, float[] boundingBox, byte[] unused, byte modular, uint ftptIndex, IList<AResource.TGIBlock> tgiBlockList)
+            uint version, EntryList entryList, float[] boundingBox, byte[] unused, byte modular, int ftptIndex, IList<AResource.TGIBlock> tgiBlockList)
             : base(APIversion, null, null)
         {
             this.handler = handler;
@@ -94,7 +94,7 @@ namespace s3pi.GenericRCOLResource
                     throw new EndOfStreamException(String.Format("Unused: expected 4 bytes, read {0}.", unused.Length));
             modular = r.ReadByte();
             if (modular != 0)
-                ftptIndex = r.ReadUInt32();
+                ftptIndex = r.ReadInt32();
             else
                 ftptIndex = 0;
 
@@ -133,22 +133,22 @@ namespace s3pi.GenericRCOLResource
         #endregion
 
         #region Sub-types
-        public class ElementUInt32 : AHandlerElement, IEquatable<ElementUInt32>
+        public class ElementInt32 : AHandlerElement, IEquatable<ElementInt32>
         {
             const int recommendedApiVersion = 1;
 
             #region Attributes
-            UInt32 data;
+            Int32 data;
             #endregion
 
             #region Constructors
-            public ElementUInt32(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
-            public ElementUInt32(int APIversion, EventHandler handler, ElementUInt32 basis) : this(APIversion, handler, basis.data) { }
-            public ElementUInt32(int APIversion, EventHandler handler, UInt32 data) : base(APIversion, handler) { this.data = data; }
+            public ElementInt32(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
+            public ElementInt32(int APIversion, EventHandler handler, ElementInt32 basis) : this(APIversion, handler, basis.data) { }
+            public ElementInt32(int APIversion, EventHandler handler, Int32 data) : base(APIversion, handler) { this.data = data; }
             #endregion
 
             #region Data I/O
-            void Parse(Stream s) { data = new BinaryReader(s).ReadUInt32(); }
+            void Parse(Stream s) { data = new BinaryReader(s).ReadInt32(); }
 
             internal void UnParse(Stream s) { new BinaryWriter(s).Write(data); }
             #endregion
@@ -161,38 +161,38 @@ namespace s3pi.GenericRCOLResource
             /// </summary>
             public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
 
-            public override AHandlerElement Clone(EventHandler handler) { return new ElementUInt32(requestedApiVersion, handler, this); }
+            public override AHandlerElement Clone(EventHandler handler) { return new ElementInt32(requestedApiVersion, handler, this); }
             #endregion
 
             #region IEquatable<Entry> Members
 
-            public bool Equals(ElementUInt32 other) { return this.data == other.data; }
+            public bool Equals(ElementInt32 other) { return this.data == other.data; }
 
             #endregion
 
             #region Content Fields
-            public UInt32 Data { get { return data; } set { if (data != value) { data = value; OnElementChanged(); } } }
+            public Int32 Data { get { return data; } set { if (data != value) { data = value; OnElementChanged(); } } }
 
             public string Value { get { return "Data: 0x" + data.ToString("X8"); } }
             #endregion
         }
-        public class UintList : AResource.DependentList<ElementUInt32>
+        public class IntList : AResource.DependentList<ElementInt32>
         {
             #region Constructors
-            public UintList(EventHandler handler) : base(handler, 255) { }
-            public UintList(EventHandler handler, Stream s) : base(handler, 255, s) { }
-            public UintList(EventHandler handler, IList<ElementUInt32> ltgi) : base(handler, 255, ltgi) { }
+            public IntList(EventHandler handler) : base(handler, 255) { }
+            public IntList(EventHandler handler, Stream s) : base(handler, 255, s) { }
+            public IntList(EventHandler handler, IList<ElementInt32> ltgi) : base(handler, 255, ltgi) { }
             #endregion
 
             #region Data I/O
             protected override uint ReadCount(Stream s) { return (new BinaryReader(s)).ReadByte(); }
             protected override void WriteCount(Stream s, uint count) { (new BinaryWriter(s)).Write((byte)count); }
 
-            protected override ElementUInt32 CreateElement(Stream s) { return new ElementUInt32(0, elementHandler, s); }
-            protected override void WriteElement(Stream s, ElementUInt32 element) { element.UnParse(s); }
+            protected override ElementInt32 CreateElement(Stream s) { return new ElementInt32(0, elementHandler, s); }
+            protected override void WriteElement(Stream s, ElementInt32 element) { element.UnParse(s); }
             #endregion
 
-            public override void Add() { this.Add((uint)0); }
+            public override void Add() { this.Add((int)0); }
         }
 
         public abstract class Entry : AHandlerElement, IEquatable<Entry>
@@ -206,8 +206,8 @@ namespace s3pi.GenericRCOLResource
             {
                 BinaryReader r = new BinaryReader(s);
                 byte entryType = r.ReadByte();
-                if (entryType == 0x00) return new Entry00(APIversion, handler, 0, r.ReadByte(), new UintList(handler, s));
-                if (entryType == 0x01) return new Entry01(APIversion, handler, 1, r.ReadUInt32());
+                if (entryType == 0x00) return new Entry00(APIversion, handler, 0, r.ReadByte(), new IntList(handler, s));
+                if (entryType == 0x01) return new Entry01(APIversion, handler, 1, r.ReadInt32());
                 throw new InvalidDataException(String.Format("Unknown EntryType 0x{0:X2} at 0x{1:X8}", entryType, s.Position));
             }
             #endregion
@@ -236,19 +236,19 @@ namespace s3pi.GenericRCOLResource
         public class Entry00 : Entry
         {
             byte entryID;
-            UintList tgiIndexes;
+            IntList tgiIndexes;
 
             public Entry00(int APIversion, EventHandler handler, Entry00 basis)
                 : this(APIversion, handler, 0, basis.entryID, basis.tgiIndexes) { }
-            public Entry00(int APIversion, EventHandler handler, byte entryType, byte entryID, IList<ElementUInt32> tgiIndexes)
-                : base(APIversion, handler) { this.entryID = entryID; this.tgiIndexes = new UintList(handler, tgiIndexes); }
+            public Entry00(int APIversion, EventHandler handler, byte entryType, byte entryID, IList<ElementInt32> tgiIndexes)
+                : base(APIversion, handler) { this.entryID = entryID; this.tgiIndexes = new IntList(handler, tgiIndexes); }
 
             internal override void UnParse(Stream s)
             {
                 BinaryWriter w = new BinaryWriter(s);
                 w.Write((byte)0x00);
                 w.Write(entryID);
-                if (tgiIndexes == null) tgiIndexes = new UintList(handler);
+                if (tgiIndexes == null) tgiIndexes = new IntList(handler);
                 tgiIndexes.UnParse(s);
             }
 
@@ -262,7 +262,7 @@ namespace s3pi.GenericRCOLResource
 
             #region Content Fields
             public byte EntryID { get { return entryID; } set { if (entryID != value) { entryID = value; if (handler != null) handler(this, EventArgs.Empty); } } }
-            public UintList TGIIndexes { get { return tgiIndexes; } set { if (tgiIndexes != value) { tgiIndexes = new UintList(handler, value); if (handler != null) handler(this, EventArgs.Empty); } } }
+            public IntList TGIIndexes { get { return tgiIndexes; } set { if (tgiIndexes != value) { tgiIndexes = new IntList(handler, value); if (handler != null) handler(this, EventArgs.Empty); } } }
 
             public override string Value
             {
@@ -278,9 +278,9 @@ namespace s3pi.GenericRCOLResource
         }
         public class Entry01 : Entry
         {
-            uint tgiIndex;
+            int tgiIndex;
             public Entry01(int APIversion, EventHandler handler, Entry01 basis) : this(APIversion, handler, 1, basis.tgiIndex) { }
-            public Entry01(int APIversion, EventHandler handler, byte entryType, uint tgiIndex) : base(APIversion, handler) { this.tgiIndex = tgiIndex; }
+            public Entry01(int APIversion, EventHandler handler, byte entryType, int tgiIndex) : base(APIversion, handler) { this.tgiIndex = tgiIndex; }
             internal override void UnParse(Stream s)
             {
                 BinaryWriter w = new BinaryWriter(s);
@@ -293,7 +293,7 @@ namespace s3pi.GenericRCOLResource
             public override AHandlerElement Clone(EventHandler handler) { return new Entry01(requestedApiVersion, handler, this); }
 
             #region Content Fields
-            public UInt32 TGIIndex { get { return tgiIndex; } set { if (tgiIndex != value) { tgiIndex = value; if (handler != null) handler(this, EventArgs.Empty); } } }
+            public Int32 TGIIndex { get { return tgiIndex; } set { if (tgiIndex != value) { tgiIndex = value; if (handler != null) handler(this, EventArgs.Empty); } } }
 
             public override string Value { get { return "TGIIndex: 0x" + tgiIndex.ToString("X8") + ""; } }
             #endregion
@@ -355,7 +355,7 @@ namespace s3pi.GenericRCOLResource
             }
         }
         public bool Modular { get { return modular != 0; } set { if (Modular != value) { modular = (byte)(value ? 0x01 : 0x00); OnRCOLChanged(this, EventArgs.Empty); } } }
-        public uint FTPTIndex
+        public int FTPTIndex
         {
             get { return ftptIndex; }
             set { if (modular == 0) throw new InvalidOperationException(); if (ftptIndex != value) { ftptIndex = value; OnRCOLChanged(this, EventArgs.Empty); } }
