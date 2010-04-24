@@ -118,6 +118,72 @@ namespace s3pi.GenericRCOLResource
         #endregion
 
         #region Sub-types
+        public class TransformElement : AHandlerElement, IEquatable<TransformElement>
+        {
+            const int recommendedApiVersion = 1;
+
+            #region Attributes
+            float rot1 = 0f;
+            float rot2 = 0f;
+            float rot3 = 0f;
+            float pos = 0f;
+            #endregion
+
+            #region Constructors
+            public TransformElement(int APIversion, EventHandler handler) : base(APIversion, handler) { }
+            public TransformElement(int APIversion, EventHandler handler, TransformElement basis)
+                : this(APIversion, handler, basis.rot1, basis.rot2, basis.rot3, basis.pos) { }
+            public TransformElement(int APIversion, EventHandler handler, float rot1, float rot2, float rot3, float pos)
+                : base(APIversion, handler) { this.rot1 = rot1; this.rot2 = rot2; this.rot3 = rot3; this.pos = pos; }
+            public TransformElement(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
+            #endregion
+
+            #region Data I/O
+            void Parse(Stream s)
+            {
+                BinaryReader r = new BinaryReader(s);
+                rot1 = r.ReadSingle();
+                rot2 = r.ReadSingle();
+                rot3 = r.ReadSingle();
+                pos = r.ReadSingle();
+            }
+
+            internal void UnParse(Stream s)
+            {
+                BinaryWriter w = new BinaryWriter(s);
+                w.Write(rot1);
+                w.Write(rot2);
+                w.Write(rot3);
+                w.Write(pos);
+            }
+            #endregion
+
+            #region AHandlerElement Members
+            public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
+
+            public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
+
+            public override AHandlerElement Clone(EventHandler handler) { return new TransformElement(requestedApiVersion, handler, this); }
+            #endregion
+
+            #region IEquatable<Route>
+            public bool Equals(TransformElement other) { return rot1 == other.rot1 && rot2 == other.rot2 && rot3 == other.rot3 && pos == other.pos; }
+            #endregion
+
+            #region Content Fields
+            [ElementPriority(1)]
+            public float Rot1 { get { return rot1; } set { if (rot1 != value) { rot1 = value; OnElementChanged(); } } }
+            [ElementPriority(2)]
+            public float Rot2 { get { return rot2; } set { if (rot2 != value) { rot2 = value; OnElementChanged(); } } }
+            [ElementPriority(3)]
+            public float Rot3 { get { return rot3; } set { if (rot3 != value) { rot3 = value; OnElementChanged(); } } }
+            [ElementPriority(4)]
+            public float Pos { get { return pos; } set { if (pos != value) { pos = value; OnElementChanged(); } } }
+
+            public virtual string Value { get { return String.Format("Rot1: {0}; Rot2: {1}; Rot3: {2}; Pos: {3}", rot1, rot2, rot3, pos); } }
+            #endregion
+        }
+
         public class Part : AHandlerElement, IEquatable<Part>
         {
             const int recommendedApiVersion = 1;
@@ -125,20 +191,25 @@ namespace s3pi.GenericRCOLResource
             #region Attributes
             protected uint slotName;
             protected uint boneName;
+            TransformElement tX;
+            TransformElement tY;
+            TransformElement tZ;
             float[] transformMatrix = new float[3 * 4];
             #endregion
 
             #region Constructors
             public Part(int APIversion, EventHandler handler) : base(APIversion, handler) { }
-            public Part(int APIversion, EventHandler handler, Part basis) : this(APIversion, handler, basis.slotName, basis.boneName, basis.transformMatrix) { }
-            public Part(int APIversion, EventHandler handler, uint slotName, uint boneName, float[] transformMatrix)
+            public Part(int APIversion, EventHandler handler, Part basis) : this(APIversion, handler, basis.slotName, basis.boneName, basis.tX, basis.tY, basis.tZ) { }
+            public Part(int APIversion, EventHandler handler, uint slotName, uint boneName, TransformElement tX, TransformElement tY, TransformElement tZ)
                 : base(APIversion, handler)
             {
                 this.slotName = slotName;
                 this.boneName = boneName;
                 if (checking) if (transformMatrix.Length != this.transformMatrix.Length)
                         throw new ArgumentLengthException("transformMatrix", transformMatrix.Length);
-                this.transformMatrix = transformMatrix;
+                this.tX = new TransformElement(requestedApiVersion, handler, tX);
+                this.tY = new TransformElement(requestedApiVersion, handler, tY);
+                this.tZ = new TransformElement(requestedApiVersion, handler, tZ);
             }
             #endregion
 
@@ -159,15 +230,14 @@ namespace s3pi.GenericRCOLResource
             public uint SlotName { get { return slotName; } set { if (slotName != value) { slotName = value; OnElementChanged(); } } }
             [ElementPriority(2)]
             public uint BoneName { get { return boneName; } set { if (boneName != value) { boneName = value; OnElementChanged(); } } }
-            public float[] TransformMatrix
-            {
-                get { return (float[])transformMatrix.Clone(); }
-                set
-                {
-                    if (value.Length != this.transformMatrix.Length) throw new ArgumentLengthException("TransformMatrix", this.transformMatrix.Length);
-                    if (!ArrayCompare(transformMatrix, value)) { transformMatrix = (float[])value.Clone(); OnElementChanged(); }
-                }
-            }
+            //[ElementPriority(3)] reserved for SlotPlacementFlags
+            [ElementPriority(4)]
+            public TransformElement X { get { return tX; } set { if (tX != value) { tX = new TransformElement(requestedApiVersion, handler, value); OnElementChanged(); } } }
+            [ElementPriority(5)]
+            public TransformElement Y { get { return tY; } set { if (tY != value) { tY = new TransformElement(requestedApiVersion, handler, value); OnElementChanged(); } } }
+            [ElementPriority(6)]
+            public TransformElement Z { get { return tZ; } set { if (tZ != value) { tZ = new TransformElement(requestedApiVersion, handler, value); OnElementChanged(); } } }
+
             public virtual string Value
             {
                 get
@@ -175,7 +245,9 @@ namespace s3pi.GenericRCOLResource
                     string s = "";
                     s += "SlotName: 0x" + slotName.ToString("X8");
                     s += "\nBoneName: 0x" + boneName.ToString("X8");
-                    s += "\nTransformMatrix: " + this["TransformMatrix"];
+                    s += "\nX: " + tX.Value;
+                    s += "\nY: " + tY.Value;
+                    s += "\nZ: " + tZ.Value;
                     return s;
                 }
             }
@@ -194,12 +266,12 @@ namespace s3pi.GenericRCOLResource
             {
                 uint[] slotNames = new uint[count];
                 uint[] boneNames = new uint[count];
-                float[][] transforms = new float[count][];
+                TransformElement[,] tfms = new TransformElement[count,3];
                 BinaryReader r = new BinaryReader(s);
                 for (int i = 0; i < slotNames.Length; i++) slotNames[i] = r.ReadUInt32();
                 for (int i = 0; i < boneNames.Length; i++) boneNames[i] = r.ReadUInt32();
-                for (int i = 0; i < transforms.Length; i++) { transforms[i] = new float[3 * 4]; for (int j = 0; j < 3 * 4; j++) transforms[i][j] = r.ReadSingle(); }
-                for (int i = 0; i < count; i++) this.Add(new Part(0, elementHandler, slotNames[i], boneNames[i], transforms[i]));
+                for (int i = 0; i < count; i++) this.Add(new Part(0, elementHandler, slotNames[i], boneNames[i],
+                    new TransformElement(0, elementHandler, s), new TransformElement(0, elementHandler, s), new TransformElement(0, elementHandler, s)));
                 if (count > 0)
                 {
                     uint zero = r.ReadUInt32();
@@ -212,7 +284,15 @@ namespace s3pi.GenericRCOLResource
                 BinaryWriter w = new BinaryWriter(s);
                 for (int i = 0; i < Count; i++) w.Write(this[i].SlotName);
                 for (int i = 0; i < Count; i++) w.Write(this[i].BoneName);
-                for (int i = 0; i < Count; i++) for (int j = 0; j < this[i].TransformMatrix.Length; j++) w.Write(this[i].TransformMatrix[j]);
+                for (int i = 0; i < Count; i++)
+                {
+                    if (this[i].X == null) this[i].X = new TransformElement(0, handler);
+                    this[i].X.UnParse(s);
+                    if (this[i].Y == null) this[i].Y = new TransformElement(0, handler);
+                    this[i].Y.UnParse(s);
+                    if (this[i].Z == null) this[i].Z = new TransformElement(0, handler);
+                    this[i].Z.UnParse(s);
+                }
                 if (Count > 0)
                     w.Write((uint)0);
             }
@@ -272,8 +352,9 @@ namespace s3pi.GenericRCOLResource
             SlotPlacement slotPlacementFlags;
             public SlottedPart(int APIversion, EventHandler handler) : base(APIversion, handler) { }
             public SlottedPart(int APIversion, EventHandler handler, SlottedPart basis) : base(APIversion, handler, basis) { slotPlacementFlags = basis.slotPlacementFlags; }
-            public SlottedPart(int APIversion, EventHandler handler, uint slotName, uint boneName, SlotPlacement slotPlacementFlags, float[] transformMatrix)
-                : base(APIversion, handler, slotName, boneName, transformMatrix) { this.slotPlacementFlags = slotPlacementFlags; }
+            public SlottedPart(int APIversion, EventHandler handler, uint slotName, uint boneName, SlotPlacement slotPlacementFlags,
+                TransformElement tX, TransformElement tY, TransformElement tZ)
+                : base(APIversion, handler, slotName, boneName, tX, tY, tZ) { this.slotPlacementFlags = slotPlacementFlags; }
 
             public bool Equals(SlottedPart other) { return ((Part)this).Equals((Part)other) && slotPlacementFlags.Equals(other.slotPlacementFlags); }
 
@@ -303,13 +384,13 @@ namespace s3pi.GenericRCOLResource
                 uint[] slotNames = new uint[count];
                 uint[] boneNames = new uint[count];
                 uint[] flags = new uint[count];
-                float[][] transforms = new float[count][];
+                TransformElement[,] tfms = new TransformElement[count, 3];
                 BinaryReader r = new BinaryReader(s);
                 for (int i = 0; i < slotNames.Length; i++) slotNames[i] = r.ReadUInt32();
                 for (int i = 0; i < boneNames.Length; i++) boneNames[i] = r.ReadUInt32();
                 for (int i = 0; i < flags.Length; i++) flags[i] = r.ReadUInt32();
-                for (int i = 0; i < transforms.Length; i++) { transforms[i] = new float[3 * 4]; for (int j = 0; j < 3 * 4; j++) transforms[i][j] = r.ReadSingle(); }
-                for (int i = 0; i < count; i++) this.Add(new SlottedPart(0, elementHandler, slotNames[i], boneNames[i], (SlotPlacement)flags[i], transforms[i]));
+                for (int i = 0; i < count; i++) this.Add(new SlottedPart(0, elementHandler, slotNames[i], boneNames[i], (SlotPlacement)flags[i],
+                    new TransformElement(0, elementHandler, s), new TransformElement(0, elementHandler, s), new TransformElement(0, elementHandler, s)));
                 if (count > 0)
                 {
                     uint zero = r.ReadUInt32();
@@ -323,7 +404,15 @@ namespace s3pi.GenericRCOLResource
                 for (int i = 0; i < Count; i++) w.Write(this[i].SlotName);
                 for (int i = 0; i < Count; i++) w.Write(this[i].BoneName);
                 for (int i = 0; i < Count; i++) w.Write((uint)this[i].SlotPlacementFlags);
-                for (int i = 0; i < Count; i++) for (int j = 0; j < this[i].TransformMatrix.Length; j++) w.Write(this[i].TransformMatrix[j]);
+                for (int i = 0; i < Count; i++)
+                {
+                    if (this[i].X == null) this[i].X = new TransformElement(0, handler);
+                    this[i].X.UnParse(s);
+                    if (this[i].Y == null) this[i].Y = new TransformElement(0, handler);
+                    this[i].Y.UnParse(s);
+                    if (this[i].Z == null) this[i].Z = new TransformElement(0, handler);
+                    this[i].Z.UnParse(s);
+                }
                 if (Count > 0)
                     w.Write((uint)0);
             }
