@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.ListViewItem listViewItem1 = new System.Windows.Forms.ListViewItem(new string[] {
+            System.Windows.Forms.ListViewItem listViewItem2 = new System.Windows.Forms.ListViewItem(new string[] {
             "WWWW",
             "0xDDDDDDDD",
             "0xDDDDDDDD",
@@ -43,10 +43,10 @@
             this.tbGroup = new System.Windows.Forms.TextBox();
             this.cbType = new System.Windows.Forms.ResourceTypeCombo();
             this.listView1 = new System.Windows.Forms.ListView();
-            this.chTag = new System.Windows.Forms.ColumnHeader();
-            this.chType = new System.Windows.Forms.ColumnHeader();
-            this.chGroup = new System.Windows.Forms.ColumnHeader();
-            this.chInstance = new System.Windows.Forms.ColumnHeader();
+            this.chTag = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.chType = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.chGroup = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.chInstance = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label3 = new System.Windows.Forms.Label();
@@ -56,13 +56,13 @@
             // btnOK
             // 
             this.btnOK.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnOK.DialogResult = System.Windows.Forms.DialogResult.OK;
             this.btnOK.Location = new System.Drawing.Point(627, 251);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(75, 23);
             this.btnOK.TabIndex = 5;
             this.btnOK.Text = "&Save";
             this.btnOK.UseVisualStyleBackColor = true;
-            this.btnOK.Click += new System.EventHandler(this.btnOK_Click);
             // 
             // btnCancel
             // 
@@ -127,26 +127,26 @@
             // tbInstance
             // 
             this.tbInstance.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbInstance.Location = new System.Drawing.Point(534, 42);
+            this.tbInstance.Location = new System.Drawing.Point(534, 56);
             this.tbInstance.Name = "tbInstance";
             this.tbInstance.Size = new System.Drawing.Size(153, 20);
             this.tbInstance.TabIndex = 7;
             this.tbInstance.Text = "0xDDDDDDDDDDDDDDDD";
             this.tbInstance.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.tbInstance.Validated += new System.EventHandler(this.tbInstance_Validated);
             this.tbInstance.Validating += new System.ComponentModel.CancelEventHandler(this.tbInstance_Validating);
+            this.tbInstance.Validated += new System.EventHandler(this.tbInstance_Validated);
             // 
             // tbGroup
             // 
             this.tbGroup.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
-            this.tbGroup.Location = new System.Drawing.Point(534, 16);
+            this.tbGroup.Location = new System.Drawing.Point(534, 30);
             this.tbGroup.Name = "tbGroup";
             this.tbGroup.Size = new System.Drawing.Size(153, 20);
             this.tbGroup.TabIndex = 5;
             this.tbGroup.Text = "0xDDDDDD";
             this.tbGroup.TextAlign = System.Windows.Forms.HorizontalAlignment.Right;
-            this.tbGroup.Validated += new System.EventHandler(this.tbGroup_Validated);
             this.tbGroup.Validating += new System.ComponentModel.CancelEventHandler(this.tbGroup_Validating);
+            this.tbGroup.Validated += new System.EventHandler(this.tbGroup_Validated);
             // 
             // cbType
             // 
@@ -157,8 +157,8 @@
             this.cbType.TabIndex = 3;
             this.cbType.Value = ((uint)(0u));
             this.cbType.ValueChanged += new System.EventHandler(this.cbType_ValueChanged);
-            this.cbType.Validated += new System.EventHandler(this.cbType_Validated);
             this.cbType.Validating += new System.ComponentModel.CancelEventHandler(this.cbType_Validating);
+            this.cbType.Validated += new System.EventHandler(this.cbType_Validated);
             // 
             // listView1
             // 
@@ -171,7 +171,7 @@
             this.listView1.FullRowSelect = true;
             this.listView1.HideSelection = false;
             this.listView1.Items.AddRange(new System.Windows.Forms.ListViewItem[] {
-            listViewItem1});
+            listViewItem2});
             this.listView1.Location = new System.Drawing.Point(3, 3);
             this.listView1.MultiSelect = false;
             this.listView1.Name = "listView1";
@@ -206,7 +206,7 @@
             // 
             this.label1.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(497, 0);
+            this.label1.Location = new System.Drawing.Point(497, 7);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(31, 13);
             this.label1.TabIndex = 2;
@@ -216,7 +216,7 @@
             // 
             this.label2.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(492, 19);
+            this.label2.Location = new System.Drawing.Point(492, 33);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(36, 13);
             this.label2.TabIndex = 4;
@@ -226,7 +226,7 @@
             // 
             this.label3.Anchor = System.Windows.Forms.AnchorStyles.Right;
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(480, 45);
+            this.label3.Location = new System.Drawing.Point(480, 59);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(48, 13);
             this.label3.TabIndex = 6;

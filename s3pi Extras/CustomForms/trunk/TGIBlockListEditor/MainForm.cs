@@ -27,8 +27,16 @@ using System.Reflection;
 
 namespace System.Windows.Forms.TGIBlockListEditorForm
 {
+    /// <summary>
+    /// A form for editing an AResource.DependentList&lt;AResource.TGIBlock&gt; object.
+    /// </summary>
     public partial class MainForm : Form
     {
+        /// <summary>
+        /// A form for editing an AResource.DependentList&lt;AResource.TGIBlock&gt; object.
+        /// The DialogResult will be set on return from ShowDialog indicating whether the user
+        /// chose to Save (OK) or Abandon (Cancel).
+        /// </summary>
         public MainForm()
         {
             InitializeComponent();
@@ -40,13 +48,17 @@ namespace System.Windows.Forms.TGIBlockListEditorForm
         }
 
         AResource.TGIBlockList items;
+        /// <summary>
+        /// The list of TGIBlocks to edit
+        /// </summary>
         public IList<AResource.TGIBlock> Items
         {
             get { return items; }
             set
             {
                 if (items == value) return;
-                items = new AResource.TGIBlockList(null, value);
+                items = new AResource.TGIBlockList(null);
+                foreach (IResourceKey rk in value) items.Add(new AResource.TGIBlock(0, null, rk));
 
                 listView1.Items.Clear();
 
@@ -190,23 +202,32 @@ namespace System.Windows.Forms.TGIBlockListEditorForm
             ListViewItem lvi = CreateListViewItem(items[listView1.SelectedIndices[0]]);
             listView1.SelectedItems[0].SubItems[3].Text = lvi.SubItems[3].Text;
         }
-
-        private void btnOK_Click(object sender, EventArgs e)
-        {
-            DialogResult = DialogResult.OK;
-            this.Close();
-        }
     }
 }
 
 namespace System.Windows.Forms
 {
+    /// <summary>
+    /// A modal form for editing an AResource.DependentList&lt;AResource.TGIBlock&gt; object.
+    /// </summary>
     public static class TGIBlockListEditor
     {
+        /// <summary>
+        /// Displays a modal form allowing a list of TGIBlocks to be edited (created, updated, deleted).
+        /// </summary>
+        /// <param name="ltgi">an AResource.DependentList&lt;AResource.TGIBlock&gt; object.</param>
+        /// <returns>the DialogResult</returns>
         public static DialogResult Show(AResource.DependentList<AResource.TGIBlock> ltgi)
         {
             return Show(Application.OpenForms.Count > 0 ? Application.OpenForms[0] : null, ltgi);
         }
+        /// <summary>
+        /// Displays a modal form allowing a list of TGIBlocks to be edited (created, updated, deleted).
+        /// </summary>
+        /// <param name="owner">Any object that implements System.Windows.Forms.IWin32Window
+        /// and represents the top-level window that will own this form.</param>
+        /// <param name="ltgi">an AResource.DependentList&lt;AResource.TGIBlock&gt; object.</param>
+        /// <returns>the DialogResult</returns>
         public static DialogResult Show(IWin32Window owner, AResource.DependentList<AResource.TGIBlock> ltgi)
         {
             TGIBlockListEditorForm.MainForm theForm = new System.Windows.Forms.TGIBlockListEditorForm.MainForm();
