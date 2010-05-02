@@ -22,11 +22,8 @@ using System.Collections.Generic;
 
 namespace System.Collections.Generic
 {
-    /// <summary>
-    /// Abstract implementation of IDependentList, extending List&lt;<typeparamref name="T"/>&gt;
-    /// </summary>
-    /// <typeparam name="T">Type of list element</typeparam>
-    /// <typeparam name="U">Type of parent class</typeparam>
+#pragma warning disable 1591
+    [Obsolete()]
     public abstract class ADependentList<T, U> : List<T>, IDependentList<T, U>
     {
         #region Attributes
@@ -81,4 +78,5 @@ namespace System.Collections.Generic
 
         public long MaxSize { get { return maxSize; } }
     }
+#pragma warning restore 1591
 }

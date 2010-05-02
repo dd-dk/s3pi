@@ -26,6 +26,11 @@ namespace System
     /// </summary>
     public interface ICloneableWithParent : ICloneable
     {
+        /// <summary>
+        /// Return a clone of the object with a new parent object.
+        /// </summary>
+        /// <param name="newParent">The new parent object</param>
+        /// <returns>A clone of the object with <paramref name="newParent"/> as its new parent object.</returns>
         object Clone(object newParent);
     }
 }
