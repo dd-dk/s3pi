@@ -23,15 +23,15 @@ using System.Collections.Generic;
 namespace System.Collections.Generic
 {
     /// <summary>
-    /// Abstract extension of List&lt;<typeparamref name="T"/>&gt; providing
-    /// feedback on list updates through the supplied EventHandler
+    /// Abstract extension of <see cref="List{T}"/>
+    /// providing feedback on list updates through the supplied <see cref="EventHandler"/>.
     /// </summary>
-    /// <typeparam name="T">Type of list element</typeparam>
+    /// <typeparam name="T"><see cref="Type"/> of list element</typeparam>
     public abstract class AHandlerList<T> : List<T>
         where T : IEquatable<T>
     {
         /// <summary>
-        /// The list change event handler delegate.
+        /// Holds the <see cref="EventHandler"/> delegate to invoke if the <see cref="AHandlerList{T}"/> changes.
         /// </summary>
         protected EventHandler handler;
         /// <summary>
@@ -41,103 +41,119 @@ namespace System.Collections.Generic
 
         #region Constructors
         /// <summary>
-        /// Initializes a new instance of the AHandlerList&lt;T&gt; class
+        /// Initializes a new instance of the <see cref="AHandlerList{T}"/> class
         /// that is empty
         /// and with an unlimited size.
         /// </summary>
-        /// <param name="handler">The event handler to call on changes to the list.</param>
+        /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list.</param>
         protected AHandlerList(EventHandler handler) : base() { this.handler = handler; }
         /// <summary>
-        /// Initializes a new instance of the AHandlerList&lt;T&gt; class,
-        /// filled with the content of <paramref name="lt"/>
+        /// Initializes a new instance of the <see cref="AHandlerList{T}"/> class,
+        /// filled with the content of <paramref name="ilt"/>
         /// and with an unlimited size.
         /// </summary>
-        /// <param name="handler">The event handler to call on changes to the list.</param>
-        /// <param name="lt">The IList&lt;T&gt; to use as the initial content of the list.</param>
-        protected AHandlerList(EventHandler handler, IList<T> lt) : base(lt) { this.handler = handler; }
+        /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list.</param>
+        /// <param name="ilt">The <see cref="IList{T}"/> to use as the initial content of the list.</param>
+        protected AHandlerList(EventHandler handler, IList<T> ilt) : base(ilt) { this.handler = handler; }
         /// <summary>
-        /// Initializes a new instance of the AHandlerList&lt;T&gt; class
+        /// Initializes a new instance of the <see cref="AHandlerList{T}"/> class
         /// that is empty
         /// and with maximum size of <paramref name="size"/>.
         /// </summary>
-        /// <param name="handler">The event handler to call on changes to the list.</param>
+        /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list.</param>
         /// <param name="size">Maximum number of elements in the list.</param>
         protected AHandlerList(EventHandler handler, long size) : base() { this.handler = handler; this.maxSize = size; }
         /// <summary>
-        /// Initializes a new instance of the AHandlerList&lt;T&gt; class,
-        /// filled with the content of <paramref name="lt"/>
+        /// Initializes a new instance of the <see cref="AHandlerList{T}"/> class,
+        /// filled with the content of <paramref name="ilt"/>
         /// and with maximum size of <paramref name="size"/>.
         /// </summary>
-        /// <param name="handler">The event handler to call on changes to the list.</param>
+        /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list.</param>
         /// <param name="size">Maximum number of elements in the list.</param>
-        /// <param name="lt">The IList&lt;T&gt; to use as the initial content of the list.</param>
-        protected AHandlerList(EventHandler handler, long size, IList<T> lt) : base(lt) { this.handler = handler; this.maxSize = size; }
+        /// <param name="ilt">The <see cref="IList{T}"/> to use as the initial content of the list.</param>
+        /// <remarks>Does not throw an exception if <paramref name="ilt"/>.Count is greater than <paramref name="size"/>.
+        /// An exception will be thrown on any attempt to add further items unless the Count is reduced first.</remarks>
+        protected AHandlerList(EventHandler handler, long size, IList<T> ilt) : base(ilt) { this.handler = handler; this.maxSize = size; }
         #endregion
 
         #region List<T> Members
         /// <summary>
-        /// Adds the elements of the specified collection to the end of the AHandlerList&lt;T&gt;.
+        /// Adds the elements of the specified collection to the end of the <see cref="AHandlerList{T}"/>.
         /// </summary>
-        /// <param name="collection">The collection whose elements should be added to the end of the AHandlerList&lt;T&gt;.
+        /// <param name="collection">The collection whose elements should be added to the end of the <see cref="AHandlerList{T}"/>.
         /// The collection itself cannot be null, but it can contain elements that are null, if type <typeparamref name="T"/> is a reference type.</param>
         /// <exception cref="System.ArgumentNullException"><paramref name="collection"/> is null.</exception>
         /// <exception cref="System.InvalidOperationException">Thrown when list size would be exceeded.</exception>
-        /// <exception cref="System.NotSupportedException">The AHandlerList&lt;T&gt; is read-only.</exception>
+        /// <exception cref="System.NotSupportedException">The <see cref="AHandlerList{T}"/> is read-only.</exception>
+        /// <remarks>Calls <see cref="Add(T)"/> for each item in <paramref name="collection"/>.</remarks>
         public new virtual void AddRange(IEnumerable<T> collection)
         {
             int newElements = new List<T>(collection).Count;
             if (maxSize >= 0 && Count >= maxSize - newElements) throw new InvalidOperationException();
-            base.AddRange(collection);
+
+            //Note that the following is required to allow for implementation specific processing on items added to the list:
+            EventHandler h = handler;
+            handler = null;
+            foreach (T item in collection) this.Add(item);
+            handler = h;
+
             OnListChanged();
         }
         /// <summary>
-        /// Inserts the elements of a collection into the AHandlerList&lt;T&gt; at the specified index.
+        /// Inserts the elements of a collection into the <see cref="AHandlerList{T}"/> at the specified index.
         /// </summary>
         /// <param name="index">The zero-based index at which the new elements should be inserted.</param>
-        /// <param name="collection">The collection whose elements should be inserted into the AHandlerList&lt;T&gt;.
+        /// <param name="collection">The collection whose elements should be inserted into the <see cref="AHandlerList{T}"/>.
         /// The collection itself cannot be null, but it can contain elements that are null, if type <typeparamref name="T"/> is a reference type.</param>
         /// <exception cref="System.ArgumentNullException"><paramref name="collection"/> is null.</exception>
         /// <exception cref="System.ArgumentOutOfRangeException">
         /// <paramref name="index"/> is less than 0.
         /// -or-
-        /// <paramref name="index"/> is greater than AHandlerList&lt;T&gt;.Count.
+        /// <paramref name="index"/> is greater than <see cref="AHandlerList{T}"/>.Count.
         /// </exception>
         /// <exception cref="System.InvalidOperationException">Thrown when list size would be exceeded.</exception>
-        /// <exception cref="System.NotSupportedException">The AHandlerList&lt;T&gt; is read-only.</exception>
+        /// <exception cref="System.NotSupportedException">The <see cref="AHandlerList{T}"/> is read-only.</exception>
+        /// <remarks>Calls <see cref="Insert(int, T)"/> for each item in <paramref name="collection"/>.</remarks>
         public new virtual void InsertRange(int index, IEnumerable<T> collection)
         {
             int newElements = new List<T>(collection).Count;
             if (maxSize >= 0 && Count >= maxSize - newElements) throw new InvalidOperationException();
-            base.InsertRange(index, collection);
+
+            //Note that the following is required to allow for implementation specific processing on items inserted into the list:
+            EventHandler h = handler;
+            handler = null;
+            foreach (T item in collection) this.Insert(index++, item);
+            handler = h;
+
             OnListChanged();
         }
         /// <summary>
         /// Removes the all the elements that match the conditions defined by the specified predicate.
         /// </summary>
         /// <param name="match">The System.Predicate&lt;T&gt; delegate that defines the conditions of the elements to remove.</param>
-        /// <returns>The number of elements removed from the AHandlerList&lt;T&gt;.</returns>
+        /// <returns>The number of elements removed from the <see cref="AHandlerList{T}"/>.</returns>
         /// <exception cref="System.ArgumentNullException"><paramref name="match"/> is null.</exception>
-        /// <exception cref="System.NotSupportedException">The AHandlerList&lt;T&gt; is read-only.</exception>
+        /// <exception cref="System.NotSupportedException">The <see cref="AHandlerList{T}"/> is read-only.</exception>
         public new virtual int RemoveAll(Predicate<T> match) { int res = base.RemoveAll(match); if (res != 0) OnListChanged(); return res; }
         /// <summary>
-        /// Removes a range of elements from the AHandlerList&lt;T&gt;.
+        /// Removes a range of elements from the <see cref="AHandlerList{T}"/>.
         /// </summary>
         /// <param name="index">The zero-based starting index of the range of elements to remove.</param>
         /// <param name="count">The number of elements to remove.</param>
         /// <exception cref="System.ArgumentException">
-        /// <paramref name="index"/> and <paramref name="count"/> do not denote a valid range of elements in the AHandlerList&lt;T&gt;.
+        /// <paramref name="index"/> and <paramref name="count"/> do not denote a valid range of elements in the <see cref="AHandlerList{T}"/>.
         /// </exception>
         /// <exception cref="System.ArgumentOutOfRangeException">
         /// <paramref name="index"/> is less than 0.
         /// -or-
-        /// <paramref name="index"/> is greater than AHandlerList&lt;T&gt;.Count.
+        /// <paramref name="index"/> is greater than <see cref="AHandlerList{T}"/>.Count.
         /// </exception>
-        /// <exception cref="System.NotSupportedException">The AHandlerList&lt;T&gt; is read-only.</exception>
+        /// <exception cref="System.NotSupportedException">The <see cref="AHandlerList{T}"/> is read-only.</exception>
         public new virtual void RemoveRange(int index, int count) { base.RemoveRange(index, count); OnListChanged(); }
         /// <summary>
-        /// Reverses the order of the elements in the entire AHandlerList&lt;T&gt;.
+        /// Reverses the order of the elements in the entire <see cref="AHandlerList{T}"/>.
         /// </summary>
-        /// <exception cref="System.NotSupportedException">The AHandlerList&lt;T&gt; is read-only.</exception>
+        /// <exception cref="System.NotSupportedException">The <see cref="AHandlerList{T}"/> is read-only.</exception>
         public new virtual void Reverse() { base.Reverse(); OnListChanged(); }
         /// <summary>
         /// Reverses the order of the elements in the specified range.
@@ -145,59 +161,59 @@ namespace System.Collections.Generic
         /// <param name="index">The zero-based starting index of the range to reverse.</param>
         /// <param name="count">The number of elements in the range to reverse.</param>
         /// <exception cref="System.ArgumentException">
-        /// <paramref name="index"/> and <paramref name="count"/> do not denote a valid range of elements in the AHandlerList&lt;T&gt;.
+        /// <paramref name="index"/> and <paramref name="count"/> do not denote a valid range of elements in the <see cref="AHandlerList{T}"/>.
         /// </exception>
         /// <exception cref="System.ArgumentOutOfRangeException">
         /// <paramref name="index"/> is less than 0.
         /// -or-
-        /// <paramref name="index"/> is greater than AHandlerList&lt;T&gt;.Count.
+        /// <paramref name="index"/> is greater than <see cref="AHandlerList{T}"/>.Count.
         /// </exception>
-        /// <exception cref="System.NotSupportedException">The AHandlerList&lt;T&gt; is read-only.</exception>
+        /// <exception cref="System.NotSupportedException">The <see cref="AHandlerList{T}"/> is read-only.</exception>
         public new virtual void Reverse(int index, int count) { base.Reverse(index, count); OnListChanged(); }
         /// <summary>
-        /// Sorts the elements in the entire AHandlerList&lt;T&gt; using the default comparer.
+        /// Sorts the elements in the entire <see cref="AHandlerList{T}"/> using the default comparer.
         /// </summary>
         /// <exception cref="System.InvalidOperationException">
-        /// The default comparer System.Collections.Generic.Comparer&lt;T&gt;.Default
-        /// cannot find an implementation of the System.IComparable&lt;T&gt; generic interface
+        /// The default comparer <see cref="Comparer{T}"/>.Default
+        /// cannot find an implementation of the <see cref="IComparable{T}"/> generic interface
         /// or the System.IComparable interface for type <typeparamref name="T"/>.
         /// </exception>
-        /// <exception cref="System.NotSupportedException">The AHandlerList&lt;T&gt; is read-only.</exception>
+        /// <exception cref="System.NotSupportedException">The <see cref="AHandlerList{T}"/> is read-only.</exception>
         public new virtual void Sort() { base.Sort(); OnListChanged(); }
         /// <summary>
-        /// Sorts the elements in the entire AHandlerList&lt;T&gt; using the specified System.Comparison&lt;T&gt;.
+        /// Sorts the elements in the entire <see cref="AHandlerList{T}"/> using the specified <see cref="Comparison{T}"/>.
         /// </summary>
-        /// <param name="comparison">The System.Comparison&lt;T&gt; to use when comparing elements.</param>
+        /// <param name="comparison">The <see cref="Comparison{T}"/> to use when comparing elements.</param>
         /// <exception cref="System.ArgumentException">The implementation of <paramref name="comparison"/> caused an error during the sort.
         /// For example, <paramref name="comparison"/> might not return 0 when comparing an item with itself.</exception>
         /// <exception cref="System.ArgumentNullException"><paramref name="comparison"/> is null.</exception>
-        /// <exception cref="System.NotSupportedException">The AHandlerList&lt;T&gt; is read-only.</exception>
+        /// <exception cref="System.NotSupportedException">The <see cref="AHandlerList{T}"/> is read-only.</exception>
         public new virtual void Sort(Comparison<T> comparison) { base.Sort(comparison); OnListChanged(); }
         /// <summary>
-        /// Sorts the elements in the entire AHandlerList&lt;T&gt; using the specified comparer.
+        /// Sorts the elements in the entire <see cref="AHandlerList{T}"/> using the specified comparer.
         /// </summary>
-        /// <param name="comparer">The System.Collections.Generic.IComparer&lt;T&gt; implementation to use when comparing elements,
-        /// or null to use the default comparer System.Collections.Generic.Comparer&lt;T&gt;.Default.</param>
+        /// <param name="comparer">The <see cref="IComparer{T}"/> implementation to use when comparing elements,
+        /// or null to use the default comparer <see cref="Comparer{T}"/>.Default.</param>
         /// <exception cref="System.ArgumentException">
         /// The implementation of <paramref name="comparer"/> caused an error during the sort.
         /// For example, <paramref name="comparer"/> might not return 0 when comparing an item with itself.
         /// </exception>
         /// <exception cref="System.InvalidOperationException">
-        /// <paramref name="comparer"/> is null, and the default comparer System.Collections.Generic.Comparer&lt;T&gt;.Default
-        /// cannot find implementation of the System.IComparable&lt;T&gt; generic interface
+        /// <paramref name="comparer"/> is null, and the default comparer <see cref="Comparer{T}"/>.Default
+        /// cannot find implementation of the <see cref="IComparable{T}"/> generic interface
         /// or the System.IComparable interface for type <typeparamref name="T"/>.
         /// </exception>
-        /// <exception cref="System.NotSupportedException">The AHandlerList&lt;T&gt; is read-only.</exception>
+        /// <exception cref="System.NotSupportedException">The <see cref="AHandlerList{T}"/> is read-only.</exception>
         public new virtual void Sort(IComparer<T> comparer) { base.Sort(comparer); OnListChanged(); }
         /// <summary>
-        /// Sorts the elements in a range of elements in AHandlerList&lt;T&gt; using the specified comparer.
+        /// Sorts the elements in a range of elements in <see cref="AHandlerList{T}"/> using the specified comparer.
         /// </summary>
         /// <param name="index">The zero-based starting index of the range to sort.</param>
         /// <param name="count">The number of elements in the range to sort.</param>
-        /// <param name="comparer">The System.Collections.Generic.IComparer&lt;T&gt; implementation to use when comparing elements,
-        /// or null to use the default comparer System.Collections.Generic.Comparer&lt;T&gt;.Default.</param>
+        /// <param name="comparer">The <see cref="IComparer{T}"/> implementation to use when comparing elements,
+        /// or null to use the default comparer <see cref="Comparer{T}"/>.Default.</param>
         /// <exception cref="System.ArgumentException">
-        /// <paramref name="index"/> and <paramref name="count"/> do not denote a valid range of elements in the AHandlerList&lt;T&gt;.
+        /// <paramref name="index"/> and <paramref name="count"/> do not denote a valid range of elements in the <see cref="AHandlerList{T}"/>.
         /// -or-
         /// The implementation of <paramref name="comparer"/> caused an error during the sort.
         /// For example, <paramref name="comparer"/> might not return 0 when comparing an item with itself.
@@ -208,64 +224,64 @@ namespace System.Collections.Generic
         /// <paramref name="count"/> is less than 0.
         /// </exception>
         /// <exception cref="System.InvalidOperationException">
-        /// <paramref name="comparer"/> is null, and the default comparer System.Collections.Generic.Comparer&lt;T&gt;.Default
-        /// cannot find implementation of the System.IComparable&lt;T&gt; generic interface
+        /// <paramref name="comparer"/> is null, and the default comparer <see cref="Comparer{T}"/>.Default
+        /// cannot find implementation of the <see cref="IComparable{T}"/> generic interface
         /// or the System.IComparable interface for type <typeparamref name="T"/>.
         /// </exception>
-        /// <exception cref="System.NotSupportedException">The AHandlerList&lt;T&gt; is read-only.</exception>
+        /// <exception cref="System.NotSupportedException">The <see cref="AHandlerList{T}"/> is read-only.</exception>
         public new virtual void Sort(int index, int count, IComparer<T> comparer) { base.Sort(index, count, comparer); OnListChanged(); }
         #endregion
 
         #region IList<T> Members
         /// <summary>
-        /// Inserts an item to the AHandlerList&lt;T&gt; at the specified index.
+        /// Inserts an item to the <see cref="AHandlerList{T}"/> at the specified index.
         /// </summary>
         /// <param name="index">The zero-based index at which item should be inserted.</param>
-        /// <param name="item">The object to insert into the AHandlerList&lt;T&gt;.</param>
-        /// <exception cref="System.ArgumentOutOfRangeException"><paramref name="index"/> is not a valid index in the AHandlerList&lt;T&gt;.</exception>
+        /// <param name="item">The object to insert into the <see cref="AHandlerList{T}"/>.</param>
+        /// <exception cref="System.ArgumentOutOfRangeException"><paramref name="index"/> is not a valid index in the <see cref="AHandlerList{T}"/>.</exception>
         /// <exception cref="System.InvalidOperationException">Thrown when list size exceeded.</exception>
-        /// <exception cref="System.NotSupportedException">The AHandlerList&lt;T&gt; is read-only.</exception>
+        /// <exception cref="System.NotSupportedException">The <see cref="AHandlerList{T}"/> is read-only.</exception>
         public new virtual void Insert(int index, T item) { if (maxSize >= 0 && Count == maxSize) throw new InvalidOperationException(); base.Insert(index, item); OnListChanged(); }
         /// <summary>
-        /// Removes the AHandlerList&lt;T&gt; item at the specified index.
+        /// Removes the <see cref="AHandlerList{T}"/> item at the specified index.
         /// </summary>
         /// <param name="index">The zero-based index of the item to remove.</param>
-        /// <exception cref="System.ArgumentOutOfRangeException"><paramref name="index"/> is not a valid index in the AHandlerList&lt;T&gt;.</exception>
-        /// <exception cref="System.NotSupportedException">The AHandlerList&lt;T&gt; is read-only.</exception>
+        /// <exception cref="System.ArgumentOutOfRangeException"><paramref name="index"/> is not a valid index in the <see cref="AHandlerList{T}"/>.</exception>
+        /// <exception cref="System.NotSupportedException">The <see cref="AHandlerList{T}"/> is read-only.</exception>
         public new virtual void RemoveAt(int index) { base.RemoveAt(index); OnListChanged(); }
         /// <summary>
         /// Gets or sets the element at the specified index.
         /// </summary>
         /// <param name="index">The zero-based index of the element to get or set.</param>
         /// <returns>The element at the specified index.</returns>
-        /// <exception cref="System.ArgumentOutOfRangeException"><paramref name="index"/> is not a valid index in the AHandlerList&lt;T&gt;.</exception>
-        /// <exception cref="System.NotSupportedException">The AHandlerList&lt;T&gt; is read-only.</exception>
+        /// <exception cref="System.ArgumentOutOfRangeException"><paramref name="index"/> is not a valid index in the <see cref="AHandlerList{T}"/>.</exception>
+        /// <exception cref="System.NotSupportedException">The <see cref="AHandlerList{T}"/> is read-only.</exception>
         public new virtual T this[int index] { get { return base[index]; } set { if (!base[index].Equals(value)) { base[index] = value; OnListChanged(); } } }
         #endregion
 
         #region ICollection<T> Members
         /// <summary>
-        /// Adds an object to the end of the AHandlerList&lt;T&gt;.
+        /// Adds an object to the end of the <see cref="AHandlerList{T}"/>.
         /// </summary>
-        /// <param name="item">The object to add to the AHandlerList&lt;T&gt;.</param>
+        /// <param name="item">The object to add to the <see cref="AHandlerList{T}"/>.</param>
         /// <exception cref="System.InvalidOperationException">Thrown when list size exceeded.</exception>
-        /// <exception cref="System.NotSupportedException">The AHandlerList&lt;T&gt; is read-only.</exception>
+        /// <exception cref="System.NotSupportedException">The <see cref="AHandlerList{T}"/> is read-only.</exception>
         public new virtual void Add(T item) { if (maxSize >= 0 && Count == maxSize) throw new InvalidOperationException(); base.Add(item); OnListChanged(); }
         /// <summary>
-        /// Removes all items from the AHandlerList&lt;T&gt;.
+        /// Removes all items from the <see cref="AHandlerList{T}"/>.
         /// </summary>
-        /// <exception cref="System.NotSupportedException">The AHandlerList&lt;T&gt; is read-only.</exception>
+        /// <exception cref="System.NotSupportedException">The <see cref="AHandlerList{T}"/> is read-only.</exception>
         public new virtual void Clear() { base.Clear(); OnListChanged(); }
         /// <summary>
-        /// Removes the first occurrence of a specific object from the AHandlerList&lt;T&gt;.
+        /// Removes the first occurrence of a specific object from the <see cref="AHandlerList{T}"/>.
         /// </summary>
-        /// <param name="item">The object to remove from the AHandlerList&lt;T&gt;.</param>
+        /// <param name="item">The object to remove from the <see cref="AHandlerList{T}"/>.</param>
         /// <returns>
-        /// true if item was successfully removed from the AHandlerList&lt;T&gt;
+        /// true if item was successfully removed from the <see cref="AHandlerList{T}"/>
         /// otherwise, false. This method also returns false if item is not found in
-        /// the original AHandlerList&lt;T&gt;.
+        /// the original <see cref="AHandlerList{T}"/>.
         /// </returns>
-        /// <exception cref="System.NotSupportedException">The AHandlerList&lt;T&gt; is read-only.</exception>
+        /// <exception cref="System.NotSupportedException">The <see cref="AHandlerList{T}"/> is read-only.</exception>
         public new virtual bool Remove(T item) { bool res = base.Remove(item); if (res) OnListChanged(); return res; }
         #endregion
 
