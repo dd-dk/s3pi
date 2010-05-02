@@ -31,13 +31,9 @@ namespace s3pi.Interfaces
         /// <summary>
         /// Initialize a new instance with the default API version and no change <see cref="EventHandler"/>.
         /// </summary>
-        public AResourceIndexEntry() : this(0, null) { }
-        /// <summary>
-        /// Initialize a new instance.
-        /// </summary>
-        /// <param name="APIversion">The requested API version.</param>
-        /// <param name="handler">The <see cref="EventHandler"/> delegate to invoke if the <see cref="AResourceKey"/> changes.</param>
-        public AResourceIndexEntry(int APIversion, EventHandler handler) : base(APIversion, handler) { }
+        public AResourceIndexEntry() : base(0, null) { handler += OnResourceIndexEntryChanged; }
+
+        private void OnResourceIndexEntryChanged(object sender, EventArgs e) { if (ResourceIndexEntryChanged != null) ResourceIndexEntryChanged(sender, e); }
 
         #region AApiVersionedFields
         /// <summary>
@@ -82,6 +78,11 @@ namespace s3pi.Interfaces
         /// True if the index entry has been deleted from the package index
         /// </summary>
         public abstract bool IsDeleted { get; set; }
+
+        /// <summary>
+        /// Raised when the AResourceIndexEntry changes
+        /// </summary>
+        public EventHandler ResourceIndexEntryChanged;
         #endregion
     }
 }
