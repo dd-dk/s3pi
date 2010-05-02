@@ -42,28 +42,34 @@ namespace s3pi.Interfaces
         string format = "";
 
         /// <summary>
-        /// Create a new TypedValue
+        /// Create a new <see cref="TypedValue"/>
         /// </summary>
         /// <param name="t">The data type</param>
         /// <param name="v">The value</param>
         public TypedValue(Type t, object v) : this(t, v, "") { }
         /// <summary>
-        /// Create a new TypedValue
+        /// Create a new <see cref="TypedValue"/>
         /// </summary>
         /// <param name="t">The data type</param>
         /// <param name="v">The value</param>
-        /// <param name="f">The default format</param>
+        /// <param name="f">The default format for <see cref="ToString()"/></param>
         public TypedValue(Type t, object v, string f) { Type = t; Value = v; format = f; }
 
+        /// <summary>
+        /// Return a string representing the <see cref="TypedValue"/>
+        /// <paramref name="tv"/>.
+        /// </summary>
+        /// <param name="tv">The value to convert.</param>
+        /// <returns>A string representing <paramref name="tv"/>.</returns>
         public static implicit operator string(TypedValue tv) { return tv.ToString(tv.format); }
 
         /// <summary>
-        /// Return the Value in default format
+        /// Return the Value as a string using the default format
         /// </summary>
         /// <returns>String representation of Value in default format</returns>
         public override string ToString() { return ToString(this.format); }
         /// <summary>
-        /// Return the Value in given format
+        /// Return the Value as a string using the given format
         /// </summary>
         /// <param name="format">Format to use for result</param>
         /// <returns>String representation of Value in given format</returns>
@@ -103,6 +109,7 @@ namespace s3pi.Interfaces
             return this.Value.ToString();
         }
 
+        #region ToString helpers
         static string ToANSIString(string unicode)
         {
             StringBuilder t = new StringBuilder();
@@ -142,17 +149,24 @@ namespace s3pi.Interfaces
             }
             return ret;
         }
+        #endregion
 
         #region IComparable<TypedValue> Members
 
         /// <summary>
-        /// Compare this TypedValue to another for sort order purposes
+        /// Compare this <see cref="TypedValue"/> to another for sort order purposes
         /// </summary>
-        /// <param name="other">Target TypedValue</param>
+        /// <param name="other">Target <see cref="TypedValue"/></param>
         /// <returns>A 32-bit signed integer that indicates the relative order of the objects being compared.  The return value has these meanings:
-        /// Value Meaning Less than zero -- This instance is less than obj.
-        /// Zero -- This instance is equal to obj.
-        /// Greater than zero -- This instance is greater than obj.</returns>
+        /// <table>
+        /// <thead><tr><td><strong>Value</strong></td><td><strong>Meaning</strong></td></tr></thead>
+        /// <tbody>
+        /// <tr><td>Less than zero</td><td>This instance is less than <paramref name="other"/>.</td></tr>
+        /// <tr><td>Zero</td><td>This instance is equal to <paramref name="other"/>.</td></tr>
+        /// <tr><td>Greater than zero</td><td>This instance is greater than <paramref name="other"/>.</td></tr>
+        /// </tbody>
+        /// </table>
+        /// </returns>
         /// <exception cref="NotImplementedException">Either this object's Type or the target's is not comparable</exception>
         /// <exception cref="ArgumentException">The target is not comparable with this object</exception>
         public int CompareTo(TypedValue other)
@@ -166,114 +180,281 @@ namespace s3pi.Interfaces
 
         #region IEqualityComparer<TypedValue> Members
 
+        /// <summary>
+        /// Determines whether the specified <see cref="TypedValue"/> instances are equal.
+        /// </summary>
+        /// <param name="x">The first <see cref="TypedValue"/> to compare.</param>
+        /// <param name="y">The second <see cref="TypedValue"/> to compare.</param>
+        /// <returns>true if the specified <see cref="TypedValue"/> instances are equal; otherwise, false.</returns>
         public bool Equals(TypedValue x, TypedValue y) { return x.Equals(y); }
+
+        /// <summary>
+        /// Returns a hash code for the specified <see cref="TypedValue"/>.
+        /// </summary>
+        /// <param name="obj">The <see cref="TypedValue"/> for which a hash code is to be returned.</param>
+        /// <returns>A hash code for the specified object.</returns>
+        /// <exception cref="ArgumentNullException">The type of <paramref name="obj"/> is a reference type and
+        /// <paramref name="obj"/> is null.</exception>
         public int GetHashCode(TypedValue obj) { return obj.GetHashCode(); }
 
         #endregion
 
         #region IEquatable<TypedValue> Members
 
+        /// <summary>
+        /// Indicates whether the current <see cref="TypedValue"/> instance is equal to another <see cref="TypedValue"/> instance.
+        /// </summary>
+        /// <param name="other">An <see cref="TypedValue"/> instance to compare with this instance.</param>
+        /// <returns>true if the current instance is equal to the <paramref name="other"/> parameter; otherwise, false.</returns>
         public bool Equals(TypedValue other) { return this.Value.Equals(other.Value); }
 
         #endregion
 
         #region IConvertible Members
 
+        /// <summary>
+        /// Returns the <see cref="TypeCode"/> for this instance.
+        /// </summary>
+        /// <returns>The enumerated constant that is the <see cref="TypeCode"/> of the <see cref="TypedValue"/> class.</returns>
         public TypeCode GetTypeCode()
         {
             return TypeCode.String;
         }
 
+        /// <summary>
+        /// Converts the value of this instance to an equivalent <see cref="Boolean"/> value
+        /// (ignoring the specified culture-specific formatting information).
+        /// </summary>
+        /// <param name="provider">(unused, may be null) An <see cref="IFormatProvider"/> interface implementation
+        /// that supplies culture-specific formatting information.</param>
+        /// <returns>A <see cref="Boolean"/> value equivalent to the value of this instance.</returns>
+        /// <exception cref="NotImplementedException">Thrown if the <see cref="TypedValue"/> value
+        /// cannot be assigned to a <see cref="Boolean"/>.</exception>
         public bool ToBoolean(IFormatProvider provider)
         {
             if (typeof(bool).IsAssignableFrom(this.Type)) return (bool)this.Value;
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Converts the value of this instance to an equivalent <see cref="Byte"/> value
+        /// (ignoring the specified culture-specific formatting information).
+        /// </summary>
+        /// <param name="provider">(unused, may be null) An <see cref="IFormatProvider"/> interface implementation
+        /// that supplies culture-specific formatting information.</param>
+        /// <returns>A <see cref="Byte"/> value equivalent to the value of this instance.</returns>
+        /// <exception cref="NotImplementedException">Thrown if the <see cref="TypedValue"/> value
+        /// cannot be assigned to a <see cref="Byte"/>.</exception>
         public byte ToByte(IFormatProvider provider)
         {
             if (typeof(byte).IsAssignableFrom(this.Type)) return (byte)this.Value;
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Converts the value of this instance to an equivalent <see cref="Char"/> value
+        /// (ignoring the specified culture-specific formatting information).
+        /// </summary>
+        /// <param name="provider">(unused, may be null) An <see cref="IFormatProvider"/> interface implementation
+        /// that supplies culture-specific formatting information.</param>
+        /// <returns>A <see cref="Char"/> value equivalent to the value of this instance.</returns>
+        /// <exception cref="NotImplementedException">Thrown if the <see cref="TypedValue"/> value
+        /// cannot be assigned to a <see cref="Char"/>.</exception>
         public char ToChar(IFormatProvider provider)
         {
             if (typeof(char).IsAssignableFrom(this.Type)) return (char)this.Value;
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Converts the value of this instance to an equivalent <see cref="DateTime"/> value
+        /// (ignoring the specified culture-specific formatting information).
+        /// </summary>
+        /// <param name="provider">(unused, may be null) An <see cref="IFormatProvider"/> interface implementation
+        /// that supplies culture-specific formatting information.</param>
+        /// <returns>A <see cref="DateTime"/> value equivalent to the value of this instance.</returns>
+        /// <exception cref="NotImplementedException">Thrown if the <see cref="TypedValue"/> value
+        /// cannot be assigned to a <see cref="DateTime"/>.</exception>
         public DateTime ToDateTime(IFormatProvider provider)
         {
             if (typeof(DateTime).IsAssignableFrom(this.Type)) return (DateTime)this.Value;
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Converts the value of this instance to an equivalent <see cref="Decimal"/> value
+        /// (ignoring the specified culture-specific formatting information).
+        /// </summary>
+        /// <param name="provider">(unused, may be null) An <see cref="IFormatProvider"/> interface implementation
+        /// that supplies culture-specific formatting information.</param>
+        /// <returns>A <see cref="Decimal"/> value equivalent to the value of this instance.</returns>
+        /// <exception cref="NotImplementedException">Thrown if the <see cref="TypedValue"/> value
+        /// cannot be assigned to a <see cref="Decimal"/>.</exception>
         public decimal ToDecimal(IFormatProvider provider)
         {
             if (typeof(decimal).IsAssignableFrom(this.Type)) return (decimal)this.Value;
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Converts the value of this instance to an equivalent <see cref="Double"/> value
+        /// (ignoring the specified culture-specific formatting information).
+        /// </summary>
+        /// <param name="provider">(unused, may be null) An <see cref="IFormatProvider"/> interface implementation
+        /// that supplies culture-specific formatting information.</param>
+        /// <returns>A <see cref="Double"/> value equivalent to the value of this instance.</returns>
+        /// <exception cref="NotImplementedException">Thrown if the <see cref="TypedValue"/> value
+        /// cannot be assigned to a <see cref="Double"/>.</exception>
         public double ToDouble(IFormatProvider provider)
         {
             if (typeof(double).IsAssignableFrom(this.Type)) return (double)this.Value;
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Converts the value of this instance to an equivalent <see cref="Int16"/> value
+        /// (ignoring the specified culture-specific formatting information).
+        /// </summary>
+        /// <param name="provider">(unused, may be null) An <see cref="IFormatProvider"/> interface implementation
+        /// that supplies culture-specific formatting information.</param>
+        /// <returns>A <see cref="Int16"/> value equivalent to the value of this instance.</returns>
+        /// <exception cref="NotImplementedException">Thrown if the <see cref="TypedValue"/> value
+        /// cannot be assigned to a <see cref="Int16"/>.</exception>
         public short ToInt16(IFormatProvider provider)
         {
             if (typeof(short).IsAssignableFrom(this.Type)) return (short)this.Value;
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Converts the value of this instance to an equivalent <see cref="Int32"/> value
+        /// (ignoring the specified culture-specific formatting information).
+        /// </summary>
+        /// <param name="provider">(unused, may be null) An <see cref="IFormatProvider"/> interface implementation
+        /// that supplies culture-specific formatting information.</param>
+        /// <returns>A <see cref="Int32"/> value equivalent to the value of this instance.</returns>
+        /// <exception cref="NotImplementedException">Thrown if the <see cref="TypedValue"/> value
+        /// cannot be assigned to a <see cref="Int32"/>.</exception>
         public int ToInt32(IFormatProvider provider)
         {
             if (typeof(int).IsAssignableFrom(this.Type)) return (int)this.Value;
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Converts the value of this instance to an equivalent <see cref="Int64"/> value
+        /// (ignoring the specified culture-specific formatting information).
+        /// </summary>
+        /// <param name="provider">(unused, may be null) An <see cref="IFormatProvider"/> interface implementation
+        /// that supplies culture-specific formatting information.</param>
+        /// <returns>A <see cref="Int64"/> value equivalent to the value of this instance.</returns>
+        /// <exception cref="NotImplementedException">Thrown if the <see cref="TypedValue"/> value
+        /// cannot be assigned to a <see cref="Int64"/>.</exception>
         public long ToInt64(IFormatProvider provider)
         {
             if (typeof(long).IsAssignableFrom(this.Type)) return (long)this.Value;
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Converts the value of this instance to an equivalent <see cref="SByte"/> value
+        /// (ignoring the specified culture-specific formatting information).
+        /// </summary>
+        /// <param name="provider">(unused, may be null) An <see cref="IFormatProvider"/> interface implementation
+        /// that supplies culture-specific formatting information.</param>
+        /// <returns>A <see cref="SByte"/> value equivalent to the value of this instance.</returns>
+        /// <exception cref="NotImplementedException">Thrown if the <see cref="TypedValue"/> value
+        /// cannot be assigned to a <see cref="SByte"/>.</exception>
         public sbyte ToSByte(IFormatProvider provider)
         {
             if (typeof(sbyte).IsAssignableFrom(this.Type)) return (sbyte)this.Value;
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Converts the value of this instance to an equivalent <see cref="Single"/> value
+        /// (ignoring the specified culture-specific formatting information).
+        /// </summary>
+        /// <param name="provider">(unused, may be null) An <see cref="IFormatProvider"/> interface implementation
+        /// that supplies culture-specific formatting information.</param>
+        /// <returns>A <see cref="Single"/> value equivalent to the value of this instance.</returns>
+        /// <exception cref="NotImplementedException">Thrown if the <see cref="TypedValue"/> value
+        /// cannot be assigned to a <see cref="Single"/>.</exception>
         public float ToSingle(IFormatProvider provider)
         {
             if (typeof(float).IsAssignableFrom(this.Type)) return (float)this.Value;
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Converts the value of this instance to an equivalent <see cref="String"/> value
+        /// (ignoring the specified culture-specific formatting information).
+        /// </summary>
+        /// <param name="provider">(unused, may be null) An <see cref="IFormatProvider"/> interface implementation
+        /// that supplies culture-specific formatting information.</param>
+        /// <returns>A <see cref="String"/> value equivalent to the value of this instance.</returns>
+        /// <exception cref="NotImplementedException">Thrown if the <see cref="TypedValue"/> value
+        /// cannot be assigned to a <see cref="String"/>.</exception>
         public string ToString(IFormatProvider provider)
         {
             if (typeof(string).IsAssignableFrom(this.Type)) return (string)this.Value;
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Converts the value of this instance to an <see cref="Object"/> of the specified <see cref="Type"/>
+        /// that has an equivalent value, using the specified culture-specific formatting information.
+        /// </summary>
+        /// <param name="conversionType">The <see cref="Type"/> to which the value of this instance is converted.</param>
+        /// <param name="provider">An <see cref="IFormatProvider"/> interface implementation that supplies culture-specific formatting information.</param>
+        /// <returns>An <see cref="Object"/> instance of type <paramref name="conversionType"/> whose value is equivalent to the value of this instance.</returns>
+        /// <exception cref="NotImplementedException">Thrown if the <see cref="TypedValue"/> value
+        /// cannot be assigned to a <paramref name="conversionType"/> object.</exception>
         public object ToType(Type conversionType, IFormatProvider provider)
         {
             if (conversionType.IsAssignableFrom(this.Type)) return Convert.ChangeType(this.Value, conversionType, provider);
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Converts the value of this instance to an equivalent <see cref="UInt16"/> value
+        /// (ignoring the specified culture-specific formatting information).
+        /// </summary>
+        /// <param name="provider">(unused, may be null) An <see cref="IFormatProvider"/> interface implementation
+        /// that supplies culture-specific formatting information.</param>
+        /// <returns>A <see cref="UInt16"/> value equivalent to the value of this instance.</returns>
+        /// <exception cref="NotImplementedException">Thrown if the <see cref="TypedValue"/> value
+        /// cannot be assigned to a <see cref="UInt16"/>.</exception>
         public ushort ToUInt16(IFormatProvider provider)
         {
             if (typeof(ushort).IsAssignableFrom(this.Type)) return (ushort)this.Value;
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Converts the value of this instance to an equivalent <see cref="UInt32"/> value
+        /// (ignoring the specified culture-specific formatting information).
+        /// </summary>
+        /// <param name="provider">(unused, may be null) An <see cref="IFormatProvider"/> interface implementation
+        /// that supplies culture-specific formatting information.</param>
+        /// <returns>A <see cref="UInt32"/> value equivalent to the value of this instance.</returns>
+        /// <exception cref="NotImplementedException">Thrown if the <see cref="TypedValue"/> value
+        /// cannot be assigned to a <see cref="UInt32"/>.</exception>
         public uint ToUInt32(IFormatProvider provider)
         {
             if (typeof(uint).IsAssignableFrom(this.Type)) return (uint)this.Value;
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Converts the value of this instance to an equivalent <see cref="UInt64"/> value
+        /// (ignoring the specified culture-specific formatting information).
+        /// </summary>
+        /// <param name="provider">(unused, may be null) An <see cref="IFormatProvider"/> interface implementation
+        /// that supplies culture-specific formatting information.</param>
+        /// <returns>A <see cref="UInt64"/> value equivalent to the value of this instance.</returns>
+        /// <exception cref="NotImplementedException">Thrown if the <see cref="TypedValue"/> value
+        /// cannot be assigned to a <see cref="UInt64"/>.</exception>
         public ulong ToUInt64(IFormatProvider provider)
         {
             if (typeof(ulong).IsAssignableFrom(this.Type)) return (ulong)this.Value;
@@ -284,16 +465,27 @@ namespace s3pi.Interfaces
 
         #region ICloneable Members
 
+        /// <summary>
+        /// Creates a new object that is a copy of the current instance.
+        /// </summary>
+        /// <returns>A new object that is a copy of this instance.</returns>
+        /// <exception cref="NotImplementedException">Thrown if the value cannot be cloned.</exception>
         public object Clone()
         {
             if (typeof(ICloneable).IsAssignableFrom(this.Type)) return new TypedValue(this.Type, ((ICloneable)this.Value).Clone(), this.format);
-            return this;
+            throw new NotImplementedException();
         }
 
         #endregion
 
         #region ISerializable Members
 
+        /// <summary>
+        /// Populates a <see cref="SerializationInfo"/> with the data needed to serialize the target object.
+        /// </summary>
+        /// <param name="info">The System.Runtime.Serialization.SerializationInfo to populate with data.</param>
+        /// <param name="context">The destination (see System.Runtime.Serialization.StreamingContext) for this serialization.</param>
+        /// <exception cref="System.Security.SecurityException">The caller does not have the required permission.</exception>
         public void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             info.AddValue("Type", Type, typeof(Type));
