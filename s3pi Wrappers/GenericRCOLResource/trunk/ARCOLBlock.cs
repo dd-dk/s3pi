@@ -94,10 +94,13 @@ namespace s3pi.Interfaces
             set { MemoryStream ms = new MemoryStream(value); Parse(ms); OnRCOLChanged(this, EventArgs.Empty); }
         }
 
+        //disable "Never used" warning, as this is used by library users rather than the library itself.
+#pragma warning disable 67
         /// <summary>
         /// Raised if the resource is changed
         /// </summary>
         public event EventHandler ResourceChanged;
+#pragma warning restore 67
 
         #endregion
 
