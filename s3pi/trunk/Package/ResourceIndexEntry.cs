@@ -51,7 +51,7 @@ namespace s3pi.Package
         public override UInt32 ResourceType
         {
             get { ms.Position = 4; return indexReader.ReadUInt32(); }
-            set { ms.Position = 4; indexWriter.Write(value); OnResourceIndexEntryChanged(this, new EventArgs()); }
+            set { ms.Position = 4; indexWriter.Write(value); OnElementChanged(); }
         }
         /// <summary>
         /// The "group" the resource is part of
@@ -61,7 +61,7 @@ namespace s3pi.Package
         public override UInt32 ResourceGroup
         {
             get { ms.Position = 8; return indexReader.ReadUInt32(); }
-            set { ms.Position = 8; indexWriter.Write(value); OnResourceIndexEntryChanged(this, new EventArgs()); }
+            set { ms.Position = 8; indexWriter.Write(value); OnElementChanged(); }
         }
         /// <summary>
         /// The "instance" number of the resource
@@ -71,7 +71,7 @@ namespace s3pi.Package
         public override UInt64 Instance
         {
             get { ms.Position = 12; return ((ulong)indexReader.ReadUInt32() << 32) | (ulong)indexReader.ReadUInt32(); }
-            set { ms.Position = 12; indexWriter.Write((uint)(value >> 32)); indexWriter.Write((uint)(value & 0xffffffff)); OnResourceIndexEntryChanged(this, new EventArgs()); }
+            set { ms.Position = 12; indexWriter.Write((uint)(value >> 32)); indexWriter.Write((uint)(value & 0xffffffff)); OnElementChanged(); }
         }
         /// <summary>
         /// If the resource was read from a package, the location in the package the resource was read from
@@ -81,7 +81,7 @@ namespace s3pi.Package
         public override UInt32 Chunkoffset
         {
             get { ms.Position = 20; return indexReader.ReadUInt32(); }
-            set { ms.Position = 20; indexWriter.Write(value); OnResourceIndexEntryChanged(this, new EventArgs()); }
+            set { ms.Position = 20; indexWriter.Write(value); OnElementChanged(); }
         }
         /// <summary>
         /// The number of bytes the resource uses within the package
@@ -91,7 +91,7 @@ namespace s3pi.Package
         public override UInt32 Filesize
         {
             get { ms.Position = 24; return indexReader.ReadUInt32() & 0x7fffffff; }
-            set { ms.Position = 24; indexWriter.Write(value | 0x80000000); OnResourceIndexEntryChanged(this, new EventArgs()); }
+            set { ms.Position = 24; indexWriter.Write(value | 0x80000000); OnElementChanged(); }
         }
         /// <summary>
         /// The number of bytes the resource uses in memory
@@ -101,7 +101,7 @@ namespace s3pi.Package
         public override UInt32 Memsize
         {
             get { ms.Position = 28; return indexReader.ReadUInt32(); }
-            set { ms.Position = 28; indexWriter.Write(value); OnResourceIndexEntryChanged(this, new EventArgs()); }
+            set { ms.Position = 28; indexWriter.Write(value); OnElementChanged(); }
         }
         /// <summary>
         /// 0xFFFF if Filesize != Memsize, else 0x0000
@@ -111,7 +111,7 @@ namespace s3pi.Package
         public override UInt16 Compressed
         {
             get { ms.Position = 32; return indexReader.ReadUInt16(); }
-            set { ms.Position = 32; indexWriter.Write(value); OnResourceIndexEntryChanged(this, new EventArgs()); }
+            set { ms.Position = 32; indexWriter.Write(value); OnElementChanged(); }
         }
         /// <summary>
         /// Always 0x0001
@@ -121,7 +121,7 @@ namespace s3pi.Package
         public override UInt16 Unknown2
         {
             get { ms.Position = 34; return indexReader.ReadUInt16(); }
-            set { ms.Position = 34; indexWriter.Write(value); OnResourceIndexEntryChanged(this, new EventArgs()); }
+            set { ms.Position = 34; indexWriter.Write(value); OnElementChanged(); }
         }
 
         /// <summary>
@@ -136,7 +136,7 @@ namespace s3pi.Package
         /// </summary>
         [MinimumVersion(1)]
         [MaximumVersion(recommendedApiVersion)]
-        public override bool IsDeleted { get { return isDeleted; } set { if (isDeleted != value) { isDeleted = value; OnResourceIndexEntryChanged(this, new EventArgs()); } } }
+        public override bool IsDeleted { get { return isDeleted; } set { if (isDeleted != value) { isDeleted = value; OnElementChanged(); } } }
 
         /// <summary>
         /// Get a copy of this element but with a new change event handler
@@ -236,7 +236,7 @@ namespace s3pi.Package
                     throw new InvalidOperationException("Index entry already deleted!");
 
             isDeleted = true;
-            OnResourceIndexEntryChanged(this, new EventArgs());
+            OnElementChanged();
         }
 
         /// <summary>
@@ -248,13 +248,13 @@ namespace s3pi.Package
         internal Stream ResourceStream
         {
             get { return resourceStream; }
-            set { if (resourceStream != value) { resourceStream = value; if (Memsize != (uint)resourceStream.Length) Memsize = (uint)resourceStream.Length; else OnResourceIndexEntryChanged(this, new EventArgs()); } }
+            set { if (resourceStream != value) { resourceStream = value; if (Memsize != (uint)resourceStream.Length) Memsize = (uint)resourceStream.Length; else OnElementChanged(); } }
         }
 
         /// <summary>
         /// True if the index entry should be treated as dirty - e.g. the ResourceStream has been replaced
         /// </summary>
-        internal bool IsDirty { get { return isDirty; } }
+        internal bool IsDirty { get { return dirty; } }
         #endregion
     }
 }
