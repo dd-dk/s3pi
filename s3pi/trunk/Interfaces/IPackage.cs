@@ -24,7 +24,7 @@ using System.IO;
 namespace s3pi.Interfaces
 {
     /// <summary>
-    /// Representation of a package
+    /// Representation of a Sims 3 Package
     /// </summary>
     public interface IPackage : IApiVersion, IContentFields
     {
@@ -34,9 +34,9 @@ namespace s3pi.Interfaces
         /// </summary>
         void SavePackage();
         /// <summary>
-        /// Tell the package to save itself to the stream <paramref name="s"/>
+        /// Tell the package to save itself to the <see cref="System.IO.Stream"/> <paramref name="s"/>
         /// </summary>
-        /// <param name="s">A stream to which the package should be saved</param>
+        /// <param name="s">A <see cref="System.IO.Stream"/> to which the package should be saved</param>
         void SaveAs(Stream s);
         /// <summary>
         /// Tell the package to save itself to a file with the name in <paramref name="path"/>
@@ -92,7 +92,7 @@ namespace s3pi.Interfaces
         byte[] Unknown4 { get; }
 
         /// <summary>
-        /// A MemoryStream covering the package header bytes
+        /// A <see cref="MemoryStream"/> covering the package header bytes
         /// </summary>
         Stream HeaderStream { get; }
         #endregion
@@ -104,7 +104,7 @@ namespace s3pi.Interfaces
         UInt32 Indextype { get; }
 
         /// <summary>
-        /// Package index: the index
+        /// Package index: the index as as <see cref="IResourceIndexEntry"/> list
         /// </summary>
         IList<IResourceIndexEntry> GetResourceList { get; }
 
@@ -114,62 +114,66 @@ namespace s3pi.Interfaces
         event EventHandler ResourceIndexInvalidated;
 
         /// <summary>
-        /// Searches for an element that matches the conditions defined by <paramref name="flags"/> and <paramref name="values"/>,
-        /// and returns the first occurrence within the entire IPackage.
+        /// Searches the entire <see cref="IPackage"/>
+        /// for the first <see cref="IResourceIndexEntry"/> that matches the conditions defined by
+        /// <paramref name="flags"/> and <paramref name="values"/>.
         /// </summary>
-        /// <param name="flags">True bits enable matching against numerically equivalent <paramref name="values"/> entry</param>
-        /// <param name="values">Fields to compare against</param>
-        /// <returns>The first match, if any; otherwise null.</returns>
+        /// <param name="flags">True bits enable matching against numerically equivalent <paramref name="values"/> entry.</param>
+        /// <param name="values">Field values to compare against.</param>
+        /// <returns>The first matching <see cref="IResourceIndexEntry"/>, if any; otherwise null.</returns>
         IResourceIndexEntry Find(uint flags, IResourceIndexEntry values);
 
         /// <summary>
-        /// Searches for an element that matches the conditions defined by <paramref name="names"/> and <paramref name="values"/>,
-        /// and returns the first occurrence within the entire IPackage.
+        /// Searches the entire <see cref="IPackage"/>
+        /// for the first <see cref="IResourceIndexEntry"/> that matches the conditions defined by
+        /// <paramref name="names"/> and <paramref name="values"/>.
         /// </summary>
-        /// <param name="names">Names of fields to compare</param>
-        /// <param name="values">Fields to compare against</param>
-        /// <returns>The first match, if any; otherwise null.</returns>
+        /// <param name="names">Names of <see cref="IResourceIndexEntry"/> fields to compare.</param>
+        /// <param name="values">Field values to compare against.</param>
+        /// <returns>The first matching <see cref="IResourceIndexEntry"/>, if any; otherwise null.</returns>
         IResourceIndexEntry Find(string[] names, TypedValue[] values);
 
         /// <summary>
-        /// Searches for all element that matches the conditions defined by <paramref name="flags"/> and <paramref name="values"/>,
-        /// within the entire IPackage.
+        /// Searches the entire <see cref="IPackage"/>
+        /// all <see cref="IResourceIndexEntry"/>s that matches the conditions defined by
+        /// <paramref name="flags"/> and <paramref name="values"/>.
         /// </summary>
-        /// <param name="flags">True bits enable matching against numerically equivalent <paramref name="values"/> entry</param>
-        /// <param name="values">Fields to compare against</param>
-        /// <returns>Zero or more matches.</returns>
+        /// <param name="flags">True bits enable matching against numerically equivalent <paramref name="values"/> entry.</param>
+        /// <param name="values">Field values to compare against.</param>
+        /// <returns>An <c>IList&lt;IResourceIndexEntry&gt;</c> of zero or more matches.</returns>
         IList<IResourceIndexEntry> FindAll(uint flags, IResourceIndexEntry values);
 
         /// <summary>
-        /// Searches for all element that matches the conditions defined by <paramref name="names"/> and <paramref name="values"/>,
-        /// within the entire IPackage.
+        /// Searches the entire <see cref="IPackage"/>
+        /// all <see cref="IResourceIndexEntry"/>s that matches the conditions defined by
+        /// <paramref name="names"/> and <paramref name="values"/>.
         /// </summary>
-        /// <param name="names">Names of fields to compare</param>
-        /// <param name="values">Fields to compare against</param>
-        /// <returns>Zero or more matches.</returns>
+        /// <param name="names">Names of <see cref="IResourceIndexEntry"/> fields to compare.</param>
+        /// <param name="values">Field values to compare against.</param>
+        /// <returns>An <c>IList&lt;IResourceIndexEntry&gt;</c> of zero or more matches.</returns>
         IList<IResourceIndexEntry> FindAll(string[] names, TypedValue[] values);
         #endregion
 
         #region Package content
         /// <summary>
-        /// Add a resource to the package
+        /// Add a resource to the <see cref="IPackage"/>.
         /// </summary>
-        /// <param name="rk">The resource key</param>
-        /// <param name="stream">The stream that contains the resource data</param>
-        /// <param name="rejectDups">If true, fail if the resource key already exists</param>
-        /// <returns>Null if rejectDups and the resource key exists; else the new IResourceIndexEntry</returns>
+        /// <param name="rk">The resource&apos;s <see cref="IResourceKey"/></param>
+        /// <param name="stream">The <see cref="System.IO.Stream"/> that contains the resource&apos;s data</param>
+        /// <param name="rejectDups">If true, fail if the <see cref="IResourceKey"/> already exists</param>
+        /// <returns>Null if rejectDups and the <see cref="IResourceKey"/> exists; else the new <see cref="IResourceIndexEntry"/></returns>
         IResourceIndexEntry AddResource(IResourceKey rk, Stream stream, bool rejectDups);
         /// <summary>
-        /// Tell the package to replace the data for the resource indexed by <paramref name="rc"/>
-        /// with the data from the resource <paramref name="res"/>
+        /// Tell the <see cref="IPackage"/> to replace the data for the resource indexed by <see cref="IResourceIndexEntry"/> <paramref name="rc"/>
+        /// with the data from the <see cref="IResource"/> <paramref name="res"/>.
         /// </summary>
-        /// <param name="rc">Target resource index</param>
-        /// <param name="res">Source resource</param>
+        /// <param name="rc">Target <see cref="IResourceIndexEntry"/>.</param>
+        /// <param name="res">Source <see cref="IResource"/>.</param>
         void ReplaceResource(IResourceIndexEntry rc, IResource res);
         /// <summary>
-        /// Tell the package to delete the resource indexed by <paramref name="rc"/>
+        /// Tell the package to delete the resource indexed by <see cref="IResourceIndexEntry"/> <paramref name="rc"/>.
         /// </summary>
-        /// <param name="rc">Target resource index</param>
+        /// <param name="rc">Target <see cref="IResourceIndexEntry"/>.</param>
         void DeleteResource(IResourceIndexEntry rc);
         #endregion
     }

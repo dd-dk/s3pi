@@ -23,26 +23,29 @@ using System.Collections;
 namespace s3pi.Interfaces
 {
     /// <summary>
-    /// Classes implementing this interface can have elements added
-    /// with an empty parameter list.
+    /// Classes implementing this interface can have elements added with
+    /// an empty parameter list or
+    /// the list of arguments to a generic class&apos; constructor.
     /// </summary>
+    /// <seealso cref="AResource.DependentList{T}"/>
     public interface IGenericAdd : IList
     {
         /// <summary>
-        /// Adds an entry to a <seealso cref="s3pi.Interfaces.AResource.DependentList&lt;T&gt;"/>.
-        /// </summary>
-        /// <param name="fields">
-        /// Either the object to add or the generic type's constructor arguments.
-        /// Where the object is an <seealso cref="s3pi.Interfaces.AHandlerElement"/>, it will be cloned with
-        /// this list's handler specified.
-        /// </param>
-        /// <returns>True on success</returns>
-        bool Add(params object[] fields);
-        /// <summary>
-        /// Add a default element to the list.
+        /// Add a default element to an <see cref="IList"/> that implements this interface.
         /// </summary>
         /// <exception cref="NotImplementedException">Lists of abstract classes will fail
         /// with a NotImplementedException.</exception>
+        /// <seealso cref="AResource.DependentList{T}"/>
         void Add();
+
+        /// <summary>
+        /// Adds an entry to an <see cref="IList"/> that implements this interface.
+        /// </summary>
+        /// <param name="fields">
+        /// Either the object to add or the generic type&apos;s constructor arguments.
+        /// </param>
+        /// <returns>True on success</returns>
+        /// <seealso cref="AResource.DependentList{T}"/>
+        bool Add(params object[] fields);
     }
 }

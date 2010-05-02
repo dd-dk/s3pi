@@ -23,7 +23,8 @@ using System.Collections.Generic;
 namespace s3pi.Interfaces
 {
     /// <summary>
-    /// Used by AResourceHandler, which is used by WrapperDealer to identify "interesting" classes and assemblies
+    /// Used by <see cref="AResourceHandler"/>, which is used by <c>WrapperDealer</c>
+    /// to identify &quot;interesting&quot; classes within assemblies
     /// </summary>
     interface IResourceHandler : IDictionary<Type, List<string>>
     {

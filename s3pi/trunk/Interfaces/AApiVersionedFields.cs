@@ -357,32 +357,32 @@ namespace s3pi.Interfaces
     }
 
     /// <summary>
-    /// This class is a useful extension to AApiVersionedFields where a change handler is required
+    /// A useful extension to <see cref="AApiVersionedFields"/> where a change handler is required
     /// </summary>
     public abstract class AHandlerElement : AApiVersionedFields
     {
         /// <summary>
-        /// Element change event handler
+        /// Holds the <see cref="EventHandler"/> delegate to invoke if the <see cref="AHandlerElement"/> changes.
         /// </summary>
         protected EventHandler handler;
         /// <summary>
-        /// Indicates if this list element has been changed by OnElementChanged()
+        /// Indicates if the <see cref="AHandlerElement"/> has been changed by OnElementChanged()
         /// </summary>
         protected bool dirty = false;
         /// <summary>
         /// Initialize a new instance
         /// </summary>
-        /// <param name="APIversion">Requested API version</param>
-        /// <param name="handler">Element change event handler</param>
+        /// <param name="APIversion">The requested API version.</param>
+        /// <param name="handler">The <see cref="EventHandler"/> delegate to invoke if the <see cref="AHandlerElement"/> changes.</param>
         public AHandlerElement(int APIversion, EventHandler handler) { requestedApiVersion = APIversion; this.handler = handler; }
         /// <summary>
-        /// Get a copy of this element but with a new change event handler
+        /// Get a copy of the <see cref="AHandlerElement"/> but with a new change <see cref="EventHandler"/>.
         /// </summary>
-        /// <param name="handler">Element change event handler</param>
-        /// <returns>Return a copy of this element but with a new change event handler</returns>
+        /// <param name="handler">The replacement <see cref="EventHandler"/> delegate.</param>
+        /// <returns>Return a copy of the <see cref="AHandlerElement"/> but with a new change <see cref="EventHandler"/>.</returns>
         public abstract AHandlerElement Clone(EventHandler handler);
         /// <summary>
-        /// Raise a change event
+        /// Flag the <see cref="AHandlerElement"/> as dirty and invoke the <see cref="EventHandler"/> delegate.
         /// </summary>
         protected virtual void OnElementChanged()
         {

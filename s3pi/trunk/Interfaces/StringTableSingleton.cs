@@ -24,8 +24,8 @@ namespace s3pi.Interfaces
 {
     /// <summary>
     /// Strings used in a number of places in the game.
-    /// Currently only in CatalogResource
     /// </summary>
+    /// <remarks>Currently only in <c>CatalogResource</c>.</remarks>
     public static class StringTableSingleton
     {
         static string[] stringTable = null;

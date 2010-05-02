@@ -43,15 +43,16 @@ namespace s3pi.Interfaces
 #endif
         
         /// <summary>
-        /// The list of available field names on this API object
+        /// A <c>List&lt;string&gt;</c> of available field names on object
         /// </summary>
         List<string> ContentFields { get; }
 
         /// <summary>
-        /// A typed value on this object
+        /// A <see cref="TypedValue"/> on this object
         /// </summary>
-        /// <param name="index">The name of the field (i.e. one of the values from ContentFields)</param>
-        /// <returns>The typed value of the named field</returns>
+        /// <param name="index">The <seealso cref="string"/> representing the name of the field
+        /// (i.e. one of the values from <see cref="ContentFields"/>)</param>
+        /// <returns>The <see cref="TypedValue"/> of field <paramref name="index"/> on this API object.</returns>
         /// <exception cref="ArgumentOutOfRangeException">Thrown when an unknown index name is requested</exception>
         TypedValue this[string index] { get; set; }
     }

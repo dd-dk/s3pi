@@ -22,17 +22,48 @@ using System.IO;
 
 namespace s3pi.Interfaces
 {
+    /// <summary>
+    /// An abstract class, extending <see cref="AHandlerElement"/> and implementing <see cref="IResourceKey"/>.
+    /// </summary>
     public abstract class AResourceKey : AHandlerElement, IResourceKey
     {
         #region Attributes
+        /// <summary>
+        /// The "type" of the resource
+        /// </summary>
         protected uint resourceType;
+        /// <summary>
+        /// The "group" the resource is part of
+        /// </summary>
         protected uint resourceGroup;
+        /// <summary>
+        /// The "instance" number of the resource
+        /// </summary>
         protected ulong instance;
         #endregion
 
+        /// <summary>
+        /// Initialize a new instance
+        /// </summary>
+        /// <param name="APIversion">The requested API version.</param>
+        /// <param name="handler">The <see cref="EventHandler"/> delegate to invoke if the <see cref="AResourceKey"/> changes.</param>
         public AResourceKey(int APIversion, EventHandler handler) : base(APIversion, handler) { }
+        /// <summary>
+        /// Initialize a new instance
+        /// </summary>
+        /// <param name="APIversion">The requested API version.</param>
+        /// <param name="handler">The <see cref="EventHandler"/> delegate to invoke if the <see cref="AResourceKey"/> changes.</param>
+        /// <param name="basis">The <see cref="IResourceKey"/> values to use to initialise the instance.</param>
         public AResourceKey(int APIversion, EventHandler handler, IResourceKey basis)
             : this(APIversion, handler, basis.ResourceType, basis.ResourceGroup, basis.Instance) { }
+        /// <summary>
+        /// Initialize a new instance
+        /// </summary>
+        /// <param name="APIversion">The requested API version.</param>
+        /// <param name="handler">The <see cref="EventHandler"/> delegate to invoke if the <see cref="AResourceKey"/> changes.</param>
+        /// <param name="resourceType">The type of the resource.</param>
+        /// <param name="resourceGroup">The group of the resource.</param>
+        /// <param name="instance">The instance of the resource.</param>
         public AResourceKey(int APIversion, EventHandler handler, uint resourceType, uint resourceGroup, ulong instance)
             : base(APIversion, handler)
         {
@@ -61,22 +92,61 @@ namespace s3pi.Interfaces
 
         #region IEqualityComparer<IResourceKey> Members
 
+        /// <summary>
+        /// Determines whether the specified <see cref="IResourceKey"/> instances are equal.
+        /// </summary>
+        /// <param name="x">The first <see cref="IResourceKey"/> to compare.</param>
+        /// <param name="y">The second <see cref="IResourceKey"/> to compare.</param>
+        /// <returns>true if the specified <see cref="IResourceKey"/> instances are equal; otherwise, false.</returns>
         public bool Equals(IResourceKey x, IResourceKey y) { return x.Equals(y); }
 
+        /// <summary>
+        /// Returns a hash code for the specified <see cref="IResourceKey"/>.
+        /// </summary>
+        /// <param name="obj">The <see cref="IResourceKey"/> for which a hash code is to be returned.</param>
+        /// <returns>A hash code for the specified object.</returns>
+        /// <exception cref="ArgumentNullException">The type of <paramref name="obj"/> is a reference type and
+        /// <paramref name="obj"/> is null.</exception>
+        /// <seealso cref="GetHashCode()"/>
         public int GetHashCode(IResourceKey obj) { return obj.GetHashCode(); }
 
+        /// <summary>
+        /// Serves as a hash function for an <see cref="AResourceKey"/>.
+        /// </summary>
+        /// <returns>A hash code for the current <see cref="AResourceKey"/>.</returns>
         public override int GetHashCode() { return ResourceType.GetHashCode() ^ ResourceGroup.GetHashCode() ^ Instance.GetHashCode(); }
 
         #endregion
 
         #region IEquatable<IResourceKey> Members
 
+        /// <summary>
+        /// Indicates whether the current <see cref="AResourceKey"/> instance is equal to another <see cref="IResourceKey"/> instance.
+        /// </summary>
+        /// <param name="other">An <see cref="IResourceKey"/> instance to compare with this instance.</param>
+        /// <returns>true if the current instance is equal to the <paramref name="other"/> parameter; otherwise, false.</returns>
         public bool Equals(IResourceKey other) { return this.CompareTo(other) == 0; }
 
         #endregion
 
         #region IComparable<IResourceKey> Members
 
+        /// <summary>
+        /// Compare this <see cref="AResourceKey"/> to another <see cref="IResourceKey"/> for sort order purposes
+        /// </summary>
+        /// <param name="other">Target <see cref="IResourceKey"/></param>
+        /// <returns>A 32-bit signed integer that indicates the relative order of the objects being compared.  The return value has these meanings:
+        /// <table>
+        /// <thead><tr><td><strong>Value</strong></td><td><strong>Meaning</strong></td></tr></thead>
+        /// <tbody>
+        /// <tr><td>Less than zero</td><td>This instance is less than <paramref name="other"/>.</td></tr>
+        /// <tr><td>Zero</td><td>This instance is equal to <paramref name="other"/>.</td></tr>
+        /// <tr><td>Greater than zero</td><td>This instance is greater than <paramref name="other"/>.</td></tr>
+        /// </tbody>
+        /// </table>
+        /// </returns>
+        /// <exception cref="NotImplementedException">Either this object's Type or the target's is not comparable</exception>
+        /// <exception cref="ArgumentException">The target is not comparable with this object</exception>
         public int CompareTo(IResourceKey other)
         {
             int res = ResourceType.CompareTo(other.ResourceType); if (res != 0) return res;
@@ -87,16 +157,16 @@ namespace s3pi.Interfaces
         #endregion
 
         /// <summary>
-        /// Converts to a string representation of this resource key.
+        /// Converts an <see cref="AResourceKey"/> to a string representation.
         /// </summary>
-        /// <param name="value">The resource key to convert</param>
-        /// <returns>The 42 character string representation of this resource key,<br/>
+        /// <param name="value">The <see cref="AResourceKey"/> to convert</param>
+        /// <returns>The 42 character string representation of this resource key,
         /// of the form 0xXXXXXXXX-0xXXXXXXXX-0xXXXXXXXXXXXXXXXX.</returns>
         public static implicit operator String(AResourceKey value) { return String.Format("0x{0:X8}-0x{1:X8}-0x{2:X16}", value.ResourceType, value.ResourceGroup, value.Instance); }
         /// <summary>
-        /// Converts to a string representation of this resource key.
+        /// Returns a string representation of this <see cref="AResourceKey"/>.
         /// </summary>
-        /// <returns>The 42 character string representation of this resource key,<br/>
+        /// <returns>The 42 character string representation of this resource key,
         /// of the form 0xXXXXXXXX-0xXXXXXXXX-0xXXXXXXXXXXXXXXXX.</returns>
         public override string ToString() { return this; }
     }

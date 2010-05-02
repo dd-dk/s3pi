@@ -29,11 +29,11 @@ namespace s3pi.Interfaces
     public interface IResource : IApiVersion, IContentFields
     {
         /// <summary>
-        /// The resource content as a Stream
+        /// The resource content as a <see cref="System.IO.Stream"/>.
         /// </summary>
         Stream Stream { get; }
         /// <summary>
-        /// The resource content as a byte array
+        /// The resource content as a <see cref="byte"/> array
         /// </summary>
         byte[] AsBytes { get; }
 
