@@ -22,9 +22,21 @@ using System.Collections.Generic;
 
 namespace s3pi.Interfaces
 {
+    /// <summary>
+    /// An abstract class, descended from <see cref="AResourceKey"/>, providing an abstract implemention of <see cref="IResourceIndexEntry"/>,
+    /// representing an index entry within a package.
+    /// </summary>
     public abstract class AResourceIndexEntry : AResourceKey, IResourceIndexEntry
     {
+        /// <summary>
+        /// Initialize a new instance with the default API version and no change <see cref="EventHandler"/>.
+        /// </summary>
         public AResourceIndexEntry() : this(0, null) { }
+        /// <summary>
+        /// Initialize a new instance.
+        /// </summary>
+        /// <param name="APIversion">The requested API version.</param>
+        /// <param name="handler">The <see cref="EventHandler"/> delegate to invoke if the <see cref="AResourceKey"/> changes.</param>
         public AResourceIndexEntry(int APIversion, EventHandler handler) : base(APIversion, handler) { }
 
         #region AApiVersionedFields
@@ -62,11 +74,6 @@ namespace s3pi.Interfaces
         public abstract ushort Unknown2 { get; set; }
 
         /// <summary>
-        /// Raised to indicate one of the index entry fields values has changed
-        /// </summary>
-        public event EventHandler ResourceIndexEntryChanged;
-
-        /// <summary>
         /// A MemoryStream covering the index entry bytes
         /// </summary>
         public abstract System.IO.Stream Stream { get; }
@@ -75,19 +82,6 @@ namespace s3pi.Interfaces
         /// True if the index entry has been deleted from the package index
         /// </summary>
         public abstract bool IsDeleted { get; set; }
-
         #endregion
-
-        /// <summary>
-        /// True if the index entry should be treated as dirty - e.g. the ResourceStream has been replaced
-        /// </summary>
-        protected bool isDirty = false;
-
-        /// <summary>
-        /// Used to indicate one of the index entry fields values has changed
-        /// </summary>
-        /// <param name="sender">Object causing the entry to change value</param>
-        /// <param name="e">(not used)</param>
-        protected virtual void OnResourceIndexEntryChanged(object sender, EventArgs e) { isDirty = true; if (ResourceIndexEntryChanged != null) ResourceIndexEntryChanged(sender, e); }
     }
 }

@@ -23,7 +23,7 @@ using System.IO;
 namespace s3pi.Interfaces
 {
     /// <summary>
-    /// An index entry
+    /// An index entry within a package
     /// </summary>
     public interface IResourceIndexEntry : IApiVersion, IContentFields, IResourceKey
     {
@@ -49,13 +49,7 @@ namespace s3pi.Interfaces
         UInt16 Unknown2 { get; set; }
 
         /// <summary>
-        /// Raised to indicate one of the index entry fields values has changed
-        /// </summary>
-        event EventHandler ResourceIndexEntryChanged;
-
-
-        /// <summary>
-        /// A MemoryStream covering the index entry bytes
+        /// A <see cref="MemoryStream"/> covering the index entry bytes
         /// </summary>
         Stream Stream { get; }
 
@@ -63,7 +57,5 @@ namespace s3pi.Interfaces
         /// True if the index entry has been deleted from the package index
         /// </summary>
         bool IsDeleted { get; set; }
-
-        //IResourceIndexEntry Clone();
     }
 }
