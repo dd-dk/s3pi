@@ -14,6 +14,9 @@ robocopy "%OutputPath%" "%CopyTo%" /s /xo /np /njh /njs /w:5 /log:.\robocopy.log
 if ERRORLEVEL 2 goto FAIL
 del .\robocopy.log
 rmdir /s/q %OutputPath%
+
+copy htaccess.txt "%CopyTo%\.htaccess"
+
 goto PAUSE
 
 :FAIL
