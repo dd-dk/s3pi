@@ -33,9 +33,13 @@ namespace s3pi.GenericRCOLResource
         uint tag = (uint)FOURCC(TAG);
         uint version = 4;
         PartList routes;
+        SevenFloatsList routeFloats;
         SlottedPartList containers;
+        SevenFloatsList containerFloats;
         PartList effects;
+        SevenFloatsList effectFloats;
         PartList inverseKineticsTargets;
+        SevenFloatsList inverseKineticsTargetFloats;
         #endregion
 
         #region Constructors
@@ -46,9 +50,13 @@ namespace s3pi.GenericRCOLResource
             this.handler = handler;
             this.version = basis.version;
             this.routes = new PartList(handler, basis.routes);
+            this.routeFloats = new SevenFloatsList(handler, basis.routeFloats);
             this.containers = new SlottedPartList(handler, basis.containers);
+            this.containerFloats = new SevenFloatsList(handler, basis.containerFloats);
             this.effects = new PartList(handler, basis.effects);
+            this.effectFloats = new SevenFloatsList(handler, basis.effectFloats);
             this.inverseKineticsTargets = new PartList(handler, basis.inverseKineticsTargets);
+            this.inverseKineticsTargetFloats = new SevenFloatsList(handler, basis.inverseKineticsTargetFloats);
         }
         public RSLT(int APIversion, EventHandler handler)
             : base(APIversion, null, null)
@@ -83,9 +91,28 @@ namespace s3pi.GenericRCOLResource
                     throw new InvalidDataException(string.Format("Expected zero, read 0x{0:X8} at 0x{1:X8}", zero, s.Position));
 
             routes = new PartList(handler, s, nRoutes);
+            if (nRoutes == 0)
+                routeFloats = new SevenFloatsList(handler);
+            else
+                routeFloats = new SevenFloatsList(handler, s);
+
             containers = new SlottedPartList(handler, s, nContainers);
+            if (nContainers == 0)
+                containerFloats = new SevenFloatsList(handler);
+            else
+                containerFloats = new SevenFloatsList(handler, s);
+            
             effects = new PartList(handler, s, nEffects);
+            if (nEffects == 0)
+                effectFloats = new SevenFloatsList(handler);
+            else
+                effectFloats = new SevenFloatsList(handler, s);
+            
             inverseKineticsTargets = new PartList(handler, s, nInverseKineticsTargets);
+            if (nInverseKineticsTargets == 0)
+                inverseKineticsTargetFloats = new SevenFloatsList(handler);
+            else
+                inverseKineticsTargetFloats = new SevenFloatsList(handler, s);
         }
 
         public override Stream UnParse()
@@ -107,9 +134,13 @@ namespace s3pi.GenericRCOLResource
             w.Write((int)0);
 
             routes.UnParse(ms);
+            if (routes.Count > 0) routeFloats.UnParse(ms);
             containers.UnParse(ms);
+            if (containers.Count > 0) containerFloats.UnParse(ms);
             effects.UnParse(ms);
+            if (effects.Count > 0) effectFloats.UnParse(ms);
             inverseKineticsTargets.UnParse(ms);
+            if (inverseKineticsTargets.Count > 0) inverseKineticsTargetFloats.UnParse(ms);
 
             return ms;
         }
@@ -118,6 +149,135 @@ namespace s3pi.GenericRCOLResource
         #endregion
 
         #region Sub-types
+        public class SevenFloats : AHandlerElement, IEquatable<SevenFloats>
+        {
+            const int recommendedApiVersion = 1;
+
+            #region Attributes
+            float unknown1 = 0f;
+            float unknown2 = 0f;
+            float unknown3 = 0f;
+            float unknown4 = 0f;
+            float unknown5 = 0f;
+            float unknown6 = 0f;
+            float unknown7 = 0f;
+            #endregion
+
+            #region Constructors
+            public SevenFloats(int APIversion, EventHandler handler) : base(APIversion, handler) { }
+            public SevenFloats(int APIversion, EventHandler handler, SevenFloats basis)
+                : this(APIversion, handler, basis.unknown1, basis.unknown2, basis.unknown3, basis.unknown4, basis.unknown5, basis.unknown6, basis.unknown7) { }
+            public SevenFloats(int APIversion, EventHandler handler,
+                float unknown1, float unknown2, float unknown3, float unknown4, float unknown5, float unknown6, float unknown7)
+                : base(APIversion, handler)
+            {
+                this.unknown1 = unknown1;
+                this.unknown2 = unknown2;
+                this.unknown3 = unknown3;
+                this.unknown4 = unknown4;
+                this.unknown5 = unknown5;
+                this.unknown6 = unknown6;
+                this.unknown7 = unknown7;
+            }
+            public SevenFloats(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
+            #endregion
+
+            #region Data I/O
+            void Parse(Stream s)
+            {
+                BinaryReader r = new BinaryReader(s);
+                unknown1 = r.ReadSingle();
+                unknown2 = r.ReadSingle();
+                unknown3 = r.ReadSingle();
+                unknown4 = r.ReadSingle();
+                unknown5 = r.ReadSingle();
+                unknown6 = r.ReadSingle();
+                unknown7 = r.ReadSingle();
+            }
+
+            internal void UnParse(Stream s)
+            {
+                BinaryWriter w = new BinaryWriter(s);
+                w.Write(unknown1);
+                w.Write(unknown2);
+                w.Write(unknown3);
+                w.Write(unknown4);
+                w.Write(unknown5);
+                w.Write(unknown6);
+                w.Write(unknown7);
+            }
+            #endregion
+
+            #region AHandlerElement Members
+            public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
+
+            public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
+
+            public override AHandlerElement Clone(EventHandler handler) { return new SevenFloats(requestedApiVersion, handler, this); }
+            #endregion
+
+            #region IEquatable<Route>
+            public bool Equals(SevenFloats other)
+            {
+                return unknown1 == other.unknown1
+                    && unknown2 == other.unknown2
+                    && unknown3 == other.unknown3
+                    && unknown4 == other.unknown4
+                    && unknown5 == other.unknown5
+                    && unknown6 == other.unknown6
+                    && unknown7 == other.unknown7;
+            }
+            #endregion
+
+            #region Content Fields
+            public float Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; OnElementChanged(); } } }
+            public float Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; OnElementChanged(); } } }
+            public float Unknown3 { get { return unknown3; } set { if (unknown3 != value) { unknown3 = value; OnElementChanged(); } } }
+            public float Unknown4 { get { return unknown4; } set { if (unknown1 != value) { unknown1 = value; OnElementChanged(); } } }
+            public float Unknown5 { get { return unknown5; } set { if (unknown5 != value) { unknown5 = value; OnElementChanged(); } } }
+            public float Unknown6 { get { return unknown6; } set { if (unknown6 != value) { unknown6 = value; OnElementChanged(); } } }
+            public float Unknown7 { get { return unknown7; } set { if (unknown7 != value) { unknown7 = value; OnElementChanged(); } } }
+
+            public virtual string Value
+            {
+                get
+                {
+                    return String.Format("Unknown1: {0}; ", unknown1) +
+                        String.Format("Unknown2: {0}; ", unknown2) +
+                        String.Format("Unknown3: {0}; ", unknown3) +
+                        String.Format("Unknown4: {0}; ", unknown4) +
+                        String.Format("Unknown5: {0}; ", unknown5) +
+                        String.Format("Unknown6: {0}; ", unknown6) +
+                        String.Format("Unknown7: {0}.", unknown7);
+                }
+            }
+            #endregion
+        }
+        public class SevenFloatsList : AResource.DependentList<SevenFloats>
+        {
+            const int max = 1; // This implements the boolean nature of the list count
+
+            #region Constructors
+            public SevenFloatsList(EventHandler handler) : base(handler, max) { }
+            public SevenFloatsList(EventHandler handler, Stream s) : base(null, max) { elementHandler = handler; Parse(s); this.handler = handler; }
+            public SevenFloatsList(EventHandler handler, IList<SevenFloats> lsf) : base(handler, max, lsf) { }
+            #endregion
+
+            #region Data I/O
+            protected override uint ReadCount(Stream s)
+            {
+                uint c = base.ReadCount(s);
+                if (checking) if (c > max)
+                    throw new InvalidDataException(String.Format("Read 0x{0:X8}, expect less than 0x{1:X8}; position 0x{2:X16}", c, max, s.Position));
+                return c;
+            }
+            protected override SevenFloats CreateElement(Stream s) { return new SevenFloats(0, elementHandler, s); }
+            protected override void WriteElement(Stream s, SevenFloats element) { element.UnParse(s); }
+            #endregion
+
+            public override void Add() { if (Count < MaxSize) this.Add(new SevenFloats(0, handler)); }
+        }
+
         public class TransformElement : AHandlerElement, IEquatable<TransformElement>
         {
             const int recommendedApiVersion = 1;
@@ -194,19 +354,18 @@ namespace s3pi.GenericRCOLResource
             TransformElement tX;
             TransformElement tY;
             TransformElement tZ;
-            float[] transformMatrix = new float[3 * 4];
             #endregion
 
             #region Constructors
             public Part(int APIversion, EventHandler handler) : base(APIversion, handler) { }
-            public Part(int APIversion, EventHandler handler, Part basis) : this(APIversion, handler, basis.slotName, basis.boneName, basis.tX, basis.tY, basis.tZ) { }
-            public Part(int APIversion, EventHandler handler, uint slotName, uint boneName, TransformElement tX, TransformElement tY, TransformElement tZ)
+            public Part(int APIversion, EventHandler handler, Part basis)
+                : this(APIversion, handler, basis.slotName, basis.boneName, basis.tX, basis.tY, basis.tZ) { }
+            public Part(int APIversion, EventHandler handler,
+                uint slotName, uint boneName, TransformElement tX, TransformElement tY, TransformElement tZ)
                 : base(APIversion, handler)
             {
                 this.slotName = slotName;
                 this.boneName = boneName;
-                if (checking) if (transformMatrix.Length != this.transformMatrix.Length)
-                        throw new ArgumentLengthException("transformMatrix", transformMatrix.Length);
                 this.tX = new TransformElement(requestedApiVersion, handler, tX);
                 this.tY = new TransformElement(requestedApiVersion, handler, tY);
                 this.tZ = new TransformElement(requestedApiVersion, handler, tZ);
@@ -222,7 +381,15 @@ namespace s3pi.GenericRCOLResource
             #endregion
 
             #region IEquatable<Route>
-            public bool Equals(Part other) { return slotName.Equals(other.slotName) && boneName.Equals(other.boneName); }
+            public bool Equals(Part other)
+            {
+                return slotName.Equals(other.slotName)
+                    && boneName.Equals(other.boneName)
+                    && tX.Equals(other.tX)
+                    && tY.Equals(other.tY)
+                    && tZ.Equals(other.tZ)
+                    ;
+            }
             #endregion
 
             #region Content Fields
@@ -266,18 +433,11 @@ namespace s3pi.GenericRCOLResource
             {
                 uint[] slotNames = new uint[count];
                 uint[] boneNames = new uint[count];
-                TransformElement[,] tfms = new TransformElement[count,3];
                 BinaryReader r = new BinaryReader(s);
                 for (int i = 0; i < slotNames.Length; i++) slotNames[i] = r.ReadUInt32();
                 for (int i = 0; i < boneNames.Length; i++) boneNames[i] = r.ReadUInt32();
                 for (int i = 0; i < count; i++) this.Add(new Part(0, elementHandler, slotNames[i], boneNames[i],
                     new TransformElement(0, elementHandler, s), new TransformElement(0, elementHandler, s), new TransformElement(0, elementHandler, s)));
-                if (count > 0)
-                {
-                    uint zero = r.ReadUInt32();
-                    if (checking) if (zero != 0)
-                            throw new InvalidDataException(string.Format("Expected zero, read 0x{0:X8} at 0x{1:X8}", zero, s.Position));
-                }
             }
             public override void UnParse(Stream s)
             {
@@ -293,8 +453,6 @@ namespace s3pi.GenericRCOLResource
                     if (this[i].Z == null) this[i].Z = new TransformElement(0, handler);
                     this[i].Z.UnParse(s);
                 }
-                if (Count > 0)
-                    w.Write((uint)0);
             }
 
             protected override Part CreateElement(Stream s) { throw new NotImplementedException(); }
@@ -384,19 +542,12 @@ namespace s3pi.GenericRCOLResource
                 uint[] slotNames = new uint[count];
                 uint[] boneNames = new uint[count];
                 uint[] flags = new uint[count];
-                TransformElement[,] tfms = new TransformElement[count, 3];
                 BinaryReader r = new BinaryReader(s);
                 for (int i = 0; i < slotNames.Length; i++) slotNames[i] = r.ReadUInt32();
                 for (int i = 0; i < boneNames.Length; i++) boneNames[i] = r.ReadUInt32();
                 for (int i = 0; i < flags.Length; i++) flags[i] = r.ReadUInt32();
                 for (int i = 0; i < count; i++) this.Add(new SlottedPart(0, elementHandler, slotNames[i], boneNames[i], (SlotPlacement)flags[i],
                     new TransformElement(0, elementHandler, s), new TransformElement(0, elementHandler, s), new TransformElement(0, elementHandler, s)));
-                if (count > 0)
-                {
-                    uint zero = r.ReadUInt32();
-                    if (checking) if (zero != 0)
-                            throw new InvalidDataException(string.Format("Expected zero, read 0x{0:X8} at 0x{1:X8}", zero, s.Position));
-                }
             }
             public override void UnParse(Stream s)
             {
@@ -413,8 +564,6 @@ namespace s3pi.GenericRCOLResource
                     if (this[i].Z == null) this[i].Z = new TransformElement(0, handler);
                     this[i].Z.UnParse(s);
                 }
-                if (Count > 0)
-                    w.Write((uint)0);
             }
 
             protected override SlottedPart CreateElement(Stream s) { throw new NotImplementedException(); }
@@ -431,11 +580,23 @@ namespace s3pi.GenericRCOLResource
         [ElementPriority(1)]
         public PartList Routes { get { return routes; } set { if (routes != value) { routes = new PartList(handler, value); OnRCOLChanged(this, EventArgs.Empty); } } }
         [ElementPriority(2)]
-        public SlottedPartList Containers { get { return containers; } set { if (containers != value) { containers = new SlottedPartList(handler, value); OnRCOLChanged(this, EventArgs.Empty); } } }
+        [DataGridExpandable]
+        public SevenFloatsList RouteFloats { get { return routeFloats; } set { if (routeFloats != value) { routeFloats = new SevenFloatsList(handler, value); OnRCOLChanged(this, EventArgs.Empty); } } }
         [ElementPriority(3)]
-        public PartList Effects { get { return effects; } set { if (effects != value) { effects = new PartList(handler, value); OnRCOLChanged(this, EventArgs.Empty); } } }
+        public SlottedPartList Containers { get { return containers; } set { if (containers != value) { containers = new SlottedPartList(handler, value); OnRCOLChanged(this, EventArgs.Empty); } } }
         [ElementPriority(4)]
+        [DataGridExpandable]
+        public SevenFloatsList ContainerFloats { get { return containerFloats; } set { if (containerFloats != value) { containerFloats = new SevenFloatsList(handler, value); OnRCOLChanged(this, EventArgs.Empty); } } }
+        [ElementPriority(5)]
+        public PartList Effects { get { return effects; } set { if (effects != value) { effects = new PartList(handler, value); OnRCOLChanged(this, EventArgs.Empty); } } }
+        [ElementPriority(6)]
+        [DataGridExpandable]
+        public SevenFloatsList EffectFloats { get { return effectFloats; } set { if (effectFloats != value) { effectFloats = new SevenFloatsList(handler, value); OnRCOLChanged(this, EventArgs.Empty); } } }
+        [ElementPriority(7)]
         public PartList InverseKineticsTargets { get { return inverseKineticsTargets; } set { if (inverseKineticsTargets != value) { inverseKineticsTargets = new PartList(handler, value); OnRCOLChanged(this, EventArgs.Empty); } } }
+        [ElementPriority(8)]
+        [DataGridExpandable]
+        public SevenFloatsList InverseKineticsTargetFloats { get { return inverseKineticsTargetFloats; } set { if (inverseKineticsTargetFloats != value) { inverseKineticsTargetFloats = new SevenFloatsList(handler, value); OnRCOLChanged(this, EventArgs.Empty); } } }
 
         public string Value
         {
@@ -447,15 +608,19 @@ namespace s3pi.GenericRCOLResource
                 s += "\n---Routes:---";
                 for (int i = 0; i < routes.Count; i++) s += "\n--[" + i + "]--\n" + routes[i].Value;
                 s += "\n---";
+                if (routeFloats.Count > 0) s += "\nRouteFloats: " + routeFloats[0].Value;
                 s += "\n---Containers:---";
                 for (int i = 0; i < containers.Count; i++) s += "\n--[" + i + "]--\n" + containers[i].Value;
                 s += "\n---";
+                if (containerFloats.Count > 0) s += "\nContainerFloats: " + containerFloats[0].Value;
                 s += "\n---Effects:---";
                 for (int i = 0; i < effects.Count; i++) s += "\n--[" + i + "]--\n" + effects[i].Value;
                 s += "\n---";
+                if (effectFloats.Count > 0) s += "\nEffectFloats: " + effectFloats[0].Value;
                 s += "\n---InverseKineticsTargets:---";
                 for (int i = 0; i < inverseKineticsTargets.Count; i++) s += "\n--[" + i + "]--\n" + inverseKineticsTargets[i].Value;
                 s += "\n---";
+                if (inverseKineticsTargetFloats.Count > 0) s += "\nInverseKineticsTargetFloats: " + inverseKineticsTargetFloats[0].Value;
                 return s;
             }
         }
