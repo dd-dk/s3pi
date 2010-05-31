@@ -118,7 +118,7 @@ namespace TxtcResource
             #endregion
 
             #region Constructors
-            public SuperBlock(int APIversion, EventHandler handler) : base(APIversion, handler) { }
+            public SuperBlock(int APIversion, EventHandler handler) : base(APIversion, handler) { entries = new EntryBlockList(handler); }
             public SuperBlock(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
             public SuperBlock(int APIversion, EventHandler handler, SuperBlock basis)
                 : this(APIversion, handler,
