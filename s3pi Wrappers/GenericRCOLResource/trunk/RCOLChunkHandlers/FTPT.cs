@@ -199,6 +199,7 @@ namespace s3pi.GenericRCOLResource
             #endregion
             
             #region Constructors
+            public Area(int APIversion, EventHandler handler) : base(APIversion, handler) { closedPolygon = new PolygonPointList(handler); }
             public Area(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
             public Area(int APIversion, EventHandler handler, Area basis)
                 : this(APIversion, handler,
@@ -350,9 +351,7 @@ namespace s3pi.GenericRCOLResource
             protected override void WriteElement(Stream s, Area element) { element.UnParse(s); }
             #endregion
 
-            public override void Add() { this.Add((uint)0, (byte)0, (AreaType)0, new List<PolygonPoint>(),
-                (uint)0, (uint)0, (uint)0, (byte)0, (float)0, (float)0, (float)0, (float)0);
-            }
+            public override void Add() { this.Add(new Area(0, null)); }
         }
         #endregion
 

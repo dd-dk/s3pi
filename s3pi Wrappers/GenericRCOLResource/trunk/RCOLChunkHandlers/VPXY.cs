@@ -142,6 +142,7 @@ namespace s3pi.GenericRCOLResource
             #endregion
 
             #region Constructors
+            public ElementInt32(int APIversion, EventHandler handler) : base(APIversion, handler) { }
             public ElementInt32(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
             public ElementInt32(int APIversion, EventHandler handler, ElementInt32 basis) : this(APIversion, handler, basis.data) { }
             public ElementInt32(int APIversion, EventHandler handler, Int32 data) : base(APIversion, handler) { this.data = data; }
@@ -192,7 +193,7 @@ namespace s3pi.GenericRCOLResource
             protected override void WriteElement(Stream s, ElementInt32 element) { element.UnParse(s); }
             #endregion
 
-            public override void Add() { this.Add((int)0); }
+            public override void Add() { this.Add(new ElementInt32(0, null)); }
         }
 
         public abstract class Entry : AHandlerElement, IEquatable<Entry>

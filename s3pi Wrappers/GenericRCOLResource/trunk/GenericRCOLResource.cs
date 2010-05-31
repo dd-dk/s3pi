@@ -121,8 +121,9 @@ namespace s3pi.GenericRCOLResource
 
         public class ChunkEntry : AHandlerElement, IEquatable<ChunkEntry>
         {
-            #region Attributes
             const Int32 recommendedApiVersion = 1;
+
+            #region Attributes
             AResource.TGIBlock tgiBlock;
             ARCOLBlock rcolBlock;
             #endregion

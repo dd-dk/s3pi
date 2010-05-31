@@ -109,10 +109,10 @@ namespace s3pi.GenericRCOLResource
             #endregion
 
             #region Constructors
+            public Entry(int APIversion, EventHandler handler) : base(APIversion, handler) { }
             public Entry(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
             public Entry(int APIversion, EventHandler handler, Entry basis) : this(APIversion, handler, basis.index, basis.fnv32) { }
             public Entry(int APIversion, EventHandler handler, uint index, uint fnv32) : base(APIversion, handler) { this.index = index; this.fnv32 = fnv32; }
-            public Entry(int APIversion, EventHandler handler) : base(APIversion, handler) { }
             #endregion
 
             #region Data I/O
@@ -158,7 +158,7 @@ namespace s3pi.GenericRCOLResource
             protected override void WriteElement(Stream s, Entry element) { element.UnParse(s); }
             #endregion
 
-            public override void Add() { this.Add((uint)0, (uint) 0); }
+            public override void Add() { this.Add(new Entry(0, null)); }
         }
         #endregion
 

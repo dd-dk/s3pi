@@ -357,7 +357,13 @@ namespace s3pi.GenericRCOLResource
             #endregion
 
             #region Constructors
-            public Part(int APIversion, EventHandler handler) : base(APIversion, handler) { }
+            public Part(int APIversion, EventHandler handler)
+                : base(APIversion, handler)
+            {
+                tX = new TransformElement(requestedApiVersion, handler);
+                tY = new TransformElement(requestedApiVersion, handler);
+                tZ = new TransformElement(requestedApiVersion, handler);
+            }
             public Part(int APIversion, EventHandler handler, Part basis)
                 : this(APIversion, handler, basis.slotName, basis.boneName, basis.tX, basis.tY, basis.tZ) { }
             public Part(int APIversion, EventHandler handler,
