@@ -246,7 +246,7 @@ namespace TxtcResource
             protected override void WriteCount(Stream s, uint count) { (new BinaryWriter(s)).Write((byte)count); }
             protected override void WriteElement(Stream s, SuperBlock element) { element.UnParse(s); }
 
-            public override void Add() { this.Add(new SuperBlock(0, elementHandler)); }
+            public override void Add() { this.Add(new SuperBlock(0, null)); }
         }
 
         public abstract class Entry : AHandlerElement, IEquatable<Entry>
@@ -892,7 +892,7 @@ namespace TxtcResource
             protected override void WriteCount(Stream s, uint count) { } // List owner must do this
             protected override void WriteElement(Stream s, EntryBlock element) { element.UnParse(s); }
 
-            public override void Add() { this.Add(new EntryBlock(0, handler)); }
+            public override void Add() { this.Add(new EntryBlock(0, null)); }
 
             public string Value
             {
