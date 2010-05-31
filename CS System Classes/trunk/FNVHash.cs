@@ -68,7 +68,7 @@ namespace System.Security.Cryptography
         /// Returns the computed hash code.
         /// </summary>
         /// <returns>The computed hash code.</returns>
-        protected override byte[] HashFinal() { return BitConverter.GetBytes(hash); }
+        protected override byte[] HashFinal() { HashValue = BitConverter.GetBytes(hash); return HashValue; }
     }
 
     /// <summary>
