@@ -154,6 +154,7 @@ namespace CatalogResource
             #endregion
 
             #region Constructors
+            internal WallFloorPatternMaterial(int APIversion, EventHandler handler) : base(APIversion, handler) { }
             internal WallFloorPatternMaterial(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler, s) { }
             public WallFloorPatternMaterial(int APIversion, EventHandler handler, WallFloorPatternMaterial basis)
                 : base(APIversion, handler, basis) { this.unknown4 = basis.unknown4; this.unknown5 = basis.unknown5; this.unknown6 = basis.unknown6; }
@@ -228,12 +229,7 @@ namespace CatalogResource
             protected override void WriteElement(Stream s, WallFloorPatternMaterial element) { element.UnParse(s); }
             #endregion
 
-            public override void Add()
-            {
-                this.Add((byte)0, (uint)0, (ushort)0,
-                    new MaterialBlock(0, null, 0, new TCString(0, null, null, 0), new TCString(0, null, null, 0), new List<TypeCode>(), new List<MaterialBlock>()),
-                    new List<TGIBlock>(), (uint)0, (uint)0, (uint)0, (uint)0);
-            }
+            public override void Add() { this.Add(new WallFloorPatternMaterial(0, null)); }
 
             #region Content Fields
             public String Value { get { string s = ""; for (int i = 0; i < Count; i++) s += string.Format("\n--{0}--\n", i) + this[i].Value; return s; } }

@@ -924,6 +924,15 @@ namespace CatalogResource
             #endregion
 
             #region Constructors
+            public MaterialBlock(int APIversion, EventHandler handler)
+                : base(APIversion, handler)
+            {
+                unknown1 = new TCString(0, null, null, 0);
+                unknown2 = new TCString(0, null, null, 0);
+                tcList = new TypeCodeList(handler);
+                mbList = new MaterialBlockList(handler);
+            }
+
             internal MaterialBlock(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
 
             public MaterialBlock(int APIversion, EventHandler handler, MaterialBlock basis)
@@ -1056,10 +1065,7 @@ namespace CatalogResource
             protected override void WriteElement(Stream s, MaterialBlock element) { element.UnParse(s); }
             #endregion
 
-            public override void Add()
-            {
-                this.Add((byte)0, new TCString(0, null, null, 0), new TCString(0, null, null, 0), new List<TypeCode>(), new List<MaterialBlock>());
-            }
+            public override void Add() { this.Add(new MaterialBlock(0, null)); }
 
             #region Content Fields
             public String Value { get { string s = ""; for (int i = 0; i < Count; i++) s += string.Format("\n--{0}--\n", i) + this[i].Value; return s; } }
@@ -1079,6 +1085,12 @@ namespace CatalogResource
             #endregion
 
             #region Constructors
+            public Material(int APIversion, EventHandler handler)
+                : base(APIversion, handler)
+            {
+                mb = new MaterialBlock(requestedApiVersion, handler);
+                list = new TGIBlockList(handler);
+            }
             internal Material(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
             public Material(int APIversion, EventHandler handler, Material basis)
                 : base(APIversion, handler)
@@ -1251,12 +1263,7 @@ namespace CatalogResource
             protected override void WriteElement(Stream s, Material element) { element.UnParse(s); }
             #endregion
 
-            public override void Add()
-            {
-                this.Add((byte)0, (uint)0, (ushort)0,
-                    new MaterialBlock(0, null, 0, new TCString(0, null, null, 0), new TCString(0, null, null, 0), new List<TypeCode>(), new List<MaterialBlock>()),
-                    new List<TGIBlock>(), (uint)0);
-            }
+            public override void Add() { this.Add(new Material(0, null)); }
 
             #region Content Fields
             public String Value { get { string s = ""; for (int i = 0; i < Count; i++) s += string.Format("\n--{0}--\n", i) + this[i].Value; return s; } }
