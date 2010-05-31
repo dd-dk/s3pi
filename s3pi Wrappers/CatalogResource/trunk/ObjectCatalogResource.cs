@@ -43,6 +43,8 @@ namespace CatalogResource
         uint unknown12;
         MTDoorList mtDoorList = null;
         byte unknown13;
+        byte unknown16;
+        uint unknown17;
         uint diagonalIndex;
         uint hash;
         RoomCategory roomCategoryFlags;
@@ -51,6 +53,8 @@ namespace CatalogResource
         RoomSubCategory roomSubCategoryFlags;
         BuildCategory buildCategoryFlags;
         uint sinkDDSIndex;
+        uint unknown18;
+        ulong unknown19;
         SlotPlacement slotPlacementFlags;
         string materialGrouping1 = "";
         string materialGrouping2 = "";
@@ -181,6 +185,14 @@ namespace CatalogResource
             this.unknown12 = r.ReadUInt32();
             this.mtDoorList = new MTDoorList(OnResourceChanged, s);
             this.unknown13 = r.ReadByte();
+            if (common.Version >= 0x0000000E)
+            {
+                this.unknown16 = r.ReadByte();
+                if (common.Version >= 0x0000000F)
+                {
+                    this.unknown17 = r.ReadUInt32();
+                }
+            }
             this.diagonalIndex = r.ReadUInt32();
             this.hash = r.ReadUInt32();
             this.roomCategoryFlags = (RoomCategory)r.ReadUInt32();
@@ -189,6 +201,11 @@ namespace CatalogResource
             this.roomSubCategoryFlags = (RoomSubCategory)r.ReadUInt64();
             this.buildCategoryFlags = (BuildCategory)r.ReadUInt32();
             this.sinkDDSIndex = r.ReadUInt32();
+            if (this.version >= 0x00000017)
+            {
+                this.unknown18 = r.ReadUInt32();
+                this.unknown19 = r.ReadUInt64();
+            }
             this.slotPlacementFlags = (SlotPlacement)r.ReadUInt32();
             this.materialGrouping1 = r2.ReadString();
             this.materialGrouping2 = r2.ReadString();
@@ -227,6 +244,14 @@ namespace CatalogResource
             if (mtDoorList == null) mtDoorList = new MTDoorList(OnResourceChanged);
             mtDoorList.UnParse(s);
             w.Write(unknown13);
+            if (common.Version >= 0x0000000E)
+            {
+                w.Write(unknown16);
+                if (common.Version >= 0x0000000F)
+                {
+                    w.Write(unknown17);
+                }
+            }
             w.Write(diagonalIndex);
             w.Write(hash);
             w.Write((uint)roomCategoryFlags);
@@ -235,6 +260,11 @@ namespace CatalogResource
             w.Write((ulong)roomSubCategoryFlags);
             w.Write((uint)buildCategoryFlags);
             w.Write(sinkDDSIndex);
+            if (this.version >= 0x00000017)
+            {
+                w.Write(unknown18);
+                w.Write(unknown19);
+            }
             w.Write((uint)slotPlacementFlags);
             Write7BitStr(s, materialGrouping1, System.Text.Encoding.BigEndianUnicode);
             Write7BitStr(s, materialGrouping2, System.Text.Encoding.BigEndianUnicode);
@@ -258,7 +288,20 @@ namespace CatalogResource
             get
             {
                 List<string> res = base.ContentFields;
-                if (this.version < 0x00000016) res.Remove("Unknown1");
+                if (this.version < 0x00000017)
+                {
+
+                    res.Remove("Unknown18");
+                    res.Remove("Unknown19");
+                    if (this.version < 0x00000016)
+                        res.Remove("Unknown1");
+                }
+                if (common.Version < 0x0000000F)
+                {
+                    res.Remove("Unknown17");
+                    if (common.Version < 0x0000000E)
+                        res.Remove("Unknown16");
+                }
                 return res;
             }
         }
@@ -667,17 +710,25 @@ namespace CatalogResource
         #endregion
 
         #region Content Fields
+        [ElementPriority(2)]
         public MaterialList Materials { get { return materialList; } set { if (materialList != value) { materialList = value == null ? null : new MaterialList(OnResourceChanged, value); } OnResourceChanged(this, new EventArgs()); } }
+        [ElementPriority(3)]
         public string Unknown1
         {
             get { if (version < 0x00000016) throw new InvalidOperationException(); return unknown1; }
             set { if (version < 0x00000016) throw new InvalidOperationException(); if (unknown1 != value) { unknown1 = value; OnResourceChanged(this, new EventArgs()); } }
         }
+        [ElementPriority(12)]
         public uint Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; OnResourceChanged(this, new EventArgs()); } } }
+        [ElementPriority(13)]
         public byte Unknown3 { get { return unknown3; } set { if (unknown3 != value) { unknown3 = value; OnResourceChanged(this, new EventArgs()); } } }
+        [ElementPriority(14)]
         public uint Unknown4 { get { return unknown4; } set { if (unknown4 != value) { unknown4 = value; OnResourceChanged(this, new EventArgs()); } } }
+        [ElementPriority(15)]
         public byte Unknown5 { get { return unknown5; } set { if (unknown5 != value) { unknown5 = value; OnResourceChanged(this, new EventArgs()); } } }
+        [ElementPriority(16)]
         public byte Unknown6 { get { return unknown6; } set { if (unknown6 != value) { unknown6 = value; OnResourceChanged(this, new EventArgs()); } } }
+        [ElementPriority(17)]
         public byte[] Unknown7
         {
             get { return (byte[])unknown7.Clone(); } // because "byte" doesn't have a parent or a Changed event
@@ -687,25 +738,69 @@ namespace CatalogResource
                 if (!ArrayCompare(unknown7, value)) { unknown7 = value == null ? null : (byte[])value.Clone(); OnResourceChanged(this, new EventArgs()); }
             }
         }
+        [ElementPriority(18)]
         public uint OBJKIndex { get { return objkIndex; } set { if (objkIndex != value) { objkIndex = value; OnResourceChanged(this, new EventArgs()); } } }
+        [ElementPriority(19)]
         public uint Unknown8 { get { return unknown8; } set { if (unknown8 != value) { unknown8 = value; OnResourceChanged(this, new EventArgs()); } } }
+        [ElementPriority(20)]
         public uint Unknown9 { get { return unknown9; } set { if (unknown9 != value) { unknown9 = value; OnResourceChanged(this, new EventArgs()); } } }
+        [ElementPriority(21)]
         public uint Unknown10 { get { return unknown10; } set { if (unknown10 != value) { unknown10 = value; OnResourceChanged(this, new EventArgs()); } } }
+        [ElementPriority(22)]
         public uint Unknown11 { get { return unknown11; } set { if (unknown11 != value) { unknown11 = value; OnResourceChanged(this, new EventArgs()); } } }
+        [ElementPriority(23)]
         public uint Unknown12 { get { return unknown12; } set { if (unknown12 != value) { unknown12 = value; OnResourceChanged(this, new EventArgs()); } } }
+        [ElementPriority(24)]
         public MTDoorList MTDoors { get { return mtDoorList; } set { if (mtDoorList != value) { mtDoorList = value == null ? null : new MTDoorList(OnResourceChanged, value); } OnResourceChanged(this, new EventArgs()); } }
+        [ElementPriority(25)]
         public byte Unknown13 { get { return unknown13; } set { if (unknown13 != value) { unknown13 = value; OnResourceChanged(this, new EventArgs()); } } }
+        [ElementPriority(26)]
+        public byte Unknown16
+        {
+            get { if (common.Version < 0x0000000E) throw new InvalidOperationException(); return unknown16; }
+            set { if (common.Version < 0x0000000E) throw new InvalidOperationException(); if (unknown16 != value) { unknown16 = value; OnResourceChanged(this, new EventArgs()); } }
+        }
+        [ElementPriority(27)]
+        public uint Unknown17
+        {
+            get { if (common.Version < 0x0000000F) throw new InvalidOperationException(); return unknown17; }
+            set { if (common.Version < 0x0000000F) throw new InvalidOperationException(); if (unknown17 != value) { unknown17 = value; OnResourceChanged(this, new EventArgs()); } }
+        }
+        [ElementPriority(28)]
         public uint DiagonalIndex { get { return diagonalIndex; } set { if (diagonalIndex != value) { diagonalIndex = value; OnResourceChanged(this, new EventArgs()); } } }
+        [ElementPriority(29)]
         public uint Hash { get { return hash; } set { if (hash != value) { hash = value; OnResourceChanged(this, new EventArgs()); } } }
+        [ElementPriority(30)]
         public RoomCategory RoomCategoryFlags { get { return roomCategoryFlags; } set { if (roomCategoryFlags != value) { roomCategoryFlags = value; OnResourceChanged(this, new EventArgs()); } } }
+        [ElementPriority(31)]
         public FunctionCategory FunctionCategoryFlags { get { return functionCategoryFlags; } set { if (functionCategoryFlags != value) { functionCategoryFlags = value; OnResourceChanged(this, new EventArgs()); } } }
+        [ElementPriority(32)]
         public FunctionSubCategory FunctionSubCategoryFlags { get { return functionSubCategoryFlags; } set { if (functionSubCategoryFlags != value) { functionSubCategoryFlags = value; OnResourceChanged(this, new EventArgs()); } } }
+        [ElementPriority(33)]
         public RoomSubCategory RoomSubCategoryFlags { get { return roomSubCategoryFlags; } set { if (roomSubCategoryFlags != value) { roomSubCategoryFlags = value; OnResourceChanged(this, new EventArgs()); } } }
+        [ElementPriority(34)]
         public BuildCategory BuildCategoryFlags { get { return buildCategoryFlags; } set { if (buildCategoryFlags != value) { buildCategoryFlags = value; OnResourceChanged(this, new EventArgs()); } } }
+        [ElementPriority(35)]
         public uint SinkDDSIndex { get { return sinkDDSIndex; } set { if (sinkDDSIndex != value) { sinkDDSIndex = value; OnResourceChanged(this, new EventArgs()); } } }
+        [ElementPriority(36)]
+        public uint Unknown18
+        {
+            get { if (version < 0x00000017) throw new InvalidOperationException(); return unknown18; }
+            set { if (version < 0x00000017) throw new InvalidOperationException(); if (unknown18 != value) { unknown18 = value; OnResourceChanged(this, new EventArgs()); } }
+        }
+        [ElementPriority(37)]
+        public ulong Unknown19
+        {
+            get { if (version < 0x00000017) throw new InvalidOperationException(); return unknown19; }
+            set { if (version < 0x00000017) throw new InvalidOperationException(); if (unknown19 != value) { unknown19 = value; OnResourceChanged(this, new EventArgs()); } }
+        }
+        [ElementPriority(38)]
         public SlotPlacement SlotPlacementFlags { get { return slotPlacementFlags; } set { if (slotPlacementFlags != value) { slotPlacementFlags = value; OnResourceChanged(this, new EventArgs()); } } }
+        [ElementPriority(39)]
         public string MaterialGrouping1 { get { return materialGrouping1; } set { if (materialGrouping1 != value) { materialGrouping1 = value; OnResourceChanged(this, new EventArgs()); } } }
+        [ElementPriority(40)]
         public string MaterialGrouping2 { get { return materialGrouping2; } set { if (materialGrouping2 != value) { materialGrouping2 = value; OnResourceChanged(this, new EventArgs()); } } }
+        [ElementPriority(41)]
         public uint[] Unknown15
         {
             get { return (uint[])unknown15.Clone(); }
@@ -715,6 +810,7 @@ namespace CatalogResource
                 if (!ArrayCompare(unknown15, value)) { unknown15 = (uint[])value.Clone(); OnResourceChanged(this, new EventArgs()); }
             }
         }
+        [ElementPriority(42)]
         public uint FallbackIndex { get { return fallbackIndex; } set { if (fallbackIndex != value) { fallbackIndex = value; OnResourceChanged(this, new EventArgs()); } } }
         #endregion
     }

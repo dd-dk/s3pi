@@ -181,20 +181,21 @@ namespace CatalogResource
             #endregion
 
             #region Content Fields
+            [ElementPriority(1)]
             public uint Version { get { return version; } set { if (version != value) { version = value; OnElementChanged(); } } }
-
+            [ElementPriority(2)]
             public ulong NameGUID { get { return nameGUID; } set { if (nameGUID != value) { nameGUID = value; OnElementChanged(); } } }
-
+            [ElementPriority(3)]
             public ulong DescGUID { get { return descGUID; } set { if (descGUID != value) { descGUID = value; OnElementChanged(); } } }
-
+            [ElementPriority(4)]
             public string Name { get { return name; } set { if (name != value) { name = value; OnElementChanged(); } } }
-
+            [ElementPriority(5)]
             public string Desc { get { return desc; } set { if (desc != value) { desc = value; OnElementChanged(); } } }
-
+            [ElementPriority(6)]
             public float Price { get { return price; } set { if (price != value) { price = value; OnElementChanged(); } } }
-
+            [ElementPriority(7)]
             public float Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; OnElementChanged(); } } }
-
+            [ElementPriority(8)]
             public byte[] Unknown3
             {
                 get { return (byte[])unknown3.Clone(); }
@@ -210,11 +211,11 @@ namespace CatalogResource
                     }
                 }
             }
-
+            [ElementPriority(9)]
             public BuildBuyProductStatus BuildBuyProductStatusFlags { get { return buildBuyProductStatusFlags; } set { if (buildBuyProductStatusFlags != value) { buildBuyProductStatusFlags = value; OnElementChanged(); } } }
-
+            [ElementPriority(10)]
             public ulong PngInstance { get { return pngInstance; } set { if (pngInstance != value) { pngInstance = value; OnElementChanged(); } } }
-
+            [ElementPriority(11)]
             public byte Unknown4
             {
                 get { if (version < 0x0000000D) throw new InvalidOperationException(); return unknown4; }
@@ -1024,10 +1025,15 @@ namespace CatalogResource
             #endregion
 
             #region Content Fields
+            [ElementPriority(1)]
             public byte XMLIndex { get { return xmlindex; } set { if (xmlindex != value) { xmlindex = value; OnElementChanged(); } } }
+            [ElementPriority(2)]
             public TCString Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; OnElementChanged(); } } }
+            [ElementPriority(3)]
             public TCString Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; OnElementChanged(); } } }
+            [ElementPriority(4)]
             public TypeCodeList TypeCodes { get { return tcList; } set { if (tcList != (value as TypeCodeList)) { tcList = new TypeCodeList(handler, value); OnElementChanged(); } } }
+            [ElementPriority(5)]
             public MaterialBlockList MaterialBlocks { get { return mbList; } set { if (mbList != (value as MaterialBlockList)) { mbList = new MaterialBlockList(handler, value); OnElementChanged(); } } }
 
             public String Value
@@ -1211,10 +1217,15 @@ namespace CatalogResource
             #endregion
 
             #region Content Fields
+            [ElementPriority(1)]
             public byte MaterialType { get { return materialType; } set { if (materialType != value) { materialType = value; OnElementChanged(); } } }
+            [ElementPriority(2)]
             public uint Unknown1 { get { return unknown1; } set { if (materialType == 1) throw new InvalidOperationException(); if (unknown1 != value) { unknown1 = value; OnElementChanged(); } } }
+            [ElementPriority(3)]
             public ushort Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; OnElementChanged(); } } }
+            [ElementPriority(4)]
             public MaterialBlock MaterialBlock { get { return mb; } set { if (mb != value) { mb = value; OnElementChanged(); } } }
+            [ElementPriority(5)]
             public TGIBlockList TGIBlocks
             {
                 get { return list; }
@@ -1227,6 +1238,7 @@ namespace CatalogResource
                     }
                 }
             }
+            [ElementPriority(6)]
             public uint Unknown3 { get { return unknown3; } set { if (unknown3 != value) { unknown3 = value; OnElementChanged(); } } }
 
             public String Value
@@ -1272,7 +1284,9 @@ namespace CatalogResource
         #endregion
 
         #region Content Fields
+        [ElementPriority(1)]
         public uint Version { get { return version; } set { if (version != value) { version = value; OnResourceChanged(this, new EventArgs()); } } }
+        [ElementPriority(11)]
         public Common CommonBlock { get { return common; } set { if (common != value) { common = new Common(requestedApiVersion, OnResourceChanged, value); OnResourceChanged(this, new EventArgs()); } } }
 
         public virtual String Value
@@ -1280,35 +1294,20 @@ namespace CatalogResource
             get
             {
                 string s = "";
-                s += "Common: CommonBlock\n---------\n" + CommonBlock.Value + "---------\n---------\n";
-                foreach (string f in this.ContentFields)
-                {
-                    if (f.Equals("Value") || f.Equals("Stream") || f.Equals("AsBytes")) continue;
-                    TypedValue tv = this[f];
-                    if (typeof(WallFloorPatternCatalogResource.WallFloorPatternMaterialList).IsAssignableFrom(tv.Type)) { }
-                    else if (typeof(MaterialList).IsAssignableFrom(tv.Type)) { }
-                    else if (typeof(MaterialBlockList).IsAssignableFrom(tv.Type)) { }
-                    else if (typeof(TGIBlockList).IsAssignableFrom(tv.Type)) { }
-                    else if (typeof(Common).IsAssignableFrom(tv.Type)) { }
-                    else if (typeof(TypeCode).IsAssignableFrom(tv.Type)) { }
-                    else if (typeof(ObjectCatalogResource.MTDoorList).IsAssignableFrom(tv.Type)) { }
-                    else s += string.Format("{0}: {1}\n", f, "" + tv);
-                }
-                s += "\n";
                 foreach (string f in this.ContentFields)
                 {
                     if (f.Equals("Value") || f.Equals("Stream") || f.Equals("AsBytes")) continue;
                     TypedValue tv = this[f];
                     string h = String.Format("\n---------\n---------\n{0}: {1}\n---------\n", tv.Type.Name, f);
                     string t = "---------\n";
-                    if (typeof(WallFloorPatternCatalogResource.WallFloorPatternMaterialList).IsAssignableFrom(tv.Type)) s += h + (tv.Value as WallFloorPatternCatalogResource.WallFloorPatternMaterialList).Value + t;
+                    if (typeof(Common).IsAssignableFrom(tv.Type)) s += h + (tv.Value as Common).Value + t;
+                    else if (typeof(WallFloorPatternCatalogResource.WallFloorPatternMaterialList).IsAssignableFrom(tv.Type)) s += h + (tv.Value as WallFloorPatternCatalogResource.WallFloorPatternMaterialList).Value + t;
                     else if (typeof(MaterialList).IsAssignableFrom(tv.Type)) s += h + (tv.Value as MaterialList).Value + t;
                     else if (typeof(MaterialBlockList).IsAssignableFrom(tv.Type)) s += h + (tv.Value as MaterialBlockList).Value + t;
                     else if (typeof(TGIBlockList).IsAssignableFrom(tv.Type)) s += h + (tv.Value as TGIBlockList).Value + t;
-                    else if (typeof(Common).IsAssignableFrom(tv.Type)) { }
                     else if (typeof(TypeCode).IsAssignableFrom(tv.Type)) s += h + (tv.Value as TypeCode).Value + t;
                     else if (typeof(ObjectCatalogResource.MTDoorList).IsAssignableFrom(tv.Type)) s += h + (tv.Value as ObjectCatalogResource.MTDoorList).Value + t;
-                    else { }
+                    else s += string.Format("{0}: {1}\n", f, "" + tv);
                 }
                 return s;
             }
