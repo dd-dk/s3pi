@@ -233,7 +233,7 @@ namespace s3pi.GenericRCOLResource
             public float Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; OnElementChanged(); } } }
             public float Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; OnElementChanged(); } } }
             public float Unknown3 { get { return unknown3; } set { if (unknown3 != value) { unknown3 = value; OnElementChanged(); } } }
-            public float Unknown4 { get { return unknown4; } set { if (unknown1 != value) { unknown1 = value; OnElementChanged(); } } }
+            public float Unknown4 { get { return unknown4; } set { if (unknown1 != value) { unknown4 = value; OnElementChanged(); } } }
             public float Unknown5 { get { return unknown5; } set { if (unknown5 != value) { unknown5 = value; OnElementChanged(); } } }
             public float Unknown6 { get { return unknown6; } set { if (unknown6 != value) { unknown6 = value; OnElementChanged(); } } }
             public float Unknown7 { get { return unknown7; } set { if (unknown7 != value) { unknown7 = value; OnElementChanged(); } } }
