@@ -117,7 +117,7 @@ namespace ModularResource
             protected override void WriteElement(Stream s, TGIIndex element) { (new BinaryWriter(s)).Write(element.Element); }
             #endregion
 
-            public override void Add() { this.Add(new TGIIndex(0, elementHandler)); }
+            public override void Add() { this.Add(new TGIIndex(0, null)); }
 
             #region Content Fields
             public String Value { get { string s = ""; for (int i = 0; i < Count; i++) s += string.Format("0x{0:X2}: 0x{1}\n", i, this[i].Element.ToString("X8")); return s; } }
