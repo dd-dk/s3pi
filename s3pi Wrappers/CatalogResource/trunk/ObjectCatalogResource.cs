@@ -28,7 +28,7 @@ namespace CatalogResource
     {
         #region Attributes
         MaterialList materialList = null;
-        string unknown1;
+        string unknown1 = "";
         uint unknown2;
         byte unknown3;
         uint unknown4;
@@ -43,8 +43,6 @@ namespace CatalogResource
         uint unknown12;
         MTDoorList mtDoorList = null;
         byte unknown13;
-        byte unknown16;
-        uint unknown17;
         uint diagonalIndex;
         uint hash;
         RoomCategory roomCategoryFlags;
@@ -53,8 +51,9 @@ namespace CatalogResource
         RoomSubCategory roomSubCategoryFlags;
         BuildCategory buildCategoryFlags;
         uint sinkDDSIndex;
+        uint unknown16;
+        uint unknown17;
         uint unknown18;
-        ulong unknown19;
         SlotPlacement slotPlacementFlags;
         string materialGrouping1 = "";
         string materialGrouping2 = "";
@@ -105,12 +104,12 @@ namespace CatalogResource
             uint roomFlags, uint functionCategoryFlags, ulong subFunctionFlags, ulong subRoomFlags, uint buildCategoryFlags,
             uint sinkDDSIndex, uint slotPlacementFlags, string materialGrouping1, string materialGrouping2, uint[] unknown15, uint nullTGIIndex,
             TGIBlockList ltgib)
-            : this(APIversion, version, materialList, null, common, unknown2, unknown3, unknown4,
+            : this(APIversion, version, materialList, "", common, unknown2, unknown3, unknown4,
              unknown5, unknown6, unknown7, objkIndex, unknown8, unknown9, unknown10,
              unknown11, unknown12, mtDoorList, unknown13, diagonalIndex, hash,
              roomFlags, functionCategoryFlags, subFunctionFlags, subRoomFlags, buildCategoryFlags,
-             sinkDDSIndex, slotPlacementFlags, materialGrouping1, materialGrouping2, unknown15, nullTGIIndex,
-             ltgib)
+             sinkDDSIndex, 0, 0, 0, slotPlacementFlags, materialGrouping1, materialGrouping2,
+             unknown15, nullTGIIndex, ltgib)
         {
             if (checking) if (version >= 0x00000016)
                     throw new InvalidOperationException(String.Format("Constructor requires Unknown1 for version {0}", version));
@@ -122,6 +121,23 @@ namespace CatalogResource
             uint roomFlags, uint functionCategoryFlags, ulong subFunctionFlags, ulong subRoomFlags, uint buildCategoryFlags,
             uint sinkDDSIndex, uint slotPlacementFlags, string materialGrouping1, string materialGrouping2, uint[] unknown15, uint nullTGIIndex,
             TGIBlockList ltgib)
+            : this(APIversion, version, materialList, unknown1, common, unknown2, unknown3, unknown4,
+             unknown5, unknown6, unknown7, objkIndex, unknown8, unknown9, unknown10,
+             unknown11, unknown12, mtDoorList, unknown13, diagonalIndex, hash,
+             roomFlags, functionCategoryFlags, subFunctionFlags, subRoomFlags, buildCategoryFlags,
+             sinkDDSIndex, 0, 0, 0, slotPlacementFlags, materialGrouping1, materialGrouping2,
+             unknown15, nullTGIIndex, ltgib)
+        {
+            if (checking) if (version >= 0x00000017)
+                    throw new InvalidOperationException(String.Format("Constructor requires Unknown16, Unknown17 and Unknown18 for version {0}", version));
+        }
+        public ObjectCatalogResource(int APIversion,
+            uint version, IList<Material> materialList, string unknown1, Common common, uint unknown2, byte unknown3, uint unknown4,
+            byte unknown5, byte unknown6, byte[] unknown7, uint objkIndex, uint unknown8, uint unknown9, uint unknown10,
+            uint unknown11, uint unknown12, IList<MTDoor> mtDoorList, byte unknown13, uint diagonalIndex, uint hash,
+            uint roomFlags, uint functionCategoryFlags, ulong subFunctionFlags, ulong subRoomFlags, uint buildCategoryFlags,
+            uint sinkDDSIndex, uint unknown16, uint unknown17, uint unknown18, uint slotPlacementFlags, string materialGrouping1, string materialGrouping2,
+            uint[] unknown15, uint nullTGIIndex, TGIBlockList ltgib)
             : base(APIversion, version, ltgib)
         {
             this.materialList = new MaterialList(OnResourceChanged, materialList);
@@ -150,6 +166,9 @@ namespace CatalogResource
             this.roomSubCategoryFlags = (RoomSubCategory)subRoomFlags;
             this.buildCategoryFlags = (BuildCategory)buildCategoryFlags;
             this.sinkDDSIndex = sinkDDSIndex;
+            this.unknown16 = unknown16;
+            this.unknown17 = unknown17;
+            this.unknown18 = unknown18;
             this.slotPlacementFlags = (SlotPlacement)slotPlacementFlags;
             this.materialGrouping1 = materialGrouping1;
             this.materialGrouping2 = materialGrouping2;
@@ -185,14 +204,6 @@ namespace CatalogResource
             this.unknown12 = r.ReadUInt32();
             this.mtDoorList = new MTDoorList(OnResourceChanged, s);
             this.unknown13 = r.ReadByte();
-            if (common.Version >= 0x0000000E)
-            {
-                this.unknown16 = r.ReadByte();
-                if (common.Version >= 0x0000000F)
-                {
-                    this.unknown17 = r.ReadUInt32();
-                }
-            }
             this.diagonalIndex = r.ReadUInt32();
             this.hash = r.ReadUInt32();
             this.roomCategoryFlags = (RoomCategory)r.ReadUInt32();
@@ -203,8 +214,9 @@ namespace CatalogResource
             this.sinkDDSIndex = r.ReadUInt32();
             if (this.version >= 0x00000017)
             {
+                this.unknown16 = r.ReadUInt32();
+                this.unknown17 = r.ReadUInt32();
                 this.unknown18 = r.ReadUInt32();
-                this.unknown19 = r.ReadUInt64();
             }
             this.slotPlacementFlags = (SlotPlacement)r.ReadUInt32();
             this.materialGrouping1 = r2.ReadString();
@@ -244,14 +256,6 @@ namespace CatalogResource
             if (mtDoorList == null) mtDoorList = new MTDoorList(OnResourceChanged);
             mtDoorList.UnParse(s);
             w.Write(unknown13);
-            if (common.Version >= 0x0000000E)
-            {
-                w.Write(unknown16);
-                if (common.Version >= 0x0000000F)
-                {
-                    w.Write(unknown17);
-                }
-            }
             w.Write(diagonalIndex);
             w.Write(hash);
             w.Write((uint)roomCategoryFlags);
@@ -262,8 +266,9 @@ namespace CatalogResource
             w.Write(sinkDDSIndex);
             if (this.version >= 0x00000017)
             {
+                w.Write(unknown16);
+                w.Write(unknown17);
                 w.Write(unknown18);
-                w.Write(unknown19);
             }
             w.Write((uint)slotPlacementFlags);
             Write7BitStr(s, materialGrouping1, System.Text.Encoding.BigEndianUnicode);
@@ -290,17 +295,11 @@ namespace CatalogResource
                 List<string> res = base.ContentFields;
                 if (this.version < 0x00000017)
                 {
-
+                    res.Remove("Unknown16");
+                    res.Remove("Unknown17");
                     res.Remove("Unknown18");
-                    res.Remove("Unknown19");
                     if (this.version < 0x00000016)
                         res.Remove("Unknown1");
-                }
-                if (common.Version < 0x0000000F)
-                {
-                    res.Remove("Unknown17");
-                    if (common.Version < 0x0000000E)
-                        res.Remove("Unknown16");
                 }
                 return res;
             }
@@ -754,18 +753,6 @@ namespace CatalogResource
         public MTDoorList MTDoors { get { return mtDoorList; } set { if (mtDoorList != value) { mtDoorList = value == null ? null : new MTDoorList(OnResourceChanged, value); } OnResourceChanged(this, new EventArgs()); } }
         [ElementPriority(25)]
         public byte Unknown13 { get { return unknown13; } set { if (unknown13 != value) { unknown13 = value; OnResourceChanged(this, new EventArgs()); } } }
-        [ElementPriority(26)]
-        public byte Unknown16
-        {
-            get { if (common.Version < 0x0000000E) throw new InvalidOperationException(); return unknown16; }
-            set { if (common.Version < 0x0000000E) throw new InvalidOperationException(); if (unknown16 != value) { unknown16 = value; OnResourceChanged(this, new EventArgs()); } }
-        }
-        [ElementPriority(27)]
-        public uint Unknown17
-        {
-            get { if (common.Version < 0x0000000F) throw new InvalidOperationException(); return unknown17; }
-            set { if (common.Version < 0x0000000F) throw new InvalidOperationException(); if (unknown17 != value) { unknown17 = value; OnResourceChanged(this, new EventArgs()); } }
-        }
         [ElementPriority(28)]
         public uint DiagonalIndex { get { return diagonalIndex; } set { if (diagonalIndex != value) { diagonalIndex = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(29)]
@@ -783,24 +770,30 @@ namespace CatalogResource
         [ElementPriority(35)]
         public uint SinkDDSIndex { get { return sinkDDSIndex; } set { if (sinkDDSIndex != value) { sinkDDSIndex = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(36)]
+        public uint Unknown16
+        {
+            get { if (version < 0x00000017) throw new InvalidOperationException(); return unknown16; }
+            set { if (version < 0x00000017) throw new InvalidOperationException(); if (unknown16 != value) { unknown16 = value; OnResourceChanged(this, new EventArgs()); } }
+        }
+        [ElementPriority(37)]
+        public uint Unknown17
+        {
+            get { if (version < 0x00000017) throw new InvalidOperationException(); return unknown17; }
+            set { if (version < 0x00000017) throw new InvalidOperationException(); if (unknown17 != value) { unknown17 = value; OnResourceChanged(this, new EventArgs()); } }
+        }
+        [ElementPriority(38)]
         public uint Unknown18
         {
             get { if (version < 0x00000017) throw new InvalidOperationException(); return unknown18; }
             set { if (version < 0x00000017) throw new InvalidOperationException(); if (unknown18 != value) { unknown18 = value; OnResourceChanged(this, new EventArgs()); } }
         }
-        [ElementPriority(37)]
-        public ulong Unknown19
-        {
-            get { if (version < 0x00000017) throw new InvalidOperationException(); return unknown19; }
-            set { if (version < 0x00000017) throw new InvalidOperationException(); if (unknown19 != value) { unknown19 = value; OnResourceChanged(this, new EventArgs()); } }
-        }
-        [ElementPriority(38)]
-        public SlotPlacement SlotPlacementFlags { get { return slotPlacementFlags; } set { if (slotPlacementFlags != value) { slotPlacementFlags = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(39)]
-        public string MaterialGrouping1 { get { return materialGrouping1; } set { if (materialGrouping1 != value) { materialGrouping1 = value; OnResourceChanged(this, new EventArgs()); } } }
+        public SlotPlacement SlotPlacementFlags { get { return slotPlacementFlags; } set { if (slotPlacementFlags != value) { slotPlacementFlags = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(40)]
-        public string MaterialGrouping2 { get { return materialGrouping2; } set { if (materialGrouping2 != value) { materialGrouping2 = value; OnResourceChanged(this, new EventArgs()); } } }
+        public string MaterialGrouping1 { get { return materialGrouping1; } set { if (materialGrouping1 != value) { materialGrouping1 = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(41)]
+        public string MaterialGrouping2 { get { return materialGrouping2; } set { if (materialGrouping2 != value) { materialGrouping2 = value; OnResourceChanged(this, new EventArgs()); } } }
+        [ElementPriority(42)]
         public uint[] Unknown15
         {
             get { return (uint[])unknown15.Clone(); }
@@ -810,7 +803,7 @@ namespace CatalogResource
                 if (!ArrayCompare(unknown15, value)) { unknown15 = (uint[])value.Clone(); OnResourceChanged(this, new EventArgs()); }
             }
         }
-        [ElementPriority(42)]
+        [ElementPriority(43)]
         public uint FallbackIndex { get { return fallbackIndex; } set { if (fallbackIndex != value) { fallbackIndex = value; OnResourceChanged(this, new EventArgs()); } } }
         #endregion
     }

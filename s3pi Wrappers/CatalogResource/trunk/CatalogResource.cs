@@ -74,6 +74,8 @@ namespace CatalogResource
             BuildBuyProductStatus buildBuyProductStatusFlags;
             ulong pngInstance;
             byte unknown4;
+            byte unknown5;
+            uint unknown6;
             #endregion
 
             #region Constructors
@@ -125,7 +127,17 @@ namespace CatalogResource
                 buildBuyProductStatusFlags = (BuildBuyProductStatus)r.ReadByte();
                 pngInstance = r.ReadUInt64();
                 if (version >= 0x0000000D)
+                {
                     unknown4 = r.ReadByte();
+                    if (version >= 0x0000000E)
+                    {
+                        unknown5 = r.ReadByte();
+                        if (version >= 0x0000000F)
+                        {
+                            unknown6 = r.ReadUInt32();
+                        }
+                    }
+                }
             }
 
             internal void UnParse(Stream s)
@@ -146,7 +158,17 @@ namespace CatalogResource
                 w.Write((byte)buildBuyProductStatusFlags);
                 w.Write(pngInstance);
                 if (version >= 0x0000000D)
+                {
                     w.Write(unknown4);
+                    if (version >= 0x0000000E)
+                    {
+                        w.Write(unknown5);
+                        if (version >= 0x0000000F)
+                        {
+                            w.Write(unknown6);
+                        }
+                    }
+                }
             }
             #endregion
 
@@ -156,7 +178,16 @@ namespace CatalogResource
                 get
                 {
                     List<string> res = GetContentFields(requestedApiVersion, this.GetType());;
-                    if (this.version < 0x0000000D) res.Remove("Unknown4");
+                    if (version < 0x0000000F)
+                    {
+                        res.Remove("Unknown6");
+                        if (version < 0x0000000E)
+                        {
+                            res.Remove("Unknown5");
+                            if (this.version < 0x0000000D)
+                                res.Remove("Unknown4");
+                        }
+                    }
                     return res;
                 }
             }
@@ -220,6 +251,18 @@ namespace CatalogResource
             {
                 get { if (version < 0x0000000D) throw new InvalidOperationException(); return unknown4; }
                 set { if (version < 0x0000000D) throw new InvalidOperationException(); if (unknown4 != value) { unknown4 = value; OnElementChanged(); } }
+            }
+            [ElementPriority(12)]
+            public byte Unknown5
+            {
+                get { if (version < 0x0000000E) throw new InvalidOperationException(); return unknown5; }
+                set { if (version < 0x0000000E) throw new InvalidOperationException(); if (unknown5 != value) { unknown5 = value; OnElementChanged(); } }
+            }
+            [ElementPriority(13)]
+            public uint Unknown6
+            {
+                get { if (version < 0x0000000F) throw new InvalidOperationException(); return unknown6; }
+                set { if (version < 0x0000000F) throw new InvalidOperationException(); if (unknown6 != value) { unknown6 = value; OnElementChanged(); } }
             }
 
             public String Value
