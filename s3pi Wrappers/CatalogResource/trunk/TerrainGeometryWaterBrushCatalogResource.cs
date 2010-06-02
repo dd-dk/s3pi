@@ -150,15 +150,25 @@ namespace CatalogResource
         #endregion
 
         #region Content Fields
+        [ElementPriority(21)]
         public uint Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; OnResourceChanged(this, new EventArgs()); } } }
+        [ElementPriority(22)]
         public uint Unknown3 { get { return unknown3; } set { if (unknown3 != value) { unknown3 = value; OnResourceChanged(this, new EventArgs()); } } }
+        [ElementPriority(23)]
         public byte Unknown4 { get { return unknown4; } set { if (unknown4 != value) { unknown4 = value; OnResourceChanged(this, new EventArgs()); } } }
+        [ElementPriority(24)]
         public uint Unknown5 { get { return unknown5; } set { if (unknown5 != value) { unknown5 = value; OnResourceChanged(this, new EventArgs()); } } }
+        [ElementPriority(25)]
         public byte Unknown6 { get { return unknown6; } set { if (unknown6 != value) { unknown6 = value; OnResourceChanged(this, new EventArgs()); } } }
+        [ElementPriority(26)]
         public byte Unknown7 { get { return unknown7; } set { if (unknown7 != value) { unknown7 = value; OnResourceChanged(this, new EventArgs()); } } }
+        [ElementPriority(27)]
         public uint BrushIndex { get { return brushIndex; } set { if (brushIndex != value) { brushIndex = value; OnResourceChanged(this, new EventArgs()); } } }
+        [ElementPriority(28)]
         public uint Unknown9 { get { return unknown9; } set { if (unknown9 != value) { unknown9 = value; OnResourceChanged(this, new EventArgs()); } } }
+        [ElementPriority(29)]
         public uint Unknown10 { get { return unknown10; } set { if (unknown10 != value) { unknown10 = value; OnResourceChanged(this, new EventArgs()); } } }
+        [ElementPriority(30)]
         public TGIBlock BrushShape
         {
             get { return brushShape; }
@@ -171,9 +181,13 @@ namespace CatalogResource
                 }
             }
         }
+        [ElementPriority(31)]
         public byte[] Unknown11 { get { return (byte[])unknown11.Clone(); } set { if (!ArrayCompare(unknown11, value)) { unknown11 = (byte[])value.Clone(); OnResourceChanged(this, new EventArgs()); } } }
+        [ElementPriority(32)]
         public float Unknown12 { get { return unknown12; } set { if (unknown12 != value) { unknown12 = value; OnResourceChanged(this, new EventArgs()); } } }
+        [ElementPriority(33)]
         public float Unknown13 { get { return unknown13; } set { if (unknown13 != value) { unknown13 = value; OnResourceChanged(this, new EventArgs()); } } }
+        [ElementPriority(34)]
         public byte[] Unknown14 { get { return (byte[])unknown14.Clone(); } set { if (!ArrayCompare(unknown14, value)) { unknown14 = (byte[])value.Clone(); OnResourceChanged(this, new EventArgs()); } } }
         #endregion
     }

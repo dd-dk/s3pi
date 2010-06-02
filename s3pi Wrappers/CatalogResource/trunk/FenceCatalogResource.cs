@@ -161,6 +161,7 @@ namespace CatalogResource
         #endregion
 
         #region Content Fields
+        [ElementPriority(1)]
         public MaterialList Materials
         {
             get { if (version < 0x00000007) throw new InvalidOperationException(); return materialList; }

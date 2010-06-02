@@ -130,12 +130,15 @@ namespace CatalogResource
         #endregion
 
         #region Content Fields
+        [ElementPriority(35)]
         public TGIBlock BrushTexture
         {
             get { return brushTexture; }
             set { if (brushTexture != value) { brushTexture = new TGIBlock(requestedApiVersion, OnResourceChanged, value); OnResourceChanged(this, new EventArgs()); } }
         }
+        [ElementPriority(36)]
         public uint Unknown15 { get { if (version < 0x00000004) throw new InvalidOperationException(); return unknown15; } set { if (version < 0x00000004) throw new InvalidOperationException(); if (unknown15 != value) { unknown15 = value; OnResourceChanged(this, new EventArgs()); } } }
+        [ElementPriority(37)]
         public CategoryType Category { get { if (version < 0x00000004) throw new InvalidOperationException(); return category; } set { if (version < 0x00000004) throw new InvalidOperationException(); if (category != value) { category = value; OnResourceChanged(this, new EventArgs()); } } }
         #endregion
     }
