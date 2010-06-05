@@ -543,7 +543,8 @@ namespace s3pi.Package
             packageStream.Position = rc.Chunkoffset;
 
             byte[] data = null;
-            if (rc.Filesize == rc.Memsize)
+            if (rc.Filesize == 1 && rc.Memsize == 0xFFFFFFFF) return null;//{ data = new byte[0]; }
+            else if (rc.Filesize == rc.Memsize)
             {
                 data = (new BinaryReader(packageStream)).ReadBytes((int)rc.Filesize);
             }
