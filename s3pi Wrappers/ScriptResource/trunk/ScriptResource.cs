@@ -36,7 +36,7 @@ namespace ScriptResource
 
         #region Attributes
         byte version = 1;
-        EntryList unknown1;
+        string gameVersion;
         uint unknown2 = 0x2BC4F79F;
         byte[] md5sum = new byte[64];
         byte[] md5table = new byte[0];
@@ -59,9 +59,9 @@ namespace ScriptResource
             BinaryReader br = new BinaryReader(s);
             version = br.ReadByte();
             if (version > 1)
-                unknown1 = new EntryList(OnResourceChanged, s);
+                gameVersion = System.Text.Encoding.Unicode.GetString(br.ReadBytes(br.ReadInt32() * 2));
             else
-                unknown1 = new EntryList(OnResourceChanged);
+                gameVersion = "";
             unknown2 = br.ReadUInt32();
             md5sum = br.ReadBytes(64);
             ushort count = br.ReadUInt16();
@@ -108,9 +108,9 @@ namespace ScriptResource
             bw.Write(version);
 			if (version > 1)
 			{
-                if (unknown1 == null) unknown1 = new EntryList(OnResourceChanged);
-                unknown1.UnParse(ms);
-			}
+                bw.Write(gameVersion.Length);
+                bw.Write(System.Text.Encoding.Unicode.GetBytes(gameVersion));
+            }
             bw.Write(unknown2);
             md5table = new byte[(((cleardata.Length & 0x1ff) == 0 ? 0 : 1) + (cleardata.Length >> 9)) << 3];
             md5data = encrypt();
@@ -155,89 +155,11 @@ namespace ScriptResource
         public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
         #endregion
 
-        #region Sub-classes
-        public class EntryUShort : AHandlerElement, IEquatable<EntryUShort>
-        {
-            const int recommendedApiVersion = 1;
-
-            #region Attributes
-            ushort u;
-            #endregion
-
-            #region Constructors
-            public EntryUShort(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
-            public EntryUShort(int APIversion, EventHandler handler, EntryUShort basis)
-                : this(APIversion, handler, basis.u) { }
-            public EntryUShort(int APIversion, EventHandler handler, ushort u)
-                : base(APIversion, handler)
-            {
-                this.u = u;
-            }
-            #endregion
-
-            #region Data I/O
-            void Parse(Stream s)
-            {
-                BinaryReader r = new BinaryReader(s);
-                this.u = r.ReadUInt16();
-            }
-
-            internal void UnParse(Stream s)
-            {
-                BinaryWriter w = new BinaryWriter(s);
-                w.Write(u);
-            }
-            #endregion
-
-            #region AHandlerElement Members
-            public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
-
-            /// <summary>
-            /// The list of available field names on this API object
-            /// </summary>
-            public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
-
-            public override AHandlerElement Clone(EventHandler handler) { return new EntryUShort(requestedApiVersion, handler, this); }
-            #endregion
-
-            #region IEquatable<PolygonPoint> Members
-
-            public bool Equals(EntryUShort other)
-            {
-                return this.u == other.u;
-            }
-
-            #endregion
-
-            #region Content Fields
-            public ushort U { get { return u; } set { if (u != value) { u = value; OnElementChanged(); } } }
-
-            public string Value { get { return String.Format("U: 0x{0}", u); } }
-            #endregion
-        }
-        public class EntryList : AResource.DependentList<EntryUShort>
-        {
-            #region Constructors
-            public EntryList(EventHandler handler) : base(handler) { }
-            public EntryList(EventHandler handler, Stream s) : base(handler, s) { }
-            public EntryList(EventHandler handler, IList<EntryUShort> le) : base(handler, le) { }
-            #endregion
-
-            #region Data I/O
-            protected override EntryUShort CreateElement(Stream s) { return new EntryUShort(0, elementHandler, s); }
-
-            protected override void WriteElement(Stream s, EntryUShort element) { element.UnParse(s); }
-            #endregion
-
-            public override void Add() { this.Add(new EntryUShort(0, null, 0)); }
-        }
-        #endregion
-
         #region Content Fields
         [ElementPriority(1)]
         public byte Version { get { return version; } set { if (version != value) { version = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(2)]
-        public EntryList Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = new EntryList(OnResourceChanged, value); OnResourceChanged(this, new EventArgs()); } } }
+        public string GameVersion { get { return gameVersion; } set { if (gameVersion != value) { gameVersion = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(3)]
         public uint Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(99)]
@@ -311,7 +233,6 @@ namespace ScriptResource
                             s += "Assembly: no data\n";
                         }
                     }
-                    else if (f.Equals("Unknown1")) { s += "Unknown1: "; for (int i = 0; i < unknown1.Count; i++)s += string.Format("0x{0:X4}: 0x{1:X2}; ", i, unknown1[i].U); s += "\n"; }
                     else
                         s += string.Format("{0}: {1}\n", f, "" + this[f]);
                 }
