@@ -29,7 +29,6 @@ namespace System.Security.Cryptography
     /// </summary>
     public class Sims3PackCRC : HashAlgorithm
     {
-        #region Seeds
         #region table
         private static readonly UInt64[] table = new UInt64[]
         {
@@ -102,13 +101,12 @@ namespace System.Security.Cryptography
 
         private UInt64 seed64;
         private UInt64 hash64;
-        #endregion
 
         /// <summary>
         /// Create a new CRC algorithm with an optional seed.
         /// </summary>
         /// <param name="seed">Optional CRC algorithm seed.</param>
-        public Sims3PackCRC(UInt64 seed = 0x00FFFFFFFFFFFFFF) { throw new NotImplementedException(); seed64 = seed; Initialize(); }
+        public Sims3PackCRC(UInt64 seed = 0x00FFFFFFFFFFFFFF) { seed64 = seed; Initialize(); }
 
         #region HashAlgorithm implementation
         /// <summary>
@@ -134,7 +132,7 @@ namespace System.Security.Cryptography
         /// Finalize the computation of the hash value.
         /// </summary>
         /// <returns>The computed hash code.</returns>
-        protected override byte[] HashFinal() { HashSizeValue = 64; HashValue = GetBytesBE(~this.hash64); return HashValue; }
+        protected override byte[] HashFinal() { HashSizeValue = 64; HashValue = BitConverter.GetBytes(~this.hash64); return HashValue; }
 
         /// <summary>
         /// Initialize the Sims3PackCRC by setting the current CRC value to the seed.
@@ -143,27 +141,40 @@ namespace System.Security.Cryptography
         #endregion
 
         /// <summary>
-        /// Calculate the CRC of a data chunk stored in a Sims3Pack file.
+        /// Calculates the Sims3Pack CRC value for the specified region of the specified byte array.
         /// </summary>
-        /// <param name="buffer">Chunk of data for which to calculate the CRC.</param>
-        /// <param name="start">Position in buffer to start calculation.</param>
-        /// <param name="size">Number of bytes over which to run calculation.</param>
-        /// <returns>CRC of <paramref name="buffer"/> from <paramref name="start"/> for <paramref name="size"/> bytes.</returns>
-        public static UInt64 CalculateCRC(byte[] buffer, int start = 0, int size = -1)
+        /// <param name="buffer">The input to calculate the CRC for.</param>
+        /// <param name="offset">The offset into the byte array from which to begin using data.</param>
+        /// <param name="count">The number of bytes in the array to use as data.</param>
+        /// <returns>The calculated CRC.</returns>
+        /// <exception cref="System.ArgumentException"><paramref name="count"/> is an invalid value.  -or- <paramref name="buffer"/> length is invalid.</exception>
+        /// <exception cref="System.ArgumentNullException"><paramref name="buffer"/> is null.</exception>
+        /// <exception cref="System.ArgumentOutOfRangeException"><paramref name="offset"/> is out of range. This parameter requires a non-negative number.</exception>
+        public static UInt64 CalculateCRC(byte[] buffer, int offset = 0, int count = -1)
         {
-            return BitConverter.ToUInt64(new Sims3PackCRC().ComputeHash(buffer, start, size == -1 ? buffer.Length : size), 0);
+            return BitConverter.ToUInt64(new Sims3PackCRC().ComputeHash(buffer, offset, count == -1 ? buffer.Length : count), 0);
+        }
+
+        /// <summary>
+        /// Calculate the CRC for the specified <see cref="System.IO.Stream"/>.
+        /// </summary>
+        /// <param name="stream">The input to calculate the CRC for.</param>
+        /// <param name="seed">Optional CRC algorithm seed.</param>
+        /// <returns>CRC of <paramref name="stream"/>.</returns>
+        public static UInt64 CalculateCRC(System.IO.Stream stream, UInt64 seed = DefaultSeed)
+        {
+            return BitConverter.ToUInt64(new Sims3PackCRC(seed).ComputeHash(stream), 0);
         }
 
         #region Helpers
-        private static byte[] GetBytesBE(UInt64 value)
+        private static UInt64 SwapEndian(UInt64 value)
         {
-            byte[] res = BitConverter.GetBytes(value);
-            if (BitConverter.IsLittleEndian)
-                Array.Reverse(res);
-            return res;
-        }
+            if (!BitConverter.IsLittleEndian) return value;
 
-        private static UInt64 SwapEndian(UInt64 value) { return BitConverter.IsLittleEndian ? BitConverter.ToUInt64(GetBytesBE(value), 0) : value; }
+            byte[] res = BitConverter.GetBytes(value);
+            Array.Reverse(res);
+            return BitConverter.ToUInt64(res, 0);
+        }
         #endregion
     }
 }
