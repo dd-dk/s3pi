@@ -1337,18 +1337,18 @@ namespace CatalogResource
             get
             {
                 string s = "";
+                string hdr = "\n---------\n---------\n{0}: {1}\n---------\n";
+                string t = "---------\n";
+                s += String.Format(hdr, "Common", "CommonBlock") + this.CommonBlock.Value + t;
                 foreach (string f in this.ContentFields)
                 {
                     if (f.Equals("Value") || f.Equals("Stream") || f.Equals("AsBytes")) continue;
                     TypedValue tv = this[f];
-                    string h = String.Format("\n---------\n---------\n{0}: {1}\n---------\n", tv.Type.Name, f);
-                    string t = "---------\n";
-                    if (typeof(Common).IsAssignableFrom(tv.Type)) s += h + (tv.Value as Common).Value + t;
+                    string h = String.Format(hdr, tv.Type.Name, f);
+                    if (typeof(Common).IsAssignableFrom(tv.Type)) { }
                     else if (typeof(WallFloorPatternCatalogResource.WallFloorPatternMaterialList).IsAssignableFrom(tv.Type)) s += h + (tv.Value as WallFloorPatternCatalogResource.WallFloorPatternMaterialList).Value + t;
                     else if (typeof(MaterialList).IsAssignableFrom(tv.Type)) s += h + (tv.Value as MaterialList).Value + t;
-                    else if (typeof(MaterialBlockList).IsAssignableFrom(tv.Type)) s += h + (tv.Value as MaterialBlockList).Value + t;
                     else if (typeof(TGIBlockList).IsAssignableFrom(tv.Type)) s += h + (tv.Value as TGIBlockList).Value + t;
-                    else if (typeof(TypeCode).IsAssignableFrom(tv.Type)) s += h + (tv.Value as TypeCode).Value + t;
                     else if (typeof(ObjectCatalogResource.MTDoorList).IsAssignableFrom(tv.Type)) s += h + (tv.Value as ObjectCatalogResource.MTDoorList).Value + t;
                     else s += string.Format("{0}: {1}\n", f, "" + tv);
                 }
