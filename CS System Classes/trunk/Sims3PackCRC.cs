@@ -161,9 +161,9 @@ namespace System.Security.Cryptography
         /// <param name="stream">The input to calculate the CRC for.</param>
         /// <param name="seed">Optional CRC algorithm seed.</param>
         /// <returns>CRC of <paramref name="stream"/>.</returns>
-        public static UInt64 CalculateCRC(System.IO.Stream stream, UInt64 seed = DefaultSeed)
+        public static UInt64 CalculateCRC(System.IO.Stream stream)
         {
-            return BitConverter.ToUInt64(new Sims3PackCRC(seed).ComputeHash(stream), 0);
+            return BitConverter.ToUInt64(new Sims3PackCRC().ComputeHash(stream), 0);
         }
 
         #region Helpers
