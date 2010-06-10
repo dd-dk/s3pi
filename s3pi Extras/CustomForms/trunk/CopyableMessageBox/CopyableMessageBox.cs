@@ -245,6 +245,8 @@ namespace System.Windows.Forms
             string s = prefix;
             for (Exception inex = ex; inex != null; inex = inex.InnerException)
             {
+                s += "\nSource: " + inex.Source;
+                s += "\nAssembly: " + inex.TargetSite.DeclaringType.Assembly.FullName;
                 s += "\n" + inex.Message;
                 s += "\n" + inex.StackTrace;
                 s += "\n-----";
