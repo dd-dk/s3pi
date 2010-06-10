@@ -170,8 +170,7 @@ namespace NameMapResource
 
         #region IEnumerable<KeyValuePair<ulong,string>> Members
 
-        public IEnumerator<KeyValuePair<ulong, string>> GetEnumerator() { return data.GetEnumerator();
-        }
+        public IEnumerator<KeyValuePair<ulong, string>> GetEnumerator() { return data.GetEnumerator(); }
 
         #endregion
 
