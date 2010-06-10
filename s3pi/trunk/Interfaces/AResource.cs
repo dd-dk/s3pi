@@ -336,6 +336,30 @@ namespace s3pi.Interfaces
 
             /// <summary>
             /// Initialize a new TGIBlock
+            /// with the default order ("TGI").
+            /// </summary>
+            /// <param name="APIversion">The requested API version.</param>
+            /// <param name="handler">The <see cref="EventHandler"/> delegate to invoke if the <see cref="AHandlerElement"/> changes.</param>
+            public TGIBlock(int APIversion, EventHandler handler) : base(APIversion, handler, 0, 0, 0) { }
+            /// <summary>
+            /// Initialize a new TGIBlock
+            /// with the specified order.
+            /// </summary>
+            /// <param name="APIversion">The requested API version.</param>
+            /// <param name="handler">The <see cref="EventHandler"/> delegate to invoke if the <see cref="AHandlerElement"/> changes.</param>
+            /// <param name="order">A <see cref="string"/> representing the <see cref="Order"/> to use to store the <see cref="IResourceKey"/> values.</param>
+            public TGIBlock(int APIversion, EventHandler handler, string order) : this(APIversion, handler) { ok(order); this.order = order; }
+            /// <summary>
+            /// Initialize a new TGIBlock
+            /// with the specified order.
+            /// </summary>
+            /// <param name="APIversion">The requested API version.</param>
+            /// <param name="handler">The <see cref="EventHandler"/> delegate to invoke if the <see cref="AHandlerElement"/> changes.</param>
+            /// <param name="order">The <see cref="Order"/> to use to store the <see cref="IResourceKey"/> values.</param>
+            public TGIBlock(int APIversion, EventHandler handler, Order order) : this(APIversion, handler) { ok(order); this.order = "" + order; }
+
+            /// <summary>
+            /// Initialize a new TGIBlock
             /// with the default order ("TGI") and specified values.
             /// </summary>
             /// <param name="APIversion">The requested API version.</param>
@@ -725,7 +749,7 @@ namespace s3pi.Interfaces
             /// <summary>
             /// Add a new default element to the list.
             /// </summary>
-            public override void Add() { base.Add(new TGIBlock(0, elementHandler, order, 0, 0, 0)); }
+            public override void Add() { base.Add(new TGIBlock(0, null, order)); } // Need to pass "order"
 
             /// <summary>
             /// Adds a new <see cref="TGIBlock"/> to the list using the values of the specified <see cref="TGIBlock"/>.
@@ -854,7 +878,7 @@ namespace s3pi.Interfaces
             /// <summary>
             /// Add a new default element to the list
             /// </summary>
-            public override void Add() { this.Add(new TGIBlock(0, elementHandler, 0, 0, 0)); }
+            public override void Add() { this.Add(new TGIBlock(0, null)); }
 
             #region Content Fields
             /// <summary>
