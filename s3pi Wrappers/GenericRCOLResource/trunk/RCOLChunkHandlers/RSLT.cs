@@ -275,7 +275,7 @@ namespace s3pi.GenericRCOLResource
             protected override void WriteElement(Stream s, SevenFloats element) { element.UnParse(s); }
             #endregion
 
-            public override void Add() { if (Count < MaxSize) this.Add(new SevenFloats(0, handler)); }
+            public override void Add() { if (Count < MaxSize) this.Add(new SevenFloats(0, null)); }
         }
 
         public class TransformElement : AHandlerElement, IEquatable<TransformElement>
@@ -465,7 +465,7 @@ namespace s3pi.GenericRCOLResource
             protected override void WriteElement(Stream s, Part element) { throw new NotImplementedException(); }
             #endregion
 
-            public override void Add() { this.Add(new Part(0, handler)); }
+            public override void Add() { this.Add(new Part(0, null)); }
         }
 
         //SlotPlacement flags taken from ObjectCatalogResource.cs
@@ -576,7 +576,7 @@ namespace s3pi.GenericRCOLResource
             protected override void WriteElement(Stream s, SlottedPart element) { throw new NotImplementedException(); }
             #endregion
 
-            public override void Add() { this.Add(new SlottedPart(0, handler)); }
+            public override void Add() { this.Add(new SlottedPart(0, null)); }
         }
         #endregion
 

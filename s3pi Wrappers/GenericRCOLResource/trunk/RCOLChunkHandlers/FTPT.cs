@@ -92,11 +92,12 @@ namespace s3pi.GenericRCOLResource
             const int recommendedApiVersion = 1;
 
             #region Attributes
-            float x;
-            float y;
+            float x = 0f;
+            float y = 0f;
             #endregion
             
             #region Constructors
+            public PolygonPoint(int APIversion, EventHandler handler) : base(APIversion, handler) { }
             public PolygonPoint(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
             public PolygonPoint(int APIversion, EventHandler handler, PolygonPoint basis)
                 : this(APIversion, handler, basis.x, basis.y) { }
@@ -168,7 +169,7 @@ namespace s3pi.GenericRCOLResource
             protected override void WriteElement(Stream s, PolygonPoint element) { element.UnParse(s); }
             #endregion
 
-            public override void Add() { this.Add((float)0, (float)0); }
+            public override void Add() { this.Add(new PolygonPoint(0, null)); }
         }
 
         [Flags]

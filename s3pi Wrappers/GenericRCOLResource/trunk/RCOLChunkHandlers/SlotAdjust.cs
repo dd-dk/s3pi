@@ -228,7 +228,7 @@ namespace s3pi.GenericRCOLResource
             protected override Adjustment CreateElement(Stream s) { return new Adjustment(0, elementHandler, s); }
             protected override void WriteElement(Stream s, Adjustment element) { element.UnParse(s); }
 
-            public override void Add() { this.Add(new Adjustment(0, handler)); }
+            public override void Add() { this.Add(new Adjustment(0, null)); }
         }
         #endregion
 

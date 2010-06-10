@@ -414,7 +414,7 @@ namespace s3pi.GenericRCOLResource
             protected override void WriteElement(Stream s, LongSection element) { element.UnParse(s); }
             #endregion
 
-            public override void Add() { this.Add(new LongSection(0, elementHandler)); }
+            public override void Add() { this.Add(new LongSection(0, null)); }
         }
 
         public class ShortSection : AHandlerElement, IEquatable<ShortSection>
@@ -527,7 +527,7 @@ namespace s3pi.GenericRCOLResource
             protected override void WriteElement(Stream s, ShortSection element) { element.UnParse(s); }
             #endregion
 
-            public override void Add() { this.Add(new ShortSection(0, elementHandler)); }
+            public override void Add() { this.Add(new ShortSection(0, null)); }
         }
         #endregion
 

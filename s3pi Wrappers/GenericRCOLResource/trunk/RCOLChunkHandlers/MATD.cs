@@ -578,6 +578,7 @@ namespace s3pi.GenericRCOLResource
             #endregion
 
             #region Constructors
+            public ElementUInt32(int APIversion, EventHandler handler) : base(APIversion, handler) { }
             public ElementUInt32(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
             public ElementUInt32(int APIversion, EventHandler handler, ElementUInt32 basis) : this(APIversion, handler, basis.data) { }
             public ElementUInt32(int APIversion, EventHandler handler, UInt32 data) : base(APIversion, handler) { this.data = data; }
@@ -621,6 +622,7 @@ namespace s3pi.GenericRCOLResource
             #endregion
 
             #region Constructors
+            public ElementSingle(int APIversion, EventHandler handler) : base(APIversion, handler) { }
             public ElementSingle(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
             public ElementSingle(int APIversion, EventHandler handler, ElementSingle basis) : this(APIversion, handler, basis.data) { }
             public ElementSingle(int APIversion, EventHandler handler, Single data) : base(APIversion, handler) { this.data = data; }
@@ -680,9 +682,9 @@ namespace s3pi.GenericRCOLResource
             {
                 switch (type)
                 {
-                    case DataType.dtFloat: this.Add((float)0); break;
+                    case DataType.dtFloat: this.Add(new ElementSingle(0, null)); break;
                     case DataType.dtUInt32_1:
-                    case DataType.dtUInt32_2: this.Add((uint)0); break;
+                    case DataType.dtUInt32_2: this.Add(new ElementUInt32(0, null)); break;
                     default:
                         throw new InvalidOperationException(String.Format("Unknown DataType 0x{0:X8}", type));
                 }
