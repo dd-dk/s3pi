@@ -79,6 +79,7 @@
     <Compile Include="IResourceHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StringTableSingleton.cs" />
+    <Compile Include="TGIBlockContentFieldAttribute.cs" />
     <Compile Include="TypedValue.cs" />
     <Compile Include="VersionAttribute.cs" />
   </ItemGroup>
