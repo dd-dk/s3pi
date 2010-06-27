@@ -159,7 +159,6 @@ namespace System.Security.Cryptography
         /// Calculate the CRC for the specified <see cref="System.IO.Stream"/>.
         /// </summary>
         /// <param name="stream">The input to calculate the CRC for.</param>
-        /// <param name="seed">Optional CRC algorithm seed.</param>
         /// <returns>CRC of <paramref name="stream"/>.</returns>
         public static UInt64 CalculateCRC(System.IO.Stream stream)
         {
