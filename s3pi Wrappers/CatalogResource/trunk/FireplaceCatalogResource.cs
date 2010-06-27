@@ -161,19 +161,19 @@ namespace CatalogResource
         public byte Unknown7 { get { return unknown7; } set { if (unknown7 != value) { unknown7 = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(27)]
         public byte Unknown8 { get { return unknown8; } set { if (unknown8 != value) { unknown8 = value; OnResourceChanged(this, new EventArgs()); } } }
-        [ElementPriority(28)]
+        [ElementPriority(28), TGIBlockListContentField("TGIBlocks")]
         public uint Index1 { get { return index1; } set { if (index1 != value) { index1 = value; OnResourceChanged(this, new EventArgs()); } } }
-        [ElementPriority(29)]
+        [ElementPriority(29), TGIBlockListContentField("TGIBlocks")]
         public uint Index2 { get { return index2; } set { if (index2 != value) { index2 = value; OnResourceChanged(this, new EventArgs()); } } }
-        [ElementPriority(30)]
+        [ElementPriority(30), TGIBlockListContentField("TGIBlocks")]
         public uint Index3 { get { return index3; } set { if (index3 != value) { index3 = value; OnResourceChanged(this, new EventArgs()); } } }
-        [ElementPriority(31)]
+        [ElementPriority(31), TGIBlockListContentField("TGIBlocks")]
         public uint Index4 { get { return index4; } set { if (index4 != value) { index4 = value; OnResourceChanged(this, new EventArgs()); } } }
-        [ElementPriority(32)]
+        [ElementPriority(32), TGIBlockListContentField("TGIBlocks")]
         public uint Index5 { get { return index5; } set { if (index5 != value) { index5 = value; OnResourceChanged(this, new EventArgs()); } } }
-        [ElementPriority(33)]
+        [ElementPriority(33), TGIBlockListContentField("TGIBlocks")]
         public uint Index6 { get { return index6; } set { if (index6 != value) { index6 = value; OnResourceChanged(this, new EventArgs()); } } }
-        [ElementPriority(34)]
+        [ElementPriority(34), TGIBlockListContentField("TGIBlocks")]
         public uint Index7 { get { return index7; } set { if (index7 != value) { index7 = value; OnResourceChanged(this, new EventArgs()); } } }
         #endregion
     }

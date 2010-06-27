@@ -134,9 +134,9 @@ namespace CatalogResource
         public uint Unknown6 { get { return unknown6; } set { if (unknown6 != value) { unknown6 = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(26)]
         public byte Unknown7 { get { return unknown7; } set { if (unknown7 != value) { unknown7 = value; OnResourceChanged(this, new EventArgs()); } } }
-        [ElementPriority(27)]
+        [ElementPriority(27), TGIBlockListContentField("TGIBlocks")]
         public uint VPXYIndex1 { get { return vpxy_index1; } set { if (vpxy_index1 != value) { vpxy_index1 = value; OnResourceChanged(this, new EventArgs()); } } }
-        [ElementPriority(28)]
+        [ElementPriority(28), TGIBlockListContentField("TGIBlocks")]
         public uint VPXYIndex2 { get { return vpxy_index2; } set { if (vpxy_index2 != value) { vpxy_index2 = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(29)]
         public uint Unknown8 { get { return unknown8; } set { if (unknown8 != value) { unknown8 = value; OnResourceChanged(this, new EventArgs()); } } }

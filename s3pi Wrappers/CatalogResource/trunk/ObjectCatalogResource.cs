@@ -737,7 +737,7 @@ namespace CatalogResource
                 if (!ArrayCompare(unknown7, value)) { unknown7 = value == null ? null : (byte[])value.Clone(); OnResourceChanged(this, new EventArgs()); }
             }
         }
-        [ElementPriority(18)]
+        [ElementPriority(18), TGIBlockListContentField("TGIBlocks")]
         public uint OBJKIndex { get { return objkIndex; } set { if (objkIndex != value) { objkIndex = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(19)]
         public uint Unknown8 { get { return unknown8; } set { if (unknown8 != value) { unknown8 = value; OnResourceChanged(this, new EventArgs()); } } }
@@ -753,7 +753,7 @@ namespace CatalogResource
         public MTDoorList MTDoors { get { return mtDoorList; } set { if (mtDoorList != value) { mtDoorList = value == null ? null : new MTDoorList(OnResourceChanged, value); } OnResourceChanged(this, new EventArgs()); } }
         [ElementPriority(25)]
         public byte Unknown13 { get { return unknown13; } set { if (unknown13 != value) { unknown13 = value; OnResourceChanged(this, new EventArgs()); } } }
-        [ElementPriority(28)]
+        [ElementPriority(28), TGIBlockListContentField("TGIBlocks")]
         public uint DiagonalIndex { get { return diagonalIndex; } set { if (diagonalIndex != value) { diagonalIndex = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(29)]
         public uint Hash { get { return hash; } set { if (hash != value) { hash = value; OnResourceChanged(this, new EventArgs()); } } }
@@ -767,7 +767,7 @@ namespace CatalogResource
         public RoomSubCategory RoomSubCategoryFlags { get { return roomSubCategoryFlags; } set { if (roomSubCategoryFlags != value) { roomSubCategoryFlags = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(34)]
         public BuildCategory BuildCategoryFlags { get { return buildCategoryFlags; } set { if (buildCategoryFlags != value) { buildCategoryFlags = value; OnResourceChanged(this, new EventArgs()); } } }
-        [ElementPriority(35)]
+        [ElementPriority(35), TGIBlockListContentField("TGIBlocks")]
         public uint SinkDDSIndex { get { return sinkDDSIndex; } set { if (sinkDDSIndex != value) { sinkDDSIndex = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(36)]
         public uint Unknown16
@@ -803,7 +803,7 @@ namespace CatalogResource
                 if (!ArrayCompare(unknown15, value)) { unknown15 = (uint[])value.Clone(); OnResourceChanged(this, new EventArgs()); }
             }
         }
-        [ElementPriority(43)]
+        [ElementPriority(43), TGIBlockListContentField("TGIBlocks")]
         public uint FallbackIndex { get { return fallbackIndex; } set { if (fallbackIndex != value) { fallbackIndex = value; OnResourceChanged(this, new EventArgs()); } } }
         #endregion
     }

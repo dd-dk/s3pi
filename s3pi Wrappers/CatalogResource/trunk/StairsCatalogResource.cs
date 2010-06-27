@@ -195,19 +195,19 @@ namespace CatalogResource
         public uint Unknown6 { get { return unknown6; } set { if (unknown6 != value) { unknown6 = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(26)]
         public byte Unknown7 { get { return unknown7; } set { if (unknown7 != value) { unknown7 = value; OnResourceChanged(this, new EventArgs()); } } }
-        [ElementPriority(27)]
+        [ElementPriority(27), TGIBlockListContentField("TGIBlocks")]
         public uint VPXYIndex1 { get { return vpxy_index1; } set { if (vpxy_index1 != value) { vpxy_index1 = value; OnResourceChanged(this, new EventArgs()); } } }
-        [ElementPriority(28)]
+        [ElementPriority(28), TGIBlockListContentField("TGIBlocks")]
         public uint VPXYIndex2 { get { return vpxy_index2; } set { if (vpxy_index2 != value) { vpxy_index2 = value; OnResourceChanged(this, new EventArgs()); } } }
-        [ElementPriority(29)]
+        [ElementPriority(29), TGIBlockListContentField("TGIBlocks")]
         public uint VPXYIndex3 { get { return vpxy_index3; } set { if (vpxy_index3 != value) { vpxy_index3 = value; OnResourceChanged(this, new EventArgs()); } } }
-        [ElementPriority(30)]
+        [ElementPriority(30), TGIBlockListContentField("TGIBlocks")]
         public uint CatalogRailingIndex { get { return catalogRailing; } set { if (catalogRailing != value) { catalogRailing = value; OnResourceChanged(this, new EventArgs()); } } }
-        [ElementPriority(31)]
+        [ElementPriority(31), TGIBlockListContentField("TGIBlocks")]
         public uint CatalogWallIndex { get { return catalogWall; } set { if (catalogWall != value) { catalogWall = value; OnResourceChanged(this, new EventArgs()); } } }
-        [ElementPriority(32)]
+        [ElementPriority(32), TGIBlockListContentField("TGIBlocks")]
         public uint CatalogWallFloorPatternIndex { get { return catalogWallFloorPattern; } set { if (catalogWallFloorPattern != value) { catalogWallFloorPattern = value; OnResourceChanged(this, new EventArgs()); } } }
-        [ElementPriority(33)]
+        [ElementPriority(33), TGIBlockListContentField("TGIBlocks")]
         public uint CatalogFenceIndex { get { return catalogFence; } set { if (catalogFence != value) { catalogFence = value; OnResourceChanged(this, new EventArgs()); } } }
         #endregion
     }

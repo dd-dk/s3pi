@@ -147,9 +147,9 @@ namespace CatalogResource
         public uint Unknown7 { get { return unknown7; } set { if (unknown7 != value) { unknown7 = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(27)]
         public uint Unknown8 { get { return unknown8; } set { if (unknown8 != value) { unknown8 = value; OnResourceChanged(this, new EventArgs()); } } }
-        [ElementPriority(28)]
+        [ElementPriority(28), TGIBlockListContentField("TGIBlocks")]
         public uint CatalogRoofPattern { get { return catalogRoofPattern; } set { if (catalogRoofPattern != value) { catalogRoofPattern = value; OnResourceChanged(this, new EventArgs()); } } }
-        [ElementPriority(29)]
+        [ElementPriority(29), TGIBlockListContentField("TGIBlocks")]
         public uint CatalogWallStyle { get { return catalogWallStyle; } set { if (catalogWallStyle != value) { catalogWallStyle = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(30)]
         public float Unknown9 { get { return unknown9; } set { if (unknown9 != value) { unknown9 = value; OnResourceChanged(this, new EventArgs()); } } }

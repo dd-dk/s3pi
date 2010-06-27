@@ -172,11 +172,11 @@ namespace CatalogResource
         public uint Unknown6 { get { return unknown6; } set { if (unknown6 != value) { unknown6 = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(26)]
         public byte Unknown7 { get { return unknown7; } set { if (unknown7 != value) { unknown7 = value; OnResourceChanged(this, new EventArgs()); } } }
-        [ElementPriority(27)]
+        [ElementPriority(27), TGIBlockListContentField("TGIBlocks")]
         public uint Index1 { get { return index1; } set { if (index1 != value) { index1 = value; OnResourceChanged(this, new EventArgs()); } } }
-        [ElementPriority(28)]
+        [ElementPriority(28), TGIBlockListContentField("TGIBlocks")]
         public uint Index2 { get { return index2; } set { if (index2 != value) { index2 = value; OnResourceChanged(this, new EventArgs()); } } }
-        [ElementPriority(29)]
+        [ElementPriority(29), TGIBlockListContentField("TGIBlocks")]
         public uint Index3 { get { return index3; } set { if (index3 != value) { index3 = value; OnResourceChanged(this, new EventArgs()); } } }
         #endregion
     }
