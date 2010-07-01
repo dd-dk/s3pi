@@ -27,7 +27,7 @@ namespace CASPartResource
     /// <summary>
     /// A resource wrapper that understands Catalog Entry resources
     /// </summary>
-    public class CASPartResource : AResource
+    public class FaceClothingResource : AResource
     {
         const int recommendedApiVersion = 1;
         public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
@@ -44,7 +44,7 @@ namespace CASPartResource
         TGIBlockList tgiBlocks;
         #endregion
 
-        public CASPartResource(int APIversion, Stream s) : base(APIversion, s) { if (stream == null) { stream = UnParse(); OnResourceChanged(this, new EventArgs()); } stream.Position = 0; Parse(stream); }
+        public FaceClothingResource(int APIversion, Stream s) : base(APIversion, s) { if (stream == null) { stream = UnParse(); OnResourceChanged(this, new EventArgs()); } stream.Position = 0; Parse(stream); }
 
         #region Data I/O
         void Parse(Stream s)
@@ -94,27 +94,6 @@ namespace CASPartResource
         #endregion
 
         #region Sub-types
-        [Flags]
-        public enum FacialRegionFlags : uint
-        {
-            None = 0x000,
-            Eyes = 0x001,
-            Nose = 0x002,
-            Mouth = 0x004,
-            TranslateMouth = 0x008,
-            Ears = 0x010,
-            TranslateEyes = 0x020,
-            Face = 0x040,
-            Head = 0x080,
-            Brow = 0x100,
-            Jaw = 0x200,
-            Body = 0x400,
-            Eyelashes = 0x800,
-        }
-        [Flags]
-        public enum AgeGenderFlags : uint
-        {
-        }
         public class Entry : AHandlerElement, IEquatable<Entry>
         {
             const int recommendedApiVersion = 1;
@@ -399,13 +378,13 @@ namespace CASPartResource
     }
 
     /// <summary>
-    /// ResourceHandler for CASPartResource wrapper
+    /// ResourceHandler for FaceClothingResource wrapper
     /// </summary>
-    public class CASPartResourceHandler : AResourceHandler
+    public class FaceClothingResourceHandler : AResourceHandler
     {
-        public CASPartResourceHandler()
+        public FaceClothingResourceHandler()
         {
-            this.Add(typeof(CASPartResource), new List<string>(new string[] { "0x0358B08A", "0x062C8204", }));
+            this.Add(typeof(FaceClothingResource), new List<string>(new string[] { "0x0358B08A", "0x062C8204", }));
         }
     }
 }
