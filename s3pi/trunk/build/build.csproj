@@ -84,6 +84,10 @@
       <Project>{9B4C57BA-E09F-4439-98B4-B9B535A4ABF6}</Project>
       <Name>Extensions</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\s3pi Wrappers\CASPartResource\CASPartResource.csproj">
+      <Project>{38D21F02-C139-43C8-8B74-D84E22B89F50}</Project>
+      <Name>CASPartResource</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\s3pi Wrappers\CatalogResource\CatalogResource.csproj">
       <Project>{0E257AB5-B560-462B-8B6C-631A90380D9E}</Project>
       <Name>CatalogResource</Name>

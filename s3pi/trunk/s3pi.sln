@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+# Visual C# Express 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Interfaces", "Interfaces\Interfaces.csproj", "{51023BD2-9139-438D-B794-95E5EC023537}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Settings", "Settings\Settings.csproj", "{374F37CF-1F27-4613-96FD-9B956A3D82B1}"
@@ -48,6 +48,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TxtcResource", "..\s3pi Wrappers\TxtcResource\TxtcResource.csproj", "{264DE8C9-33D0-451E-9067-8BA0CF2BFACE}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModularResource", "..\s3pi Wrappers\ModularResource\ModularResource.csproj", "{4C8EEE00-88BB-4A22-BEB2-68245D98CB78}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CASPartResource", "..\s3pi Wrappers\CASPartResource\CASPartResource.csproj", "{38D21F02-C139-43C8-8B74-D84E22B89F50}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -139,6 +141,10 @@ Global
 		{4C8EEE00-88BB-4A22-BEB2-68245D98CB78}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4C8EEE00-88BB-4A22-BEB2-68245D98CB78}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4C8EEE00-88BB-4A22-BEB2-68245D98CB78}.Release|Any CPU.Build.0 = Release|Any CPU
+		{38D21F02-C139-43C8-8B74-D84E22B89F50}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{38D21F02-C139-43C8-8B74-D84E22B89F50}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{38D21F02-C139-43C8-8B74-D84E22B89F50}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{38D21F02-C139-43C8-8B74-D84E22B89F50}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
