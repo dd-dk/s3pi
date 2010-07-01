@@ -43,16 +43,23 @@ namespace s3pi.GenericRCOLResource
         public VPXY(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler, s) { }
         public VPXY(int APIversion, EventHandler handler, VPXY basis)
             : this(APIversion, handler,
-            basis.version, basis.entryList, basis.boundingBox, basis.unused, basis.modular, basis.ftptIndex, basis.tgiBlockList) { }
+            basis.version, basis.entryList, basis.tc02, basis.boundingBox, basis.unused, basis.modular, basis.ftptIndex, basis.tgiBlockList) { }
         public VPXY(int APIversion, EventHandler handler,
-            uint version, EntryList entryList, float[] boundingBox, byte[] unused, byte modular, int ftptIndex, IList<AResource.TGIBlock> tgiBlockList)
+            uint version, EntryList entryList, byte tc02, float[] boundingBox, byte[] unused, byte modular, int ftptIndex, IList<AResource.TGIBlock> tgiBlockList)
             : base(APIversion, null, null)
         {
             this.handler = handler;
             this.version = version;
+            if (checking) if (version != 4)
+                    throw new ArgumentException(String.Format("Invalid Version: 0x{0:X8}; expected 0x00000004", version));
             this.entryList = new EntryList(OnRCOLChanged, entryList);
+            this.tc02 = tc02;
+            if (checking) if (tc02 != 0x02)
+                    throw new ArgumentException(String.Format("Invalid TC02: 0x{0:X2}; expected 0x02", tc02));
             this.boundingBox = (float[])boundingBox.Clone();
             this.unused = (byte[])unused.Clone();
+            if (checking) if (unused.Length != 4)
+                    throw new ArgumentLengthException("Unused", 4);
             this.modular = modular;
             if (modular != 0)
                 this.ftptIndex = ftptIndex;
@@ -334,9 +341,9 @@ namespace s3pi.GenericRCOLResource
         #endregion
 
         #region Content Fields
-        public uint Version { get { return version; } set { if (version != value) { version = value; OnRCOLChanged(this, EventArgs.Empty); } } }
+        public uint Version { get { return version; } /*set { if (version != value) { version = value; OnRCOLChanged(this, EventArgs.Empty); } }/**/ }
         public EntryList Entries { get { return entryList; } set { if (entryList != value) { entryList = new EntryList(OnRCOLChanged, value); OnRCOLChanged(this, EventArgs.Empty); } } }
-        //public byte TC02 { get { return tc02; } set { if (tc02 != value) { tc02 = value; OnRCOLChanged(this, EventArgs.Empty); } } }
+        public byte TC02 { get { return tc02; } /*set { if (tc02 != value) { tc02 = value; OnRCOLChanged(this, EventArgs.Empty); } }/**/ }
         public float[] BoundingBox
         {
             get { return (float[])boundingBox.Clone(); }
