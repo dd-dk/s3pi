@@ -874,7 +874,7 @@ namespace s3pi.Interfaces
 
                 s.Position = ptgiO;
                 w.Write((uint)(tgiPosn - ptgiO - sizeof(uint)));
-                w.Write((uint)(pos - tgiPosn) + (addEight ? 8 : 0));
+                w.Write((uint)(pos - tgiPosn + (addEight ? 8 : 0)));
 
                 s.Position = pos;
             }
