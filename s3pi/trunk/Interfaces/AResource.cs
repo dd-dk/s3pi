@@ -795,20 +795,24 @@ namespace s3pi.Interfaces
         /// </summary>
         public class TGIBlockList : DependentList<TGIBlock>
         {
+            bool addEight = false;
+
             #region Constructors
             /// <summary>
             /// Initializes a new instance of the <see cref="TGIBlockList"/> class
             /// that is empty.
             /// </summary>
             /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
-            public TGIBlockList(EventHandler handler) : base(handler) { }
+            /// <param name="addEight">When true, invoke fudge factor in parse/unparse</param>
+            public TGIBlockList(EventHandler handler, bool addEight = false) : base(handler) { this.addEight = addEight; }
             /// <summary>
             /// Initializes a new instance of the <see cref="TGIBlockList"/> class
             /// filled with the content of <paramref name="ilt"/>.
             /// </summary>
             /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
             /// <param name="ilt">The <c>IList&lt;TGIBlock&gt;</c> to use as the initial content of the list.</param>
-            public TGIBlockList(EventHandler handler, IList<TGIBlock> ilt) : base(handler, ilt) { }
+            /// <param name="addEight">When true, invoke fudge factor in parse/unparse</param>
+            public TGIBlockList(EventHandler handler, IList<TGIBlock> ilt, bool addEight = false) : base(handler, ilt) { this.addEight = addEight; }
             /// <summary>
             /// Initializes a new instance of the <see cref="TGIBlockList"/> class
             /// filled with elements from <see cref="System.IO.Stream"/> <paramref name="s"/>.
@@ -817,7 +821,8 @@ namespace s3pi.Interfaces
             /// <param name="s">The <see cref="System.IO.Stream"/> to read for the initial content of the list.</param>
             /// <param name="tgiPosn">Position in the <see cref="System.IO.Stream"/> where the list of <see cref="TGIBlock"/>s starts.</param>
             /// <param name="tgiSize">Size (in bytes) of the stored list.</param>
-            public TGIBlockList(EventHandler handler, Stream s, long tgiPosn, long tgiSize) : base(null) { elementHandler = handler; Parse(s, tgiPosn, tgiSize); this.handler = handler; }
+            /// <param name="addEight">When true, invoke fudge factor in parse/unparse</param>
+            public TGIBlockList(EventHandler handler, Stream s, long tgiPosn, long tgiSize, bool addEight = false) : base(null) { elementHandler = handler; this.addEight = addEight; Parse(s, tgiPosn, tgiSize); this.handler = handler; }
             #endregion
 
             #region Data I/O
@@ -849,7 +854,7 @@ namespace s3pi.Interfaces
 
                 if (tgiSize > 0) Parse(s);
 
-                if (checking) if (tgiSize != s.Position - tgiPosn)
+                if (checking) if (tgiSize != s.Position - tgiPosn + (addEight ? 8 : 0))
                         throw new InvalidDataException(String.Format("Size of TGIBlock read: 0x{0:X8}, actual: 0x{1:X8}; at 0x{2:X8}",
                             tgiSize, s.Position - tgiPosn, s.Position));
             }
@@ -869,7 +874,7 @@ namespace s3pi.Interfaces
 
                 s.Position = ptgiO;
                 w.Write((uint)(tgiPosn - ptgiO - sizeof(uint)));
-                w.Write((uint)(pos - tgiPosn));
+                w.Write((uint)(pos - tgiPosn) + (addEight ? 8 : 0));
 
                 s.Position = pos;
             }
