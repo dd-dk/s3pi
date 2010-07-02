@@ -55,6 +55,9 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CASPartResource.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="CASPartFlags.cs">
       <SubType>Code</SubType>
     </Compile>

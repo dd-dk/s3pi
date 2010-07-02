@@ -343,11 +343,11 @@ namespace CASPartResource
         [ElementPriority(3)]
         public uint Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(4)]
-        public TGIBlock BlendGeometry { get { return blendGeometry; } set { if (blendGeometry != value) { blendGeometry = new TGIBlock(requestedApiVersion, OnResourceChanged, value); OnResourceChanged(this, new EventArgs()); } } }
+        public TGIBlock BlendGeometry { get { return blendGeometry; } set { if (!blendGeometry.Equals(value)) { blendGeometry = new TGIBlock(requestedApiVersion, OnResourceChanged, value); OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(5)]
-        public CASEntryList CASEntries { get { return casEntries; } set { if (casEntries != value) { casEntries = new CASEntryList(OnResourceChanged, value); OnResourceChanged(this, new EventArgs()); } } }
+        public CASEntryList CASEntries { get { return casEntries; } set { if (!casEntries.Equals(value)) { casEntries = new CASEntryList(OnResourceChanged, value); OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(6)]
-        public TGIBlockList TGIBlocks { get { return tgiBlocks; } set { if (tgiBlocks != value) { tgiBlocks = new TGIBlockList(OnResourceChanged, value, true); OnResourceChanged(this, new EventArgs()); } } }
+        public TGIBlockList TGIBlocks { get { return tgiBlocks; } set { if (!tgiBlocks.Equals(value)) { tgiBlocks = new TGIBlockList(OnResourceChanged, value, true); OnResourceChanged(this, new EventArgs()); } } }
 
         public string Value
         {
