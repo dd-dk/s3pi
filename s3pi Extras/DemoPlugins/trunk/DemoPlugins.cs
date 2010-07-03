@@ -222,9 +222,9 @@ namespace s3pi.DemoPlugins
             }
         }
 
-        public static MemoryStream Edit(IResourceIndexEntry key, IResource res, string command, bool wantsQuotes, bool ignoreWriteTimestamp)
+        public static MemoryStream Edit(IResourceKey key, IResource res, string command, bool wantsQuotes, bool ignoreWriteTimestamp)
         {
-            string filename = Path.Combine(Path.GetTempPath(), (s3pi.Extensions.TGIN)(key as AResourceIndexEntry));
+            string filename = Path.Combine(Path.GetTempPath(), (s3pi.Extensions.TGIN)(key as AResourceKey));
             try
             {
                 DateTime lastWriteTime = pasteTo(res, filename);
