@@ -117,4 +117,79 @@ namespace CASPartResource
         ValidForMaternity = 0x00800000,
         IsHiddenInCAS = 0x01000000,
     }
+
+    [Flags]
+    public enum UnknownFlags : uint
+    {
+        None = 0x00000000,
+
+        Unknown00 = 0x00000001,
+        Unknown01 = 0x00000002,
+        Unknown02 = 0x00000004,
+        Unknown03 = 0x00000008,
+
+        Unknown04 = 0x00000010,
+        Unknown05 = 0x00000020,
+        Unknown06 = 0x00000040,
+        Unknown07 = 0x00000080,
+
+        Unknown08 = 0x00000100,
+        Unknown09 = 0x00000200,
+        Unknown0A = 0x00000400,
+        Unknown0B = 0x00000800,
+
+        Unknown0C = 0x00001000,
+        Unknown0D = 0x00002000,
+        Unknown0E = 0x00004000,
+        Unknown0F = 0x00008000,
+
+        Unknown10 = 0x00010000,
+        Unknown11 = 0x00020000,
+        Unknown12 = 0x00040000,
+        Unknown13 = 0x00080000,
+
+        Unknown14 = 0x00100000,
+        Unknown15 = 0x00200000,
+        Unknown16 = 0x00400000,
+        Unknown17 = 0x00800000,
+
+        Unknown18 = 0x01000000,
+        Unknown19 = 0x02000000,
+        Unknown1A = 0x04000000,
+        Unknown1B = 0x08000000,
+
+        Unknown1C = 0x10000000,
+        Unknown1D = 0x20000000,
+        Unknown1E = 0x40000000,
+        Unknown1F = 0x80000000,
+    }
+
+    public enum ClothingType : uint
+    {
+        Hair = 1,
+        Scalp = 2,
+        Face = 3,
+        Body = 4,
+        Top = 5,
+        Bottom = 6,
+        Shoes = 7,
+        Earrings = 11,
+        GlassesF = 12,
+        Bracelets = 13,
+        RingL = 14,
+        RingR = 15,
+        Beard = 16,
+        Lipstick = 17,
+        Eyeshadow = 18,
+        Eyeliner = 19,
+        Blush = 20,
+        Makeup = 21,
+        Eyebrow = 22,
+        Glove = 24,
+        Socks = 25,
+        Mascara = 26,
+        Weathering = 29,
+        EarringL = 30,
+        EarringR = 31,
+    }
 }
