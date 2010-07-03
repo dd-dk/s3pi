@@ -25,7 +25,7 @@ using s3pi.Interfaces;
 namespace CASPartResource
 {
     /// <summary>
-    /// A resource wrapper that understands Catalog Entry resources
+    /// A resource wrapper that understands Face and Clothing resources
     /// </summary>
     public class FaceClothingResource : AResource
     {
