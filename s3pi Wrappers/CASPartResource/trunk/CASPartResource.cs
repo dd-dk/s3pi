@@ -25,7 +25,7 @@ using s3pi.Interfaces;
 namespace CASPartResource
 {
     /// <summary>
-    /// A resource wrapper that understands Catalog Entry resources
+    /// A resource wrapper that understands CAS Part resources
     /// </summary>
     public class CASPartResource : AResource
     {
@@ -59,8 +59,8 @@ namespace CASPartResource
         ByteEntryList diffuse2Indexes;
         ByteEntryList specular2Indexes;
         ByteEntryList bondIndexes;
-        CountedTGIBlockList tgiBlocks;
         string unknown4;
+        CountedTGIBlockList tgiBlocks;
 
         #endregion
 
@@ -121,12 +121,13 @@ namespace CASPartResource
             if (xmlEntries == null) xmlEntries = new XMLEntryList(OnResourceChanged);
             xmlEntries.UnParse(s);
 
-            Write7BitStr(s, unknown1);
+            Write7BitStr(s, unknown1, System.Text.Encoding.BigEndianUnicode);
             w.Write(sortPriority);
             w.Write(unknown2);
             w.Write((uint)clothing);
             w.Write((uint)dataType);
             w.Write((uint)ageGender);
+            w.Write((uint)clothingCategory);
             w.Write(casPart1Index);
             w.Write(casPart2Index);
             w.Write(blendInfoFatIndex);
@@ -135,21 +136,14 @@ namespace CASPartResource
             w.Write(blendInfoSpecialIndex);
             w.Write(unknown3);
 
-            if (vpxyIndexes == null) vpxyIndexes = new ByteEntryList(OnResourceChanged);
-            vpxyIndexes.UnParse(s);
-            if (outerEntries == null) outerEntries = new OuterEntryList(OnResourceChanged);
-            outerEntries.UnParse(s);
-            if (diffuse1Indexes == null) diffuse1Indexes = new ByteEntryList(OnResourceChanged);
-            diffuse1Indexes.UnParse(s);
-            if (specular1Indexes == null) specular1Indexes = new ByteEntryList(OnResourceChanged);
-            specular1Indexes.UnParse(s);
-            if (diffuse2Indexes == null) diffuse2Indexes = new ByteEntryList(OnResourceChanged);
-            diffuse2Indexes.UnParse(s);
-            if (specular2Indexes == null) specular2Indexes = new ByteEntryList(OnResourceChanged);
-            specular2Indexes.UnParse(s);
-            if (bondIndexes == null) bondIndexes = new ByteEntryList(OnResourceChanged);
-            bondIndexes.UnParse(s);
-            Write7BitStr(s, unknown4);
+            if (vpxyIndexes == null) vpxyIndexes = new ByteEntryList(OnResourceChanged); vpxyIndexes.UnParse(s);
+            if (outerEntries == null) outerEntries = new OuterEntryList(OnResourceChanged); outerEntries.UnParse(s);
+            if (diffuse1Indexes == null) diffuse1Indexes = new ByteEntryList(OnResourceChanged); diffuse1Indexes.UnParse(s);
+            if (specular1Indexes == null) specular1Indexes = new ByteEntryList(OnResourceChanged); specular1Indexes.UnParse(s);
+            if (diffuse2Indexes == null) diffuse2Indexes = new ByteEntryList(OnResourceChanged); diffuse2Indexes.UnParse(s);
+            if (specular2Indexes == null) specular2Indexes = new ByteEntryList(OnResourceChanged); specular2Indexes.UnParse(s);
+            if (bondIndexes == null) bondIndexes = new ByteEntryList(OnResourceChanged); bondIndexes.UnParse(s);
+            Write7BitStr(s, unknown4, System.Text.Encoding.BigEndianUnicode);
 
             tgiPosn = s.Position;
             if (tgiBlocks == null) tgiBlocks = new CountedTGIBlockList(OnResourceChanged, "IGT");
@@ -168,34 +162,6 @@ namespace CASPartResource
         #endregion
 
         #region Sub-types
-        public enum ClothingType : uint
-        {
-            Hair = 1,
-            Scalp = 2,
-            Face = 3,
-            Body = 4,
-            Top = 5,
-            Bottom = 6,
-            Shoes = 7,
-            Earrings = 11,
-            GlassesF = 12,
-            Bracelets = 13,
-            RingL = 14,
-            RingR = 15,
-            Beard = 16,
-            Lipstick = 17,
-            Eyeshadow = 18,
-            Eyeliner = 19,
-            Blush = 20,
-            Makeup = 21,
-            Eyebrow = 22,
-            Glove = 24,
-            Socks = 25,
-            Mascara = 26,
-            Weathering = 29,
-            EarringL = 30,
-            EarringR = 31,
-        }
         public class XMLEntry : AHandlerElement, IEquatable<XMLEntry>
         {
             const int recommendedApiVersion = 1;
