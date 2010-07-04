@@ -34,18 +34,19 @@
     <FeedbackEMailLinkText>the author</FeedbackEMailLinkText>
     <WorkingPath>C:\Windows\Temp\HelpWork\</WorkingPath>
     <NamespaceSummaries>
-      <NamespaceSummaryItem name="CatalogResource" isDocumented="False" xmlns="" />
-<NamespaceSummaryItem name="ComplateResource" isDocumented="False" xmlns="" />
-<NamespaceSummaryItem name="ImageResource" isDocumented="False" xmlns="" />
-<NamespaceSummaryItem name="ModularResource" isDocumented="False" xmlns="" />
-<NamespaceSummaryItem name="NameMapResource" isDocumented="False" xmlns="" />
-<NamespaceSummaryItem name="ObjKeyResource" isDocumented="False" xmlns="" />
-<NamespaceSummaryItem name="s3pi.DefaultResource" isDocumented="False" xmlns="" />
-<NamespaceSummaryItem name="s3pi.GenericRCOLResource" isDocumented="False" xmlns="" />
-<NamespaceSummaryItem name="ScriptResource" isDocumented="False" xmlns="" />
-<NamespaceSummaryItem name="StblResource" isDocumented="False" xmlns="" />
-<NamespaceSummaryItem name="TextResource" isDocumented="False" xmlns="" />
-<NamespaceSummaryItem name="TxtcResource" isDocumented="False" xmlns="" /></NamespaceSummaries>
+      <NamespaceSummaryItem name="CatalogResource" isDocumented="False" />
+<NamespaceSummaryItem name="ComplateResource" isDocumented="False" />
+<NamespaceSummaryItem name="ImageResource" isDocumented="False" />
+<NamespaceSummaryItem name="ModularResource" isDocumented="False" />
+<NamespaceSummaryItem name="NameMapResource" isDocumented="False" />
+<NamespaceSummaryItem name="ObjKeyResource" isDocumented="False" />
+<NamespaceSummaryItem name="s3pi.DefaultResource" isDocumented="False" />
+<NamespaceSummaryItem name="s3pi.GenericRCOLResource" isDocumented="False" />
+<NamespaceSummaryItem name="ScriptResource" isDocumented="False" />
+<NamespaceSummaryItem name="StblResource" isDocumented="False" />
+<NamespaceSummaryItem name="TextResource" isDocumented="False" />
+<NamespaceSummaryItem name="TxtcResource" isDocumented="False" />
+<NamespaceSummaryItem name="CASPartResource" isDocumented="False" /></NamespaceSummaries>
   </PropertyGroup>
   <!-- There are no properties for these groups.  AnyCPU needs to appear in
        order for Visual Studio to perform the build.  The others are optional
