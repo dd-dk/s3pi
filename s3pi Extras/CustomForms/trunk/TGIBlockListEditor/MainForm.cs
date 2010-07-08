@@ -212,6 +212,16 @@ namespace System.Windows.Forms
     /// </summary>
     public static class TGIBlockListEditor
     {
+        internal static Form OwningForm
+        {
+            get
+            {
+                Form owner = Application.OpenForms.Count > 0 ? Application.OpenForms[0] : null;
+                if (owner != null && (owner.InvokeRequired || owner.IsDisposed || !owner.IsHandleCreated)) owner = null;
+                return owner;
+            }
+        }
+
         /// <summary>
         /// Displays a modal form allowing a list of TGIBlocks to be edited (created, updated, deleted).
         /// </summary>
@@ -219,7 +229,7 @@ namespace System.Windows.Forms
         /// <returns>the DialogResult</returns>
         public static DialogResult Show(AResource.DependentList<AResource.TGIBlock> ltgi)
         {
-            return Show(Application.OpenForms.Count > 0 ? Application.OpenForms[0] : null, ltgi);
+            return Show(OwningForm, ltgi);
         }
         /// <summary>
         /// Displays a modal form allowing a list of TGIBlocks to be edited (created, updated, deleted).

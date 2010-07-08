@@ -52,7 +52,7 @@ namespace System.Windows.Forms
             int iconHeight = icon == CopyableMessageBoxIcon.None ? 0 : 77; // icon area, if icon present
 
             // To calculate the text box size, we get an autosize label to tell us how big it should be
-            Size winSize = Application.OpenForms.Count > 0 ? Application.OpenForms[0].Size : Screen.PrimaryScreen.WorkingArea.Size;
+            Size winSize = CopyableMessageBox.OwningForm != null ? CopyableMessageBox.OwningForm.Size : Screen.PrimaryScreen.WorkingArea.Size;
             lb.MaximumSize = new Size((int)(winSize.Width * .8) - (formWidth + tbPadding + iconWidth),
                 (int)(winSize.Height * .8) - (formHeight + buttonHeight + tbPadding));
             lb.AutoSize = true;
@@ -73,7 +73,7 @@ namespace System.Windows.Forms
             this.tbMessage.Lines = message.Split('\n');
 
             enumToGlyph(icon, lbIcon);
-            
+
             CreateButtons(buttons, defBtn, cncBtn);
 
 
@@ -166,9 +166,19 @@ namespace System.Windows.Forms
 
     public static class CopyableMessageBox
     {
+        internal static Form OwningForm
+        {
+            get
+            {
+                Form owner = Application.OpenForms.Count > 0 ? Application.OpenForms[0] : null;
+                if (owner != null && (owner.InvokeRequired || owner.IsDisposed || !owner.IsHandleCreated)) owner = null;
+                return owner;
+            }
+        }
+
         public static int Show(string message)
         {
-            return Show(message, Application.OpenForms.Count > 0 ? Application.OpenForms[0].Text : "",
+            return Show(message, OwningForm != null ? OwningForm.Text : Application.ProductName,
                 CopyableMessageBoxIcon.None, new List<string>(new string[] { "OK" }), 0, 0);
         }
         public static int Show(string message, string caption)
@@ -197,7 +207,7 @@ namespace System.Windows.Forms
 
         public static int Show(string message, string caption, CopyableMessageBoxIcon icon, IList<string> buttons, int defBtn, int cncBtn)
         {
-            return Show(Application.OpenForms.Count > 0 ? Application.OpenForms[0] : null, message, caption, icon, buttons, defBtn, cncBtn);
+            return Show(OwningForm, message, caption, icon, buttons, defBtn, cncBtn);
         }
 
         public static int Show(IWin32Window owner, string message, string caption, CopyableMessageBoxIcon icon, IList<string> buttons, int defBtn, int cncBtn)
