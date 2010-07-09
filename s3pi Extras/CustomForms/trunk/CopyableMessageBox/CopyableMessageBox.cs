@@ -80,6 +80,8 @@ namespace System.Windows.Forms
             this.ResumeLayout();
 
             this.DialogResult = DialogResult.OK;
+
+            Microsoft.Win32.ForceFocus.Focus(this);
         }
 
         private void enumToGlyph(CopyableMessageBoxIcon icon, Label lb)
