@@ -80,8 +80,6 @@ namespace System.Windows.Forms
             this.ResumeLayout();
 
             this.DialogResult = DialogResult.OK;
-
-            Microsoft.Win32.ForceFocus.Focus(this);
         }
 
         private void enumToGlyph(CopyableMessageBoxIcon icon, Label lb)
@@ -215,10 +213,12 @@ namespace System.Windows.Forms
         public static int Show(IWin32Window owner, string message, string caption, CopyableMessageBoxIcon icon, IList<string> buttons, int defBtn, int cncBtn)
         {
             CopyableMessageBoxInternal cmb = new CopyableMessageBoxInternal(message, caption, icon, buttons, defBtn, cncBtn);
-            if (owner != null) cmb.Icon = ((Form)owner).Icon;
-            else owner = new Form();
 
-            if (cmb.ShowDialog(owner) == DialogResult.Cancel) return cncBtn;
+            DialogResult dr;
+            if (owner != null) { cmb.Icon = ((Form)owner).Icon; dr = cmb.ShowDialog(owner); }
+            else { Form f = new Form(); f.FormBorderStyle = FormBorderStyle.None; f.Opacity = 0f; Microsoft.Win32.ForceFocus.Focus(f); dr = cmb.ShowDialog(f); f.Close(); }
+
+            if (dr == DialogResult.Cancel) return cncBtn;
             return (cmb.theButton != null) ? buttons.IndexOf(cmb.theButton.Text) : -1;
         }
 
