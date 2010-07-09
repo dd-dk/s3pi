@@ -84,7 +84,7 @@ namespace Microsoft.Win32
         /// Ensure the given <seealso cref="Form"/> has focus.
         /// </summary>
         /// <param name="theForm"><seealso cref="Form"/> to take focus.</param>
-        public static void Focus(Form theForm)
+        public static void Focus(IWin32Window theForm)
         {
             IntPtr hWnd = theForm.Handle;
 
