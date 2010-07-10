@@ -216,7 +216,7 @@ namespace System.Windows.Forms
 
             DialogResult dr;
             if (owner != null) { cmb.Icon = ((Form)owner).Icon; dr = cmb.ShowDialog(owner); }
-            else { Form f = new Form(); f.FormBorderStyle = FormBorderStyle.None; f.Opacity = 0f; Microsoft.Win32.ForceFocus.Focus(f); dr = cmb.ShowDialog(f); f.Close(); }
+            else { Microsoft.Win32.ForceFocus.Focus(cmb); dr = cmb.ShowDialog(); }
 
             if (dr == DialogResult.Cancel) return cncBtn;
             return (cmb.theButton != null) ? buttons.IndexOf(cmb.theButton.Text) : -1;
