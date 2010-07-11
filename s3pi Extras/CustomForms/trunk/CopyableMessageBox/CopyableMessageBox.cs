@@ -215,8 +215,7 @@ namespace System.Windows.Forms
             CopyableMessageBoxInternal cmb = new CopyableMessageBoxInternal(message, caption, icon, buttons, defBtn, cncBtn);
 
             DialogResult dr;
-            if (owner != null) { cmb.Icon = ((Form)owner).Icon; dr = cmb.ShowDialog(owner); }
-            else { Microsoft.Win32.ForceFocus.Focus(cmb); dr = cmb.ShowDialog(); }
+            if (owner != null) { cmb.Icon = ((Form)owner).Icon; dr = cmb.ShowDialog(owner); } else { dr = cmb.ShowDialog(); }
 
             if (dr == DialogResult.Cancel) return cncBtn;
             return (cmb.theButton != null) ? buttons.IndexOf(cmb.theButton.Text) : -1;
