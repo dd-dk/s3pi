@@ -108,6 +108,11 @@ namespace s3pi.Interfaces
 
         #region Package index
         /// <summary>
+        /// Package index: raised when the result of a previous call to GetResourceList becomes invalid 
+        /// </summary>
+        public event EventHandler ResourceIndexInvalidated;
+
+        /// <summary>
         /// Package index: the index format in use
         /// </summary>
         public abstract uint Indextype { get; }
@@ -118,45 +123,62 @@ namespace s3pi.Interfaces
         public abstract IList<IResourceIndexEntry> GetResourceList { get; }
 
         /// <summary>
-        /// Package index: raised when the result of a previous call to GetResourceList becomes invalid 
+        /// Searches the entire <see cref="IPackage"/>
+        /// for the first <see cref="IResourceIndexEntry"/> that matches the conditions defined by
+        /// <paramref name="flags"/> and <paramref name="values"/>.
         /// </summary>
-        public event EventHandler ResourceIndexInvalidated;
-
-        /// <summary>
-        /// Searches for an element that matches the conditions defined by <paramref name="flags"/> and <paramref name="values"/>,
-        /// and returns the first occurrence within the entire APackage.
-        /// </summary>
-        /// <param name="flags">True bits enable matching against numerically equivalent <paramref name="values"/> entry</param>
-        /// <param name="values">Fields to compare against</param>
-        /// <returns>The first match, if any; otherwise null.</returns>
+        /// <param name="flags">True bits enable matching against numerically equivalent <paramref name="values"/> entry.</param>
+        /// <param name="values">Field values to compare against.</param>
+        /// <returns>The first matching <see cref="IResourceIndexEntry"/>, if any; otherwise null.</returns>
         public abstract IResourceIndexEntry Find(uint flags, IResourceIndexEntry values);
 
         /// <summary>
-        /// Searches for an element that matches the conditions defined by <paramref name="names"/> and <paramref name="values"/>,
-        /// and returns the first occurrence within the entire APackage/>.
+        /// Searches the entire <see cref="IPackage"/>
+        /// for the first <see cref="IResourceIndexEntry"/> that matches the conditions defined by
+        /// <paramref name="names"/> and <paramref name="values"/>.
         /// </summary>
-        /// <param name="names">Names of fields to compare</param>
-        /// <param name="values">Fields to compare against</param>
-        /// <returns>The first match, if any; otherwise null.</returns>
+        /// <param name="names">Names of <see cref="IResourceIndexEntry"/> fields to compare.</param>
+        /// <param name="values">Field values to compare against.</param>
+        /// <returns>The first matching <see cref="IResourceIndexEntry"/>, if any; otherwise null.</returns>
         public abstract IResourceIndexEntry Find(string[] names, TypedValue[] values);
 
         /// <summary>
-        /// Searches for all element that matches the conditions defined by <paramref name="flags"/> and <paramref name="values"/>,
-        /// within the entire APackage/>.
+        /// Searches the entire <see cref="IPackage"/>
+        /// for the first <see cref="IResourceIndexEntry"/> that matches the conditions defined by
+        /// the <c>Predicate&lt;IResourceIndexEntry&gt;</c> <paramref name="Match"/>.
         /// </summary>
-        /// <param name="flags">True bits enable matching against numerically equivalent <paramref name="values"/> entry</param>
-        /// <param name="values">Fields to compare against</param>
-        /// <returns>Zero or more matches.</returns>
+        /// <param name="Match"><c>Predicate&lt;IResourceIndexEntry&gt;</c> defining matching conditions.</param>
+        /// <returns>The first matching <see cref="IResourceIndexEntry"/>, if any; otherwise null.</returns>
+        public abstract IResourceIndexEntry Find(Predicate<IResourceIndexEntry> Match);
+
+        /// <summary>
+        /// Searches the entire <see cref="IPackage"/>
+        /// for all <see cref="IResourceIndexEntry"/>s that matches the conditions defined by
+        /// <paramref name="flags"/> and <paramref name="values"/>.
+        /// </summary>
+        /// <param name="flags">True bits enable matching against numerically equivalent <paramref name="values"/> entry.</param>
+        /// <param name="values">Field values to compare against.</param>
+        /// <returns>An <c>IList&lt;IResourceIndexEntry&gt;</c> of zero or more matches.</returns>
         public abstract IList<IResourceIndexEntry> FindAll(uint flags, IResourceIndexEntry values);
 
         /// <summary>
-        /// Searches for all element that matches the conditions defined by <paramref name="names"/> and <paramref name="values"/>,
-        /// within the entire APackage/>.
+        /// Searches the entire <see cref="IPackage"/>
+        /// for all <see cref="IResourceIndexEntry"/>s that matches the conditions defined by
+        /// <paramref name="names"/> and <paramref name="values"/>.
         /// </summary>
-        /// <param name="names">Names of fields to compare</param>
-        /// <param name="values">Fields to compare against</param>
-        /// <returns>Zero or more matches.</returns>
+        /// <param name="names">Names of <see cref="IResourceIndexEntry"/> fields to compare.</param>
+        /// <param name="values">Field values to compare against.</param>
+        /// <returns>An <c>IList&lt;IResourceIndexEntry&gt;</c> of zero or more matches.</returns>
         public abstract IList<IResourceIndexEntry> FindAll(string[] names, TypedValue[] values);
+
+        /// <summary>
+        /// Searches the entire <see cref="IPackage"/>
+        /// for all <see cref="IResourceIndexEntry"/>s that matches the conditions defined by
+        /// the <c>Predicate&lt;IResourceIndexEntry&gt;</c> <paramref name="Match"/>.
+        /// </summary>
+        /// <param name="Match"><c>Predicate&lt;IResourceIndexEntry&gt;</c> defining matching conditions.</param>
+        /// <returns>Zero or more matches.</returns>
+        public abstract IList<IResourceIndexEntry> FindAll(Predicate<IResourceIndexEntry> Match);
         #endregion
 
         #region Package content

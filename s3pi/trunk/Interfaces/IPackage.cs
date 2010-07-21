@@ -99,19 +99,19 @@ namespace s3pi.Interfaces
 
         #region Package index
         /// <summary>
+        /// Package index: raised when the result of a previous call to GetResourceList becomes invalid 
+        /// </summary>
+        event EventHandler ResourceIndexInvalidated;
+
+        /// <summary>
         /// Package index: the index format in use
         /// </summary>
         UInt32 Indextype { get; }
 
         /// <summary>
-        /// Package index: the index as as <see cref="IResourceIndexEntry"/> list
+        /// Package index: the index as a <see cref="IResourceIndexEntry"/> list
         /// </summary>
         IList<IResourceIndexEntry> GetResourceList { get; }
-
-        /// <summary>
-        /// Package index: raised when the result of a previous call to GetResourceList becomes invalid 
-        /// </summary>
-        event EventHandler ResourceIndexInvalidated;
 
         /// <summary>
         /// Searches the entire <see cref="IPackage"/>
@@ -135,7 +135,16 @@ namespace s3pi.Interfaces
 
         /// <summary>
         /// Searches the entire <see cref="IPackage"/>
-        /// all <see cref="IResourceIndexEntry"/>s that matches the conditions defined by
+        /// for the first <see cref="IResourceIndexEntry"/> that matches the conditions defined by
+        /// the <c>Predicate&lt;IResourceIndexEntry&gt;</c> <paramref name="Match"/>.
+        /// </summary>
+        /// <param name="Match"><c>Predicate&lt;IResourceIndexEntry&gt;</c> defining matching conditions.</param>
+        /// <returns>The first matching <see cref="IResourceIndexEntry"/>, if any; otherwise null.</returns>
+        IResourceIndexEntry Find(Predicate<IResourceIndexEntry> Match);
+
+        /// <summary>
+        /// Searches the entire <see cref="IPackage"/>
+        /// for all <see cref="IResourceIndexEntry"/>s that matches the conditions defined by
         /// <paramref name="flags"/> and <paramref name="values"/>.
         /// </summary>
         /// <param name="flags">True bits enable matching against numerically equivalent <paramref name="values"/> entry.</param>
@@ -145,13 +154,22 @@ namespace s3pi.Interfaces
 
         /// <summary>
         /// Searches the entire <see cref="IPackage"/>
-        /// all <see cref="IResourceIndexEntry"/>s that matches the conditions defined by
+        /// for all <see cref="IResourceIndexEntry"/>s that matches the conditions defined by
         /// <paramref name="names"/> and <paramref name="values"/>.
         /// </summary>
         /// <param name="names">Names of <see cref="IResourceIndexEntry"/> fields to compare.</param>
         /// <param name="values">Field values to compare against.</param>
         /// <returns>An <c>IList&lt;IResourceIndexEntry&gt;</c> of zero or more matches.</returns>
         IList<IResourceIndexEntry> FindAll(string[] names, TypedValue[] values);
+
+        /// <summary>
+        /// Searches the entire <see cref="IPackage"/>
+        /// for all <see cref="IResourceIndexEntry"/>s that matches the conditions defined by
+        /// the <c>Predicate&lt;IResourceIndexEntry&gt;</c> <paramref name="Match"/>.
+        /// </summary>
+        /// <param name="Match"><c>Predicate&lt;IResourceIndexEntry&gt;</c> defining matching conditions.</param>
+        /// <returns>Zero or more matches.</returns>
+        IList<IResourceIndexEntry> FindAll(Predicate<IResourceIndexEntry> Match);
         #endregion
 
         #region Package content

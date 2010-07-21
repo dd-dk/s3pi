@@ -285,20 +285,24 @@ namespace s3pi.Package
         {
             Boolset flags;
             IResourceIndexEntry values;
-            public FlagMatch(Boolset flags, IResourceIndexEntry values) { this.flags = flags; this.values = values; }
+            public FlagMatch(Boolset flags, IResourceIndexEntry values)
+            {
+                if (flags.Length > values.ContentFields.Count) throw new ArgumentLengthException("flags", values.ContentFields.Count);
+                this.flags = flags;
+                this.values = values;
+            }
             public bool Match(IResourceIndexEntry rie)
             {
-                if (flags == 0) return true;
                 if (rie.IsDeleted) return false;
+                if (flags == 0) return true;
 
-                bool res = true;
-                for (int i = 0; i < values.ContentFields.Count && i < flags.Length; i++)
+                for (int i = 0; i < flags.Length; i++)
                 {
                     if (!flags[i]) continue;
                     string f = values.ContentFields[i];
-                    if (!values[f].Equals(rie[f])) { res = false; break; }
+                    if (!values[f].Equals(rie[f])) return false;
                 }
-                return res;
+                return true;
             }
         }
 
@@ -313,12 +317,9 @@ namespace s3pi.Package
             }
             public bool Match(IResourceIndexEntry rie)
             {
-                if (names.Length == 0) return true;
                 if (rie.IsDeleted) return false;
-
-                bool res = true;
-                for (int i = 0; i < names.Length; i++) if (!values[i].Equals(rie[names[i]])) { res = false; break; }
-                return res;
+                for (int i = 0; i < names.Length; i++) if (!values[i].Equals(rie[names[i]])) return false;
+                return true;
             }
         }
 
@@ -351,12 +352,24 @@ namespace s3pi.Package
         }
 
         /// <summary>
-        /// Searches for any element that matches the conditions defined by <paramref name="flags"/> and <paramref name="values"/>,
-        /// and returns all occurences within the package index./>.
+        /// Searches the entire <see cref="IPackage"/>
+        /// for the first <see cref="IResourceIndexEntry"/> that matches the conditions defined by
+        /// the <c>Predicate&lt;IResourceIndexEntry&gt;</c> <paramref name="Match"/>.
         /// </summary>
-        /// <param name="flags">True bits enable matching against numerically equivalent <paramref name="values"/> entry</param>
-        /// <param name="values">Fields to compare against</param>
-        /// <returns>Zero or more matches.</returns>
+        /// <param name="Match"><c>Predicate&lt;IResourceIndexEntry&gt;</c> defining matching conditions.</param>
+        /// <returns>The first matching <see cref="IResourceIndexEntry"/>, if any; otherwise null.</returns>
+        [MinimumVersion(1)]
+        [MaximumVersion(recommendedApiVersion)]
+        public override IResourceIndexEntry Find(Predicate<IResourceIndexEntry> Match) { return Index.Find(Match); }
+
+        /// <summary>
+        /// Searches the entire <see cref="IPackage"/>
+        /// for all <see cref="IResourceIndexEntry"/>s that matches the conditions defined by
+        /// <paramref name="flags"/> and <paramref name="values"/>.
+        /// </summary>
+        /// <param name="flags">True bits enable matching against numerically equivalent <paramref name="values"/> entry.</param>
+        /// <param name="values">Field values to compare against.</param>
+        /// <returns>An <c>IList&lt;IResourceIndexEntry&gt;</c> of zero or more matches.</returns>
         [MinimumVersion(1)]
         [MaximumVersion(recommendedApiVersion)]
         public override IList<IResourceIndexEntry> FindAll(uint flags, IResourceIndexEntry values)
@@ -365,12 +378,13 @@ namespace s3pi.Package
         }
 
         /// <summary>
-        /// Searches for any element that matches the conditions defined by <paramref name="names"/> and <paramref name="values"/>,
-        /// and returns all occurences within the package index./>.
+        /// Searches the entire <see cref="IPackage"/>
+        /// for all <see cref="IResourceIndexEntry"/>s that matches the conditions defined by
+        /// <paramref name="names"/> and <paramref name="values"/>.
         /// </summary>
-        /// <param name="names">Names of fields to compare</param>
-        /// <param name="values">Fields to compare against</param>
-        /// <returns>Zero or more matches.</returns>
+        /// <param name="names">Names of <see cref="IResourceIndexEntry"/> fields to compare.</param>
+        /// <param name="values">Field values to compare against.</param>
+        /// <returns>An <c>IList&lt;IResourceIndexEntry&gt;</c> of zero or more matches.</returns>
         [MinimumVersion(1)]
         [MaximumVersion(recommendedApiVersion)]
         public override IList<IResourceIndexEntry> FindAll(string[] names, TypedValue[] values)
@@ -378,6 +392,16 @@ namespace s3pi.Package
             return Index.FindAll((new NameMatch(names, values)).Match);
         }
 
+        /// <summary>
+        /// Searches the entire <see cref="IPackage"/>
+        /// for all <see cref="IResourceIndexEntry"/>s that matches the conditions defined by
+        /// the <c>Predicate&lt;IResourceIndexEntry&gt;</c> <paramref name="Match"/>.
+        /// </summary>
+        /// <param name="Match"><c>Predicate&lt;IResourceIndexEntry&gt;</c> defining matching conditions.</param>
+        /// <returns>Zero or more matches.</returns>
+        [MinimumVersion(1)]
+        [MaximumVersion(recommendedApiVersion)]
+        public override IList<IResourceIndexEntry> FindAll(Predicate<IResourceIndexEntry> Match) { return Index.FindAll(Match); }
         #endregion
 
         #region Package content
