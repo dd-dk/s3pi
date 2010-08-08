@@ -293,7 +293,6 @@ namespace s3pi.Package
             }
             public bool Match(IResourceIndexEntry rie)
             {
-                if (rie.IsDeleted) return false;
                 if (flags == 0) return true;
 
                 for (int i = 0; i < flags.Length; i++)
@@ -317,7 +316,6 @@ namespace s3pi.Package
             }
             public bool Match(IResourceIndexEntry rie)
             {
-                if (rie.IsDeleted) return false;
                 for (int i = 0; i < names.Length; i++) if (!values[i].Equals(rie[names[i]])) return false;
                 return true;
             }
@@ -332,10 +330,7 @@ namespace s3pi.Package
         /// <returns>The first match, if any; otherwise null.</returns>
         [MinimumVersion(1)]
         [MaximumVersion(recommendedApiVersion)]
-        public override IResourceIndexEntry Find(uint flags, IResourceIndexEntry values)
-        {
-            return Index.Find((new FlagMatch(flags, values)).Match);
-        }
+        public override IResourceIndexEntry Find(uint flags, IResourceIndexEntry values) { return Index.Find((new FlagMatch(flags, values)).Match); }
 
         /// <summary>
         /// Searches for an element that matches the conditions defined by <paramref name="names"/> and <paramref name="values"/>,
@@ -346,10 +341,7 @@ namespace s3pi.Package
         /// <returns>The first match, if any; otherwise null.</returns>
         [MinimumVersion(1)]
         [MaximumVersion(recommendedApiVersion)]
-        public override IResourceIndexEntry Find(string[] names, TypedValue[] values)
-        {
-            return Index.Find((new NameMatch(names, values)).Match);
-        }
+        public override IResourceIndexEntry Find(string[] names, TypedValue[] values) { return Index.Find((new NameMatch(names, values)).Match); }
 
         /// <summary>
         /// Searches the entire <see cref="IPackage"/>
@@ -360,7 +352,7 @@ namespace s3pi.Package
         /// <returns>The first matching <see cref="IResourceIndexEntry"/>, if any; otherwise null.</returns>
         [MinimumVersion(1)]
         [MaximumVersion(recommendedApiVersion)]
-        public override IResourceIndexEntry Find(Predicate<IResourceIndexEntry> Match) { return Index.Find(Match); }
+        public override IResourceIndexEntry Find(Predicate<IResourceIndexEntry> Match) { return Index.Find(x => !x.IsDeleted && Match(x)); }
 
         /// <summary>
         /// Searches the entire <see cref="IPackage"/>
@@ -372,10 +364,7 @@ namespace s3pi.Package
         /// <returns>An <c>IList&lt;IResourceIndexEntry&gt;</c> of zero or more matches.</returns>
         [MinimumVersion(1)]
         [MaximumVersion(recommendedApiVersion)]
-        public override IList<IResourceIndexEntry> FindAll(uint flags, IResourceIndexEntry values)
-        {
-            return Index.FindAll((new FlagMatch(flags, values)).Match);
-        }
+        public override IList<IResourceIndexEntry> FindAll(uint flags, IResourceIndexEntry values) { return Index.FindAll((new FlagMatch(flags, values)).Match); }
 
         /// <summary>
         /// Searches the entire <see cref="IPackage"/>
@@ -387,10 +376,7 @@ namespace s3pi.Package
         /// <returns>An <c>IList&lt;IResourceIndexEntry&gt;</c> of zero or more matches.</returns>
         [MinimumVersion(1)]
         [MaximumVersion(recommendedApiVersion)]
-        public override IList<IResourceIndexEntry> FindAll(string[] names, TypedValue[] values)
-        {
-            return Index.FindAll((new NameMatch(names, values)).Match);
-        }
+        public override IList<IResourceIndexEntry> FindAll(string[] names, TypedValue[] values) { return Index.FindAll((new NameMatch(names, values)).Match); }
 
         /// <summary>
         /// Searches the entire <see cref="IPackage"/>
@@ -401,7 +387,7 @@ namespace s3pi.Package
         /// <returns>Zero or more matches.</returns>
         [MinimumVersion(1)]
         [MaximumVersion(recommendedApiVersion)]
-        public override IList<IResourceIndexEntry> FindAll(Predicate<IResourceIndexEntry> Match) { return Index.FindAll(Match); }
+        public override IList<IResourceIndexEntry> FindAll(Predicate<IResourceIndexEntry> Match) { return Index.FindAll(x => !x.IsDeleted && Match(x)); }
         #endregion
 
         #region Package content
