@@ -1345,7 +1345,9 @@ namespace CatalogResource
                     if (f.Equals("Value") || f.Equals("Stream") || f.Equals("AsBytes")) continue;
                     TypedValue tv = this[f];
                     string h = String.Format(hdr, tv.Type.Name, f);
-                    if (typeof(Common).IsAssignableFrom(tv.Type)) { }
+                    if (tv.Type.HasElementType && typeof(AApiVersionedFields).IsAssignableFrom(tv.Type.GetElementType())) // it's an array
+                            s += h + tv + "\n" + t;
+                    else if (typeof(Common).IsAssignableFrom(tv.Type)) { }
                     else if (typeof(WallFloorPatternCatalogResource.WallFloorPatternMaterialList).IsAssignableFrom(tv.Type)) s += h + (tv.Value as WallFloorPatternCatalogResource.WallFloorPatternMaterialList).Value + t;
                     else if (typeof(MaterialList).IsAssignableFrom(tv.Type)) s += h + (tv.Value as MaterialList).Value + t;
                     else if (typeof(TGIBlockList).IsAssignableFrom(tv.Type)) s += h + (tv.Value as TGIBlockList).Value + t;
