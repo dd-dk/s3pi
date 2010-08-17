@@ -103,8 +103,17 @@ namespace s3pi.Interfaces
             if (typeof(System.Char[]).IsAssignableFrom(this.Type))
                 return ToDisplayString((char[])this.Value);
 
-            if (typeof(Array).IsAssignableFrom(this.Type))
-                return FromArray((Array)this.Value);
+            if (this.Type.HasElementType) // it's an array
+            {
+                if (typeof(AApiVersionedFields).IsAssignableFrom(this.Type.GetElementType()))
+                {
+                    return FromAApiVersionedFieldsArray(this.Type.GetElementType(), (Array)this.Value);
+                }
+                else
+                {
+                    return FromSimpleArray(this.Type.GetElementType(), (Array)this.Value);
+                }
+            }
 
             return this.Value.ToString();
         }
@@ -117,16 +126,31 @@ namespace s3pi.Interfaces
             return t.ToString().Normalize();
         }
 
-        static string FromArray(Array ary)
+        static string FromSimpleArray(Type type, Array ary)
         {
             string s = "";
-            int i = 0;
-            foreach (object v in ary)
+            for (int i = 0; i < ary.Length; i++)
             {
+                object v = ary.GetValue(i);
                 TypedValue tv = new TypedValue(v.GetType(), v, "X");
-                s += String.Format(" [{0:X}:'{1}']", i++, "" + tv);
+                s += String.Format(" [{0:X}:'{1}']", i, "" + tv);
             }
             return s.TrimStart();
+        }
+
+        static string FromAApiVersionedFieldsArray(Type type, Array ary)
+        {
+            string s = "";
+            string fmt = "[{0:X}" + (type.IsAbstract ? " {1}" : "") + "]: {2}\n";
+            for (int i = 0; i < ary.Length; i++)
+            {
+                AApiVersionedFields value = (AApiVersionedFields)ary.GetValue(i);
+                if (value.ContentFields.Contains("Value"))
+                    s += string.Format(fmt, i, value.GetType(), value["Value"]);
+                else
+                    s += string.Format(fmt, i, value.GetType(), value);
+            }
+            return s.Trim('\n');
         }
 
         static readonly string[] LowNames = {
