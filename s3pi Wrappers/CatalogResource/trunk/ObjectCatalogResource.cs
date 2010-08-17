@@ -60,16 +60,7 @@ namespace CatalogResource
         uint unknown19;
         uint unknown20;
         uint unknown21;
-        TopicCategory topic1;
-        uint rating1;
-        TopicCategory topic2;
-        uint rating2;
-        TopicCategory topic3;
-        uint rating3;
-        TopicCategory topic4;
-        uint rating4;
-        TopicCategory topic5;
-        uint rating5;
+        TopicRating[] topicRatings = new TopicRating[5];
         uint fallbackIndex;
         #endregion
 
@@ -109,16 +100,7 @@ namespace CatalogResource
             this.unknown19 = basis.unknown19;
             this.unknown20 = basis.unknown20;
             this.unknown21 = basis.unknown21;
-            this.topic1 = basis.topic1;
-            this.rating1 = basis.rating1;
-            this.topic2 = basis.topic2;
-            this.rating2 = basis.rating2;
-            this.topic3 = basis.topic3;
-            this.rating3 = basis.rating3;
-            this.topic4 = basis.topic4;
-            this.rating4 = basis.rating4;
-            this.topic5 = basis.topic5;
-            this.rating5 = basis.rating5;
+            this.topicRatings = (TopicRating[])basis.topicRatings.Clone();
             this.fallbackIndex = basis.fallbackIndex;
         }
         public ObjectCatalogResource(int APIversion,
@@ -128,8 +110,7 @@ namespace CatalogResource
             uint unknown12, IList<MTDoor> mtDoorList, byte unknown13, uint diagonalIndex, uint hash,
             uint roomFlags, uint functionCategoryFlags, ulong subFunctionFlags, ulong subRoomFlags, uint buildCategoryFlags, uint sinkDDSIndex,
             uint slotPlacementFlags, string materialGrouping1, string materialGrouping2, uint unknown19, uint unknown20, uint unknown21,
-            TopicCategory topic1, uint rating1, TopicCategory topic2, uint rating2, TopicCategory topic3, uint rating3,
-            TopicCategory topic4, uint rating4, TopicCategory topic5, uint rating5,
+            TopicRating[] topicRatings,
             uint fallbackIndex, TGIBlockList ltgib)
             : this(APIversion,
             version, materialList,
@@ -141,8 +122,7 @@ namespace CatalogResource
             roomFlags, functionCategoryFlags, subFunctionFlags, subRoomFlags, buildCategoryFlags, sinkDDSIndex,
             0, 0, 0,
             slotPlacementFlags, materialGrouping1, materialGrouping2, unknown19, unknown20, unknown21,
-            topic1, rating1, topic2, rating2,
-            topic3, rating3, topic4, rating4, topic5, rating5,
+            topicRatings,
             fallbackIndex, ltgib)
         {
             if (checking) if (version >= 0x00000016)
@@ -157,8 +137,7 @@ namespace CatalogResource
             uint unknown12, IList<MTDoor> mtDoorList, byte unknown13, uint diagonalIndex, uint hash,
             uint roomFlags, uint functionCategoryFlags, ulong subFunctionFlags, ulong subRoomFlags, uint buildCategoryFlags, uint sinkDDSIndex,
             uint slotPlacementFlags, string materialGrouping1, string materialGrouping2, uint unknown19, uint unknown20, uint unknown21,
-            TopicCategory topic1, uint rating1, TopicCategory topic2, uint rating2,
-            TopicCategory topic3, uint rating3, TopicCategory topic4, uint rating4, TopicCategory topic5, uint rating5,
+            TopicRating[] topicRatings,
             uint fallbackIndex, TGIBlockList ltgib)
             : this(APIversion,
             version, materialList,
@@ -170,8 +149,7 @@ namespace CatalogResource
             roomFlags, functionCategoryFlags, subFunctionFlags, subRoomFlags, buildCategoryFlags, sinkDDSIndex,
             0, 0, 0,
             slotPlacementFlags, materialGrouping1, materialGrouping2, unknown19, unknown20, unknown21,
-            topic1, rating1, topic2, rating2,
-            topic3, rating3, topic4, rating4, topic5, rating5,
+            topicRatings,
             fallbackIndex, ltgib)
         {
             if (checking) if (version >= 0x00000017)
@@ -187,8 +165,7 @@ namespace CatalogResource
             uint roomFlags, uint functionCategoryFlags, ulong subFunctionFlags, ulong subRoomFlags, uint buildCategoryFlags, uint sinkDDSIndex,
             uint unknown16, uint unknown17, uint unknown18,
             uint slotPlacementFlags, string materialGrouping1, string materialGrouping2, uint unknown19, uint unknown20, uint unknown21,
-            TopicCategory topic1, uint rating1, TopicCategory topic2, uint rating2,
-            TopicCategory topic3, uint rating3, TopicCategory topic4, uint rating4, TopicCategory topic5, uint rating5,
+            TopicRating[] topicRatings,
             uint fallbackIndex, TGIBlockList ltgib)
             : base(APIversion, version, ltgib)
         {
@@ -200,7 +177,8 @@ namespace CatalogResource
             this.unknown4 = unknown4;
             this.unknown5 = unknown5;
             this.unknown6 = unknown6;
-            if (unknown7.Length != this.unknown7.Length) throw new ArgumentLengthException("unknown7", this.unknown7.Length);
+            if (checking) if (unknown7.Length != this.unknown7.Length)
+                throw new ArgumentLengthException("unknown7", this.unknown7.Length);
             this.unknown7 = (byte[])unknown7.Clone();
             this.objkIndex = objkIndex;
             this.unknown8 = unknown8;
@@ -227,16 +205,9 @@ namespace CatalogResource
             this.unknown19 = unknown19;
             this.unknown20 = unknown20;
             this.unknown21 = unknown21;
-            this.topic1 = topic1;
-            this.rating1 = rating1;
-            this.topic2 = topic2;
-            this.rating2 = rating2;
-            this.topic3 = topic3;
-            this.rating3 = rating3;
-            this.topic4 = topic4;
-            this.rating4 = rating4;
-            this.topic5 = topic5;
-            this.rating5 = rating5;
+            if (checking) if (topicRatings.Length != 5)
+                    throw new ArgumentLengthException("TopicRatings", this.topicRatings.Length);
+            this.topicRatings = (TopicRating[])topicRatings.Clone();
             this.fallbackIndex = fallbackIndex;
         }
         #endregion
@@ -287,16 +258,8 @@ namespace CatalogResource
             this.unknown19 = r.ReadUInt32();
             this.unknown20 = r.ReadUInt32();
             this.unknown21 = r.ReadUInt32();
-            this.topic1 = (TopicCategory)r.ReadUInt32();
-            this.rating1 = r.ReadUInt32();
-            this.topic2 = (TopicCategory)r.ReadUInt32();
-            this.rating2 = r.ReadUInt32();
-            this.topic3 = (TopicCategory)r.ReadUInt32();
-            this.rating3 = r.ReadUInt32();
-            this.topic4 = (TopicCategory)r.ReadUInt32();
-            this.rating4 = r.ReadUInt32();
-            this.topic5 = (TopicCategory)r.ReadUInt32();
-            this.rating5 = r.ReadUInt32();
+            for (int i = 0; i < topicRatings.Length; i++)
+                topicRatings[i] = new TopicRating(requestedApiVersion, OnResourceChanged, s);
             this.fallbackIndex = r.ReadUInt32();
 
             list = new TGIBlockList(OnResourceChanged, s, tgiPosn, tgiSize);
@@ -351,16 +314,11 @@ namespace CatalogResource
             w.Write(unknown19);
             w.Write(unknown20);
             w.Write(unknown21);
-            w.Write((uint)topic1);
-            w.Write(rating1);
-            w.Write((uint)topic2);
-            w.Write(rating2);
-            w.Write((uint)topic3);
-            w.Write(rating3);
-            w.Write((uint)topic4);
-            w.Write(rating4);
-            w.Write((uint)topic5);
-            w.Write(rating5);
+            for (int i = 0; i < topicRatings.Length; i++)
+            {
+                if (topicRatings[i] == null) topicRatings[i] = new TopicRating(0, OnResourceChanged);
+                topicRatings[i].UnParse(s);
+            }
             w.Write(fallbackIndex);
 
             base.UnParse(s);
@@ -784,7 +742,82 @@ namespace CatalogResource
             NeverBreaks,
             Portable,
             Speed,
-            NoString,
+            Inventing,
+            Sculpting,
+        }
+
+        public class TopicRating : AHandlerElement, IEquatable<TopicRating>
+        {
+            #region Attributes
+            TopicCategory topic;
+            uint rating;
+            #endregion
+
+            #region Constructors
+            public TopicRating(int APIversion, EventHandler handler) : base(APIversion, handler) { }
+            public TopicRating(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
+            public TopicRating(int APIversion, EventHandler handler, TopicRating basis)
+                : this(APIversion, handler, basis.topic, basis.rating) { }
+            public TopicRating(int APIversion, EventHandler handler, TopicCategory topic, uint rating)
+                : base(APIversion, handler)
+            {
+                this.topic = topic;
+                this.rating = rating;
+            }
+            #endregion
+
+            #region Data I/O
+            private void Parse(Stream s)
+            {
+                BinaryReader r = new BinaryReader(s);
+                this.topic = (TopicCategory)r.ReadUInt32();
+                this.rating = r.ReadUInt32();
+            }
+            public void UnParse(Stream s)
+            {
+                BinaryWriter w = new BinaryWriter(s);
+                w.Write((uint)topic);
+                w.Write(rating);
+            }
+            #endregion
+
+            #region IEquatable<MTDoorEntry> Members
+
+            public bool Equals(TopicRating other)
+            {
+                return (topic == other.topic && rating == other.rating);
+            }
+
+            #endregion
+
+            #region AHandlerElement
+            public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
+
+            public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
+
+            public override AHandlerElement Clone(EventHandler handler) { return new TopicRating(requestedApiVersion, handler, this); }
+            #endregion
+
+            #region Content Fields
+            public TopicCategory Topic { get { return topic; } set { if (topic != value) { topic = value; OnElementChanged(); } } }
+            public uint Rating { get { return rating; } set { if (rating != value) { rating = value; OnElementChanged(); } } }
+
+            public String Value
+            {
+                get
+                {
+                    string s = "";
+                    s += topic;
+                    if (rating != 0)
+                    {
+                        if (rating == 11) s = "+ " + s;
+                        else
+                            s += ": " + rating;
+                    }
+                    return s;
+                }
+            }
+            #endregion
         }
 
         public class MTDoor : AHandlerElement, IEquatable<MTDoor>
@@ -990,26 +1023,16 @@ namespace CatalogResource
         [ElementPriority(44)]
         public uint Unknown21 { get { return unknown21; } set { if (unknown21 != value) { unknown21 = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(45)]
-        public TopicCategory Topic1 { get { return topic1; } set { if (topic1 != value) { topic1 = value; OnResourceChanged(this, new EventArgs()); } } }
-        [ElementPriority(46)]
-        public uint Rating1 { get { return rating1; } set { if (rating1 != value) { rating1 = value; OnResourceChanged(this, new EventArgs()); } } }
-        [ElementPriority(47)]
-        public TopicCategory Topic2 { get { return topic2; } set { if (topic2 != value) { topic2 = value; OnResourceChanged(this, new EventArgs()); } } }
-        [ElementPriority(48)]
-        public uint Rating2 { get { return rating2; } set { if (rating2 != value) { rating2 = value; OnResourceChanged(this, new EventArgs()); } } }
-        [ElementPriority(49)]
-        public TopicCategory Topic3 { get { return topic3; } set { if (topic3 != value) { topic3 = value; OnResourceChanged(this, new EventArgs()); } } }
-        [ElementPriority(50)]
-        public uint Rating3 { get { return rating3; } set { if (rating3 != value) { rating3 = value; OnResourceChanged(this, new EventArgs()); } } }
-        [ElementPriority(51)]
-        public TopicCategory Topic4 { get { return topic4; } set { if (topic4 != value) { topic4 = value; OnResourceChanged(this, new EventArgs()); } } }
-        [ElementPriority(52)]
-        public uint Rating4 { get { return rating4; } set { if (rating4 != value) { rating4 = value; OnResourceChanged(this, new EventArgs()); } } }
-        [ElementPriority(53)]
-        public TopicCategory Topic5 { get { return topic5; } set { if (topic5 != value) { topic5 = value; OnResourceChanged(this, new EventArgs()); } } }
-        [ElementPriority(54)]
-        public uint Rating5 { get { return rating5; } set { if (rating5 != value) { rating5 = value; OnResourceChanged(this, new EventArgs()); } } }
-        [ElementPriority(55), TGIBlockListContentField("TGIBlocks")]
+        public TopicRating[] TopicRatings
+        {
+            get { return topicRatings; }
+            set
+            {
+                if (value.Length != this.topicRatings.Length) throw new ArgumentLengthException("TopicRatings", this.topicRatings.Length);
+                if (!ArrayCompare(topicRatings, value)) { topicRatings = value == null ? null : (TopicRating[])value.Clone(); OnResourceChanged(this, new EventArgs()); }
+            }
+        }
+        [ElementPriority(46), TGIBlockListContentField("TGIBlocks")]
         public uint FallbackIndex { get { return fallbackIndex; } set { if (fallbackIndex != value) { fallbackIndex = value; OnResourceChanged(this, new EventArgs()); } } }
         #endregion
     }
