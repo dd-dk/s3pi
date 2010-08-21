@@ -957,7 +957,7 @@ namespace TxtcResource
     {
         public TxtcResourceHandler()
         {
-            this.Add(typeof(TxtcResource), new List<string>(new string[] { "0x033A1435", }));
+            this.Add(typeof(TxtcResource), new List<string>(new string[] { "0x033A1435", "0x0341ACC9", }));
         }
     }
 }
