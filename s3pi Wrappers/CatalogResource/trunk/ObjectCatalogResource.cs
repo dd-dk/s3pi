@@ -57,8 +57,8 @@ namespace CatalogResource
         SlotPlacement slotPlacementFlags;
         string materialGrouping1 = "";
         string materialGrouping2 = "";
-        uint unknown19;
-        uint unknown20;
+        Moodlet moodletGiven;
+        int moodletScore;
         uint unknown21;
         TopicRating[] topicRatings = new TopicRating[5];
         uint fallbackIndex;
@@ -97,8 +97,8 @@ namespace CatalogResource
             this.slotPlacementFlags = basis.slotPlacementFlags;
             this.materialGrouping1 = basis.materialGrouping1;
             this.materialGrouping2 = basis.materialGrouping2;
-            this.unknown19 = basis.unknown19;
-            this.unknown20 = basis.unknown20;
+            this.moodletGiven = basis.moodletGiven;
+            this.moodletScore = basis.moodletScore;
             this.unknown21 = basis.unknown21;
             this.topicRatings = (TopicRating[])basis.topicRatings.Clone();
             this.fallbackIndex = basis.fallbackIndex;
@@ -109,7 +109,7 @@ namespace CatalogResource
             Misc8 unknown8, Misc9 unknown9, Misc10 unknown10, Misc11 unknown11,
             uint unknown12, IList<MTDoor> mtDoorList, byte unknown13, uint diagonalIndex, uint hash,
             uint roomFlags, uint functionCategoryFlags, ulong subFunctionFlags, ulong subRoomFlags, uint buildCategoryFlags, uint sinkDDSIndex,
-            uint slotPlacementFlags, string materialGrouping1, string materialGrouping2, uint unknown19, uint unknown20, uint unknown21,
+            uint slotPlacementFlags, string materialGrouping1, string materialGrouping2, Moodlet moodletGiven, int moodletScore, uint unknown21,
             TopicRating[] topicRatings,
             uint fallbackIndex, TGIBlockList ltgib)
             : this(APIversion,
@@ -121,7 +121,7 @@ namespace CatalogResource
             unknown12, mtDoorList, unknown13, diagonalIndex, hash,
             roomFlags, functionCategoryFlags, subFunctionFlags, subRoomFlags, buildCategoryFlags, sinkDDSIndex,
             0, 0, 0,
-            slotPlacementFlags, materialGrouping1, materialGrouping2, unknown19, unknown20, unknown21,
+            slotPlacementFlags, materialGrouping1, materialGrouping2, moodletGiven, moodletScore, unknown21,
             topicRatings,
             fallbackIndex, ltgib)
         {
@@ -136,7 +136,7 @@ namespace CatalogResource
             Misc8 unknown8, Misc9 unknown9, Misc10 unknown10, Misc11 unknown11,
             uint unknown12, IList<MTDoor> mtDoorList, byte unknown13, uint diagonalIndex, uint hash,
             uint roomFlags, uint functionCategoryFlags, ulong subFunctionFlags, ulong subRoomFlags, uint buildCategoryFlags, uint sinkDDSIndex,
-            uint slotPlacementFlags, string materialGrouping1, string materialGrouping2, uint unknown19, uint unknown20, uint unknown21,
+            uint slotPlacementFlags, string materialGrouping1, string materialGrouping2, Moodlet moodletGiven, int moodletScore, uint unknown21,
             TopicRating[] topicRatings,
             uint fallbackIndex, TGIBlockList ltgib)
             : this(APIversion,
@@ -148,7 +148,7 @@ namespace CatalogResource
             unknown12, mtDoorList, unknown13, diagonalIndex, hash,
             roomFlags, functionCategoryFlags, subFunctionFlags, subRoomFlags, buildCategoryFlags, sinkDDSIndex,
             0, 0, 0,
-            slotPlacementFlags, materialGrouping1, materialGrouping2, unknown19, unknown20, unknown21,
+            slotPlacementFlags, materialGrouping1, materialGrouping2, moodletGiven, moodletScore, unknown21,
             topicRatings,
             fallbackIndex, ltgib)
         {
@@ -164,7 +164,7 @@ namespace CatalogResource
             uint unknown12, IList<MTDoor> mtDoorList, byte unknown13, uint diagonalIndex, uint hash,
             uint roomFlags, uint functionCategoryFlags, ulong subFunctionFlags, ulong subRoomFlags, uint buildCategoryFlags, uint sinkDDSIndex,
             uint unknown16, uint unknown17, uint unknown18,
-            uint slotPlacementFlags, string materialGrouping1, string materialGrouping2, uint unknown19, uint unknown20, uint unknown21,
+            uint slotPlacementFlags, string materialGrouping1, string materialGrouping2, Moodlet moodletGiven, int moodletScore, uint unknown21,
             TopicRating[] topicRatings,
             uint fallbackIndex, TGIBlockList ltgib)
             : base(APIversion, version, ltgib)
@@ -202,8 +202,8 @@ namespace CatalogResource
             this.slotPlacementFlags = (SlotPlacement)slotPlacementFlags;
             this.materialGrouping1 = materialGrouping1;
             this.materialGrouping2 = materialGrouping2;
-            this.unknown19 = unknown19;
-            this.unknown20 = unknown20;
+            this.moodletGiven = moodletGiven;
+            this.moodletScore = moodletScore;
             this.unknown21 = unknown21;
             if (checking) if (topicRatings.Length != 5)
                     throw new ArgumentLengthException("TopicRatings", this.topicRatings.Length);
@@ -255,8 +255,8 @@ namespace CatalogResource
             this.slotPlacementFlags = (SlotPlacement)r.ReadUInt32();
             this.materialGrouping1 = r2.ReadString();
             this.materialGrouping2 = r2.ReadString();
-            this.unknown19 = r.ReadUInt32();
-            this.unknown20 = r.ReadUInt32();
+            this.moodletGiven = (Moodlet)r.ReadUInt32();
+            this.moodletScore = r.ReadInt32();
             this.unknown21 = r.ReadUInt32();
             for (int i = 0; i < topicRatings.Length; i++)
                 topicRatings[i] = new TopicRating(requestedApiVersion, OnResourceChanged, s);
@@ -311,8 +311,8 @@ namespace CatalogResource
             w.Write((uint)slotPlacementFlags);
             Write7BitStr(s, materialGrouping1, System.Text.Encoding.BigEndianUnicode);
             Write7BitStr(s, materialGrouping2, System.Text.Encoding.BigEndianUnicode);
-            w.Write(unknown19);
-            w.Write(unknown20);
+            w.Write((uint)moodletGiven);
+            w.Write(moodletScore);
             w.Write(unknown21);
             for (int i = 0; i < topicRatings.Length; i++)
             {
@@ -581,7 +581,7 @@ namespace CatalogResource
             PlumbingShowersAndTubs = 0x08000000,
 
             DecorMisc = 0x10000000,
-            DecorSculptures_UNUSED = 0x20000000,
+            DecorSculptures = 0x20000000,
             DecorWallArt = 0x40000000,
             DecorPlants = 0x80000000,
 
@@ -715,6 +715,14 @@ namespace CatalogResource
             //
         }
 
+        public enum Moodlet : uint
+        {
+            Unused00 = 0x00000000,
+            Seating,
+            Sleeping,
+            Music,
+        }
+
         public enum TopicCategory : uint
         {
             EndOfTopics = 0x00000000,
@@ -736,6 +744,7 @@ namespace CatalogResource
             Upgradable,
             LearnCookingFaster,
             ChildOnly,
+            unused13,
             Gardening,
             Fishing,
             SelfCleaning,
@@ -750,7 +759,7 @@ namespace CatalogResource
         {
             #region Attributes
             TopicCategory topic;
-            uint rating;
+            int rating;
             #endregion
 
             #region Constructors
@@ -758,7 +767,7 @@ namespace CatalogResource
             public TopicRating(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
             public TopicRating(int APIversion, EventHandler handler, TopicRating basis)
                 : this(APIversion, handler, basis.topic, basis.rating) { }
-            public TopicRating(int APIversion, EventHandler handler, TopicCategory topic, uint rating)
+            public TopicRating(int APIversion, EventHandler handler, TopicCategory topic, int rating)
                 : base(APIversion, handler)
             {
                 this.topic = topic;
@@ -771,7 +780,7 @@ namespace CatalogResource
             {
                 BinaryReader r = new BinaryReader(s);
                 this.topic = (TopicCategory)r.ReadUInt32();
-                this.rating = r.ReadUInt32();
+                this.rating = r.ReadInt32();
             }
             public void UnParse(Stream s)
             {
@@ -800,7 +809,7 @@ namespace CatalogResource
 
             #region Content Fields
             public TopicCategory Topic { get { return topic; } set { if (topic != value) { topic = value; OnElementChanged(); } } }
-            public uint Rating { get { return rating; } set { if (rating != value) { rating = value; OnElementChanged(); } } }
+            public int Rating { get { return rating; } set { if (rating != value) { rating = value; OnElementChanged(); } } }
 
             public String Value
             {
@@ -1017,9 +1026,9 @@ namespace CatalogResource
         [ElementPriority(41)]
         public string MaterialGrouping2 { get { return materialGrouping2; } set { if (materialGrouping2 != value) { materialGrouping2 = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(42)]
-        public uint Unknown19 { get { return unknown19; } set { if (unknown19 != value) { unknown19 = value; OnResourceChanged(this, new EventArgs()); } } }
+        public Moodlet MoodletGiven { get { return moodletGiven; } set { if (moodletGiven != value) { moodletGiven = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(43)]
-        public uint Unknown20 { get { return unknown20; } set { if (unknown20 != value) { unknown20 = value; OnResourceChanged(this, new EventArgs()); } } }
+        public int MoodletScore { get { return moodletScore; } set { if (moodletScore != value) { moodletScore = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(44)]
         public uint Unknown21 { get { return unknown21; } set { if (unknown21 != value) { unknown21 = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(45)]
