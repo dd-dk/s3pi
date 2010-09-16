@@ -31,10 +31,10 @@ namespace CatalogResource
         string unknown1 = "";
         uint unknown2;
         byte unknown3;
-        uint unknown4;
-        byte unknown5;
-        byte unknown6;
-        byte[] unknown7 = new byte[4];
+        Fire fireType;
+        byte isStealable;
+        byte isReposessable;
+        uint inWorldEditable;
         uint objkIndex;
         Misc8 unknown8;
         Misc9 unknown9;
@@ -74,10 +74,10 @@ namespace CatalogResource
             this.common = new Common(requestedApiVersion, OnResourceChanged, basis.common);
             this.unknown2 = basis.unknown2;
             this.unknown3 = basis.unknown3;
-            this.unknown4 = basis.unknown4;
-            this.unknown5 = basis.unknown5;
-            this.unknown6 = basis.unknown6;
-            this.unknown7 = (byte[])basis.unknown7.Clone();
+            this.fireType = basis.fireType;
+            this.isStealable = basis.isStealable;
+            this.isReposessable = basis.isReposessable;
+            this.inWorldEditable = basis.inWorldEditable;
             this.objkIndex = basis.objkIndex;
             this.unknown8 = basis.unknown8;
             this.unknown9 = basis.unknown9;
@@ -104,8 +104,8 @@ namespace CatalogResource
             this.fallbackIndex = basis.fallbackIndex;
         }
         public ObjectCatalogResource(int APIversion,
-            uint version, IList<Material> materialList, Common common, uint unknown2, byte unknown3, uint unknown4,
-            byte unknown5, byte unknown6, byte[] unknown7, uint objkIndex,
+            uint version, IList<Material> materialList, Common common, uint unknown2, byte unknown3, Fire fireType,
+            byte isStealable, byte isReposessable, uint inWorldEditable, uint objkIndex,
             Misc8 unknown8, Misc9 unknown9, Misc10 unknown10, Misc11 unknown11,
             uint unknown12, IList<MTDoor> mtDoorList, byte unknown13, uint diagonalIndex, uint hash,
             uint roomFlags, uint functionCategoryFlags, ulong subFunctionFlags, ulong subRoomFlags, uint buildCategoryFlags, uint sinkDDSIndex,
@@ -115,8 +115,8 @@ namespace CatalogResource
             : this(APIversion,
             version, materialList,
             "",
-            common, unknown2, unknown3, unknown4,
-            unknown5, unknown6, unknown7, objkIndex,
+            common, unknown2, unknown3, fireType,
+            isStealable, isReposessable, inWorldEditable, objkIndex,
             unknown8, unknown9, unknown10, unknown11,
             unknown12, mtDoorList, unknown13, diagonalIndex, hash,
             roomFlags, functionCategoryFlags, subFunctionFlags, subRoomFlags, buildCategoryFlags, sinkDDSIndex,
@@ -131,8 +131,8 @@ namespace CatalogResource
         public ObjectCatalogResource(int APIversion,
             uint version, IList<Material> materialList,
             string unknown1,
-            Common common, uint unknown2, byte unknown3, uint unknown4,
-            byte unknown5, byte unknown6, byte[] unknown7, uint objkIndex,
+            Common common, uint unknown2, byte unknown3, Fire fireType,
+            byte isStealable, byte isReposessable, uint inWorldEditable, uint objkIndex,
             Misc8 unknown8, Misc9 unknown9, Misc10 unknown10, Misc11 unknown11,
             uint unknown12, IList<MTDoor> mtDoorList, byte unknown13, uint diagonalIndex, uint hash,
             uint roomFlags, uint functionCategoryFlags, ulong subFunctionFlags, ulong subRoomFlags, uint buildCategoryFlags, uint sinkDDSIndex,
@@ -142,8 +142,8 @@ namespace CatalogResource
             : this(APIversion,
             version, materialList,
             unknown1,
-            common, unknown2, unknown3, unknown4,
-            unknown5, unknown6, unknown7, objkIndex,
+            common, unknown2, unknown3, fireType,
+            isStealable, isReposessable, inWorldEditable, objkIndex,
             unknown8, unknown9, unknown10, unknown11,
             unknown12, mtDoorList, unknown13, diagonalIndex, hash,
             roomFlags, functionCategoryFlags, subFunctionFlags, subRoomFlags, buildCategoryFlags, sinkDDSIndex,
@@ -158,8 +158,8 @@ namespace CatalogResource
         public ObjectCatalogResource(int APIversion,
             uint version, IList<Material> materialList,
             string unknown1,
-            Common common, uint unknown2, byte unknown3, uint unknown4,
-            byte unknown5, byte unknown6, byte[] unknown7, uint objkIndex,
+            Common common, uint unknown2, byte unknown3, Fire fireType,
+            byte isStealable, byte isReposessable, uint inWorldEditable, uint objkIndex,
             Misc8 unknown8, Misc9 unknown9, Misc10 unknown10, Misc11 unknown11,
             uint unknown12, IList<MTDoor> mtDoorList, byte unknown13, uint diagonalIndex, uint hash,
             uint roomFlags, uint functionCategoryFlags, ulong subFunctionFlags, ulong subRoomFlags, uint buildCategoryFlags, uint sinkDDSIndex,
@@ -174,12 +174,10 @@ namespace CatalogResource
             this.common = new Common(requestedApiVersion, OnResourceChanged, common);
             this.unknown2 = unknown2;
             this.unknown3 = unknown3;
-            this.unknown4 = unknown4;
-            this.unknown5 = unknown5;
-            this.unknown6 = unknown6;
-            if (checking) if (unknown7.Length != this.unknown7.Length)
-                throw new ArgumentLengthException("unknown7", this.unknown7.Length);
-            this.unknown7 = (byte[])unknown7.Clone();
+            this.fireType = fireType;
+            this.isStealable = (byte)(isStealable == 0 ? 0 : 1);
+            this.isReposessable = (byte)(isReposessable == 0 ? 0 : 1);
+            this.inWorldEditable = inWorldEditable;
             this.objkIndex = objkIndex;
             this.unknown8 = unknown8;
             this.unknown9 = unknown9;
@@ -224,12 +222,10 @@ namespace CatalogResource
             this.common = new Common(requestedApiVersion, OnResourceChanged, s);
             this.unknown2 = r.ReadUInt32();
             this.unknown3 = r.ReadByte();
-            this.unknown4 = r.ReadUInt32();
-            this.unknown5 = r.ReadByte();
-            this.unknown6 = r.ReadByte();
-            this.unknown7 = r.ReadBytes(4);
-            if (checking) if (this.unknown7.Length != 4)
-                    throw new InvalidDataException(String.Format("unknown7: read {0} bytes; expected 4 at 0x{1:X8}.", unknown7.Length, s.Position));
+            this.fireType = (Fire)r.ReadUInt32();
+            this.isStealable = r.ReadByte();
+            this.isReposessable = r.ReadByte();
+            this.inWorldEditable = r.ReadUInt32();
             this.objkIndex = r.ReadUInt32();
             this.unknown8 = (Misc8)r.ReadUInt32();
             this.unknown9 = (Misc9)r.ReadUInt32();
@@ -281,10 +277,10 @@ namespace CatalogResource
             common.UnParse(s);
             w.Write(unknown2);
             w.Write(unknown3);
-            w.Write(unknown4);
-            w.Write(unknown5);
-            w.Write(unknown6);
-            w.Write(unknown7);
+            w.Write((uint)fireType);
+            w.Write(isStealable);
+            w.Write(isReposessable);
+            w.Write(inWorldEditable);
             w.Write(objkIndex);
             w.Write((uint)unknown8);
             w.Write((uint)unknown9);
@@ -352,6 +348,13 @@ namespace CatalogResource
         #endregion
 
         #region Sub-classes
+        public enum Fire : uint
+        {
+            DoesNotBurn = 0,
+            Chars,
+            AshPile
+        }
+
         [Flags]
         public enum Misc8 : uint
         {
@@ -648,7 +651,7 @@ namespace CatalogResource
             Rug = 0x00001000,
             Rock = 0x00002000,
             Unused15 = 0x00004000,
-            Unused16 = 0x00008000,
+            Landmark = 0x00008000,
 
             //
             //
@@ -954,21 +957,13 @@ namespace CatalogResource
         [ElementPriority(13)]
         public byte Unknown3 { get { return unknown3; } set { if (unknown3 != value) { unknown3 = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(14)]
-        public uint Unknown4 { get { return unknown4; } set { if (unknown4 != value) { unknown4 = value; OnResourceChanged(this, new EventArgs()); } } }
+        public Fire FireType { get { return fireType; } set { if (fireType != value) { fireType = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(15)]
-        public byte Unknown5 { get { return unknown5; } set { if (unknown5 != value) { unknown5 = value; OnResourceChanged(this, new EventArgs()); } } }
+        public bool IsStealable { get { return isStealable != 0; } set { if (IsStealable != value) { isStealable = (byte)(value ? 1 : 0); OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(16)]
-        public byte Unknown6 { get { return unknown6; } set { if (unknown6 != value) { unknown6 = value; OnResourceChanged(this, new EventArgs()); } } }
+        public bool IsReposessable { get { return isReposessable != 0; } set { if (IsReposessable != value) { isReposessable = (byte)(value ? 1 : 0); OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(17)]
-        public byte[] Unknown7
-        {
-            get { return (byte[])unknown7.Clone(); } // because "byte" doesn't have a parent or a Changed event
-            set
-            {
-                if (value.Length != this.unknown7.Length) throw new ArgumentLengthException("Unknown7", this.unknown7.Length);
-                if (!ArrayCompare(unknown7, value)) { unknown7 = value == null ? null : (byte[])value.Clone(); OnResourceChanged(this, new EventArgs()); }
-            }
-        }
+        public bool InWorldEditable { get { return inWorldEditable != 0; } set { if (InWorldEditable != value) { inWorldEditable = (uint)(value ? 1 : 0); OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(18), TGIBlockListContentField("TGIBlocks")]
         public uint OBJKIndex { get { return objkIndex; } set { if (objkIndex != value) { objkIndex = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(19)]
