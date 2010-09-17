@@ -811,7 +811,9 @@ namespace CatalogResource
             #endregion
 
             #region Content Fields
+            [ElementPriority(1)]
             public TopicCategory Topic { get { return topic; } set { if (topic != value) { topic = value; OnElementChanged(); } } }
+            [ElementPriority(2)]
             public int Rating { get { return rating; } set { if (rating != value) { rating = value; OnElementChanged(); } } }
 
             public String Value
@@ -891,6 +893,7 @@ namespace CatalogResource
             #endregion
 
             #region Content Fields
+            [ElementPriority(1)]
             public float[] Unknown1
             {
                 get { return (float[])unknown1.Clone(); }
@@ -900,7 +903,9 @@ namespace CatalogResource
                     if (!ArrayCompare(unknown1, value)) { unknown1 = (float[])value.Clone(); OnElementChanged(); }
                 }
             }
+            [ElementPriority(2)]
             public uint Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; OnElementChanged(); } } }
+            [ElementPriority(3)]
             public uint WallMaskIndex { get { return wallMaskIndex; } set { if (wallMaskIndex != value) { wallMaskIndex = value; OnElementChanged(); } } }
 
             public String Value
