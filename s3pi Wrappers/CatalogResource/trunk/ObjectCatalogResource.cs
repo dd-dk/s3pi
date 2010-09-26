@@ -821,12 +821,17 @@ namespace CatalogResource
                 get
                 {
                     string s = "";
-                    s += topic;
-                    if (rating != 0)
+                    if (topic == TopicCategory.EndOfTopics)
+                        s = "--- " + topic + " ---";
+                    else
                     {
-                        if (rating == 11) s = "+ " + s;
-                        else
-                            s += ": " + rating;
+                        s += topic;
+                        if (rating != 0)
+                        {
+                            if (rating == 11) s = "+ " + s;
+                            else
+                                s += ": " + rating;
+                        }
                     }
                     return s;
                 }
