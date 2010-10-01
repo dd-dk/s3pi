@@ -38,7 +38,7 @@ namespace CASPartResource
         #region Attributes
         uint version = 18;
         XMLEntryList xmlEntries;
-        string unknown1;
+        string unknown1 = "";
         float sortPriority;
         byte unknown2;
         ClothingType clothing;
@@ -59,7 +59,7 @@ namespace CASPartResource
         ByteEntryList diffuse2Indexes;
         ByteEntryList specular2Indexes;
         ByteEntryList bondIndexes;
-        string unknown4;
+        string unknown4 = "";
         CountedTGIBlockList tgiBlocks;
 
         #endregion
