@@ -65,8 +65,23 @@ namespace s3pi.WrapperDealer
             return WrapperForType(AlwaysDefault ? "*" : rie["ResourceType"], APIversion, (pkg as APackage).GetResource(rie));
         }
 
+        /// <summary>
+        /// Retrieve the resource wrappers known to WrapperDealer.
+        /// </summary>
+        public static ICollection<KeyValuePair<string, Type>> TypeMap { get { return new List<KeyValuePair<string, Type>>(typeMap); } }
+
+        /// <summary>
+        /// Access the collection of wrappers on the &quot;disabled&quot; list.
+        /// </summary>
+        /// <remarks>Updates to entries in the collection will be used next time a wrapper is requested.
+        /// Existing instances of a disabled wrapper will not be invalidated and it will remain possible to
+        /// bypass WrapperDealer and instantiate instances of the wrapper class directly.</remarks>
+        public static ICollection<KeyValuePair<string, Type>> Disabled { get { return disabled; } }
+
         #region Implementation
         static List<KeyValuePair<string, Type>> typeMap = null;
+
+        static List<KeyValuePair<string, Type>> disabled = new List<KeyValuePair<string, Type>>();
 
         static WrapperDealer()
         {
@@ -95,15 +110,16 @@ namespace s3pi.WrapperDealer
                 }
                 catch { }
             }
+            typeMap.Sort((x, y) => x.Key.CompareTo(y.Key));
         }
 
         static IResource WrapperForType(string type, int APIversion, Stream s)
         {
             Type t = null;
-            foreach (KeyValuePair<string, Type> kvp in typeMap) if (kvp.Key == type) { t = kvp.Value; break; }
+            t = typeMap.Find(x => !disabled.Contains(x) && x.Key == type).Value;
 
             if (t == null)
-                foreach (KeyValuePair<string, Type> kvp in typeMap) if (kvp.Key == "*") { t = kvp.Value; break; }
+                t = typeMap.Find(x => !disabled.Contains(x) && x.Key == "*").Value;
 
             if (Settings.Settings.Checking) if (t == null)
                     throw new InvalidOperationException("Could not find a resource handler");
