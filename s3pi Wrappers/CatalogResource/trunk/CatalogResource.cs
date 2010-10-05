@@ -913,7 +913,7 @@ namespace CatalogResource
                 switch (controlCode)
                 {
                     case 0x40: inc = false; return new TCPadding(0, handler, s);
-                    case 0x2F: inc = true; return new TypeCode2F(0, handler, s);
+                    //case 0x2F: inc = true; return new TypeCode2F(0, handler, s);
                     default: inc = true; return TypeCode.CreateTypeCode(0, elementHandler, s, new byte[] { controlCode, r.ReadByte() });
                 }
             }
