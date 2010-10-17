@@ -297,13 +297,13 @@ namespace CatalogResource
             {
                 switch (prefix[1])
                 {
-                    case 0x01: return new TCString(APIversion, handler, s, prefix);
-                    case 0x02: return new TCRGBA(APIversion, handler, s, prefix);
-                    case 0x03: return new TCTGIIndex(APIversion, handler, s, prefix);
-                    case 0x04: return new TCSingle(APIversion, handler, s, prefix);
-                    case 0x05: return new TCXY(APIversion, handler, s, prefix);
-                    case 0x06: return new TCXYZ(APIversion, handler, s, prefix);
-                    case 0x07: return new TCBoolean(APIversion, handler, s, prefix);
+                    case 0x01: return new TC01_String(APIversion, handler, s, prefix);
+                    case 0x02: return new TC02_ARGB(APIversion, handler, s, prefix);
+                    case 0x03: return new TC03_TGIIndex(APIversion, handler, s, prefix);
+                    case 0x04: return new TC04_Single(APIversion, handler, s, prefix);
+                    case 0x05: return new TC05_XY(APIversion, handler, s, prefix);
+                    case 0x06: return new TC06_XYZ(APIversion, handler, s, prefix);
+                    case 0x07: return new TC07_Boolean(APIversion, handler, s, prefix);
                 }
                 throw new InvalidDataException(String.Format("Unknown TypeCode 0x{0:X2} at 0x{1:X8}", prefix[1], s.Position));
             }
@@ -377,7 +377,7 @@ namespace CatalogResource
         }
 
         [ConstructorParameters(new object[] { new byte[] { 0, 0x01, }, (byte)0, })]
-        public class TCString : TypeCode
+        public class TC01_String : TypeCode
         {
             static List<string> stringTable = new List<string>(StringTableSingleton.Table);
             #region Attributes
@@ -388,9 +388,9 @@ namespace CatalogResource
             #endregion
 
             #region Constructors
-            internal TCString(int APIversion, EventHandler handler, Stream s, byte[] prefix) : base(APIversion, handler, s, prefix) { }
+            internal TC01_String(int APIversion, EventHandler handler, Stream s, byte[] prefix) : base(APIversion, handler, s, prefix) { }
 
-            public TCString(int APIversion, EventHandler handler, TCString basis)
+            public TC01_String(int APIversion, EventHandler handler, TC01_String basis)
                 : base(APIversion, handler, basis.prefix)
             {
                 this.hasString = basis.hasString;
@@ -399,9 +399,9 @@ namespace CatalogResource
                 this.stringValue = basis.stringValue == null ? null : (string)basis.stringValue.Clone();
             }
 
-            public TCString(int APIversion, EventHandler handler, byte[] prefix, string stringValue)
+            public TC01_String(int APIversion, EventHandler handler, byte[] prefix, string stringValue)
                 : base(APIversion, handler, prefix) { setStringValue(stringValue); }
-            public TCString(int APIversion, EventHandler handler, byte[] prefix, byte byteValue)
+            public TC01_String(int APIversion, EventHandler handler, byte[] prefix, byte byteValue)
                 : base(APIversion, handler, prefix) { setByteValue(byteValue); }
             #endregion
 
@@ -461,14 +461,14 @@ namespace CatalogResource
 
             public override int CompareTo(TypeCode other)
             {
-                TCString tc = other as TCString;
+                TC01_String tc = other as TC01_String;
                 if (tc == null) return -1;
                 return Data.CompareTo(tc.Data);
             }
 
             public override int GetHashCode(TypeCode obj) { return Data.GetHashCode(); }
 
-            public override AHandlerElement Clone(EventHandler handler) { return new TCString(requestedApiVersion, handler, this); }
+            public override AHandlerElement Clone(EventHandler handler) { return new TC01_String(requestedApiVersion, handler, this); }
 
             public string Data
             {
@@ -478,7 +478,7 @@ namespace CatalogResource
         }
 
         [ConstructorParameters(new object[] { new byte[] { 0, 0x02, }, (byte)0, (byte)0, (byte)0, (byte)0, })]
-        public class TCRGBA : TypeCode
+        public class TC02_ARGB : TypeCode
         {
             #region Attributes
             byte red;
@@ -488,11 +488,11 @@ namespace CatalogResource
             #endregion
 
             #region Constructors
-            internal TCRGBA(int APIversion, EventHandler handler, Stream s, byte[] prefix) : base(APIversion, handler, s, prefix) { }
+            internal TC02_ARGB(int APIversion, EventHandler handler, Stream s, byte[] prefix) : base(APIversion, handler, s, prefix) { }
 
-            public TCRGBA(int APIversion, EventHandler handler, TCRGBA basis)
+            public TC02_ARGB(int APIversion, EventHandler handler, TC02_ARGB basis)
                 : this(APIversion, handler, basis.prefix, basis.red, basis.green, basis.blue, basis.alpha) { }
-            public TCRGBA(int APIversion, EventHandler handler, byte[] prefix, byte r, byte g, byte b, byte a)
+            public TC02_ARGB(int APIversion, EventHandler handler, byte[] prefix, byte r, byte g, byte b, byte a)
                 : base(APIversion, handler, prefix) { red = r; green = g; blue = b; alpha = a; }
             #endregion
 
@@ -519,19 +519,19 @@ namespace CatalogResource
 
             public override int CompareTo(TypeCode other)
             {
-                TCRGBA tc = other as TCRGBA;
+                TC02_ARGB tc = other as TC02_ARGB;
                 if (tc == null) return -1;
                 return GetHashCode(this).CompareTo(GetHashCode(tc));
             }
 
             public override int GetHashCode(TypeCode obj)
             {
-                TCRGBA tc = obj as TCRGBA;
+                TC02_ARGB tc = obj as TC02_ARGB;
                 if (tc == null) base.GetHashCode(obj);
                 return (((tc.red << 8) + tc.green << 8) + tc.blue << 8) + tc.alpha;
             }
 
-            public override AHandlerElement Clone(EventHandler handler) { return new TCRGBA(requestedApiVersion, handler, this); }
+            public override AHandlerElement Clone(EventHandler handler) { return new TC02_ARGB(requestedApiVersion, handler, this); }
 
             [ElementPriority(1)]
             public byte Red { get { return red; } set { if (red != value) { red = value; OnElementChanged(); } } }
@@ -544,18 +544,18 @@ namespace CatalogResource
         }
 
         [ConstructorParameters(new object[] { new byte[] { 0, 0x03, }, (byte)0, })]
-        public class TCTGIIndex : TypeCode
+        public class TC03_TGIIndex : TypeCode
         {
             #region Attributes
             byte tgiIndex;
             #endregion
 
             #region Constructors
-            internal TCTGIIndex(int APIversion, EventHandler handler, Stream s, byte[] prefix) : base(APIversion, handler, s, prefix) { }
+            internal TC03_TGIIndex(int APIversion, EventHandler handler, Stream s, byte[] prefix) : base(APIversion, handler, s, prefix) { }
 
-            public TCTGIIndex(int APIversion, EventHandler handler, TCTGIIndex basis)
+            public TC03_TGIIndex(int APIversion, EventHandler handler, TC03_TGIIndex basis)
                 : this(APIversion, handler, basis.prefix, basis.tgiIndex) { }
-            public TCTGIIndex(int APIversion, EventHandler handler, byte[] prefix, byte tgiIndex)
+            public TC03_TGIIndex(int APIversion, EventHandler handler, byte[] prefix, byte tgiIndex)
                 : base(APIversion, handler, prefix) { this.tgiIndex = tgiIndex; }
             #endregion
 
@@ -572,36 +572,36 @@ namespace CatalogResource
 
             public override int CompareTo(TypeCode other)
             {
-                TCTGIIndex tc = other as TCTGIIndex;
+                TC03_TGIIndex tc = other as TC03_TGIIndex;
                 if (tc == null) return -1;
                 return tgiIndex.CompareTo(tc.tgiIndex);
             }
 
             public override int GetHashCode(TypeCode obj)
             {
-                TCTGIIndex tc = obj as TCTGIIndex;
+                TC03_TGIIndex tc = obj as TC03_TGIIndex;
                 if (tc == null) base.GetHashCode(obj);
                 return tgiIndex.GetHashCode();
             }
 
-            public override AHandlerElement Clone(EventHandler handler) { return new TCTGIIndex(requestedApiVersion, handler, this); }
+            public override AHandlerElement Clone(EventHandler handler) { return new TC03_TGIIndex(requestedApiVersion, handler, this); }
 
             public byte TGIIndex { get { return tgiIndex; } set { if (tgiIndex != value) { tgiIndex = value; OnElementChanged(); } } }
         }
 
         [ConstructorParameters(new object[] { new byte[] { 0, 0x04, }, (float)0, })]
-        public class TCSingle : TypeCode
+        public class TC04_Single : TypeCode
         {
             #region Attributes
             float unknown1;
             #endregion
 
             #region Constructors
-            internal TCSingle(int APIversion, EventHandler handler, Stream s, byte[] prefix) : base(APIversion, handler, s, prefix) { }
+            internal TC04_Single(int APIversion, EventHandler handler, Stream s, byte[] prefix) : base(APIversion, handler, s, prefix) { }
 
-            public TCSingle(int APIversion, EventHandler handler, TCSingle basis)
+            public TC04_Single(int APIversion, EventHandler handler, TC04_Single basis)
                 : this(APIversion, handler, basis.prefix, basis.unknown1) { }
-            public TCSingle(int APIversion, EventHandler handler, byte[] prefix, float unknown1)
+            public TC04_Single(int APIversion, EventHandler handler, byte[] prefix, float unknown1)
                 : base(APIversion, handler, prefix) { this.unknown1 = unknown1; }
             #endregion
 
@@ -618,25 +618,25 @@ namespace CatalogResource
 
             public override int CompareTo(TypeCode other)
             {
-                TCSingle tc = other as TCSingle;
+                TC04_Single tc = other as TC04_Single;
                 if (tc == null) return -1;
                 return unknown1.CompareTo(tc.unknown1);
             }
 
             public override int GetHashCode(TypeCode obj)
             {
-                TCSingle tc = obj as TCSingle;
+                TC04_Single tc = obj as TC04_Single;
                 if (tc == null) base.GetHashCode(obj);
                 return unknown1.GetHashCode();
             }
 
-            public override AHandlerElement Clone(EventHandler handler) { return new TCSingle(requestedApiVersion, handler, this); }
+            public override AHandlerElement Clone(EventHandler handler) { return new TC04_Single(requestedApiVersion, handler, this); }
 
             public float Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; OnElementChanged(); } } }
         }
 
         [ConstructorParameters(new object[] { new byte[] { 0, 0x05, }, (float)0, (float)0, })]
-        public class TCXY : TypeCode
+        public class TC05_XY : TypeCode
         {
             #region Attributes
             float unknown1;
@@ -644,11 +644,11 @@ namespace CatalogResource
             #endregion
 
             #region Constructors
-            internal TCXY(int APIversion, EventHandler handler, Stream s, byte[] prefix) : base(APIversion, handler, s, prefix) { }
+            internal TC05_XY(int APIversion, EventHandler handler, Stream s, byte[] prefix) : base(APIversion, handler, s, prefix) { }
 
-            public TCXY(int APIversion, EventHandler handler, TCXY basis)
+            public TC05_XY(int APIversion, EventHandler handler, TC05_XY basis)
                 : this(APIversion, handler, basis.prefix, basis.unknown1, basis.unknown2) { }
-            public TCXY(int APIversion, EventHandler handler, byte[] prefix, float unknown1, float unknown2)
+            public TC05_XY(int APIversion, EventHandler handler, byte[] prefix, float unknown1, float unknown2)
                 : base(APIversion, handler, prefix) { this.unknown1 = unknown1; this.unknown2 = unknown2; }
             #endregion
 
@@ -671,26 +671,26 @@ namespace CatalogResource
 
             public override int CompareTo(TypeCode other)
             {
-                TCXY tc = other as TCXY;
+                TC05_XY tc = other as TC05_XY;
                 if (tc == null) return -1;
                 return GetHashCode(this).CompareTo(GetHashCode(tc));
             }
 
             public override int GetHashCode(TypeCode obj)
             {
-                TCXY tc = obj as TCXY;
+                TC05_XY tc = obj as TC05_XY;
                 if (tc == null) base.GetHashCode(obj);
                 return tc.unknown1.GetHashCode() ^ tc.unknown2.GetHashCode();
             }
 
-            public override AHandlerElement Clone(EventHandler handler) { return new TCXY(requestedApiVersion, handler, this); }
+            public override AHandlerElement Clone(EventHandler handler) { return new TC05_XY(requestedApiVersion, handler, this); }
 
             public float Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; OnElementChanged(); } } }
             public float Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; OnElementChanged(); } } }
         }
 
         [ConstructorParameters(new object[] { new byte[] { 0, 0x06, }, (float)0, (float)0, (float)0, })]
-        public class TCXYZ : TypeCode
+        public class TC06_XYZ : TypeCode
         {
             #region Attributes
             float unknown1;
@@ -699,11 +699,11 @@ namespace CatalogResource
             #endregion
 
             #region Constructors
-            internal TCXYZ(int APIversion, EventHandler handler, Stream s, byte[] prefix) : base(APIversion, handler, s, prefix) { }
+            internal TC06_XYZ(int APIversion, EventHandler handler, Stream s, byte[] prefix) : base(APIversion, handler, s, prefix) { }
 
-            public TCXYZ(int APIversion, EventHandler handler, TCXYZ basis)
+            public TC06_XYZ(int APIversion, EventHandler handler, TC06_XYZ basis)
                 : this(APIversion, handler, basis.prefix, basis.unknown1, basis.unknown2, basis.unknown3) { }
-            public TCXYZ(int APIversion, EventHandler handler, byte[] prefix, float unknown1, float unknown2, float unknown3)
+            public TC06_XYZ(int APIversion, EventHandler handler, byte[] prefix, float unknown1, float unknown2, float unknown3)
                 : base(APIversion, handler, prefix) { this.unknown1 = unknown1; this.unknown2 = unknown2; this.unknown3 = unknown3; }
             #endregion
 
@@ -728,19 +728,19 @@ namespace CatalogResource
 
             public override int CompareTo(TypeCode other)
             {
-                TCXYZ tc = other as TCXYZ;
+                TC06_XYZ tc = other as TC06_XYZ;
                 if (tc == null) return -1;
                 return GetHashCode(this).CompareTo(GetHashCode(tc));
             }
 
             public override int GetHashCode(TypeCode obj)
             {
-                TCXYZ tc = obj as TCXYZ;
+                TC06_XYZ tc = obj as TC06_XYZ;
                 if (tc == null) base.GetHashCode(obj);
                 return tc.unknown1.GetHashCode() ^ tc.unknown2.GetHashCode() ^ tc.unknown3.GetHashCode();
             }
 
-            public override AHandlerElement Clone(EventHandler handler) { return new TCXYZ(requestedApiVersion, handler, this); }
+            public override AHandlerElement Clone(EventHandler handler) { return new TC06_XYZ(requestedApiVersion, handler, this); }
 
             public float Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; OnElementChanged(); } } }
             public float Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; OnElementChanged(); } } }
@@ -748,18 +748,18 @@ namespace CatalogResource
         }
 
         [ConstructorParameters(new object[] { new byte[] { 0, 0x07, }, (byte)0, })]
-        public class TCBoolean : TypeCode
+        public class TC07_Boolean : TypeCode
         {
             #region Attributes
             byte unknown1;
             #endregion
 
             #region Constructors
-            internal TCBoolean(int APIversion, EventHandler handler, Stream s, byte[] prefix) : base(APIversion, handler, s, prefix) { }
+            internal TC07_Boolean(int APIversion, EventHandler handler, Stream s, byte[] prefix) : base(APIversion, handler, s, prefix) { }
 
-            public TCBoolean(int APIversion, EventHandler handler, TCBoolean basis)
+            public TC07_Boolean(int APIversion, EventHandler handler, TC07_Boolean basis)
                 : this(APIversion, handler, basis.prefix, basis.unknown1) { }
-            public TCBoolean(int APIversion, EventHandler handler, byte[] prefix, byte unknown1)
+            public TC07_Boolean(int APIversion, EventHandler handler, byte[] prefix, byte unknown1)
                 : base(APIversion, handler, prefix) { this.unknown1 = unknown1; }
             #endregion
 
@@ -775,24 +775,24 @@ namespace CatalogResource
 
             public override int CompareTo(TypeCode other)
             {
-                TCBoolean tc = other as TCBoolean;
+                TC07_Boolean tc = other as TC07_Boolean;
                 if (tc == null) return -1;
                 return unknown1.CompareTo(tc.unknown1);
             }
 
             public override int GetHashCode(TypeCode obj)
             {
-                TCBoolean tc = obj as TCBoolean;
+                TC07_Boolean tc = obj as TC07_Boolean;
                 if (tc == null) base.GetHashCode(obj);
                 return unknown1.GetHashCode();
             }
 
-            public override AHandlerElement Clone(EventHandler handler) { return new TCBoolean(requestedApiVersion, handler, this); }
+            public override AHandlerElement Clone(EventHandler handler) { return new TC07_Boolean(requestedApiVersion, handler, this); }
 
             public byte Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; OnElementChanged(); } } }
         }
 
-        [ConstructorParameters(new object[] { (byte)0x2F, (byte)0, (uint)0, })]
+        /*[ConstructorParameters(new object[] { (byte)0x2F, (byte)0, (uint)0, })]
         public class TypeCode2F : TypeCode
         {
             #region Attributes
@@ -844,21 +844,21 @@ namespace CatalogResource
 
             public byte Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; OnElementChanged(); } } }
             public uint Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; OnElementChanged(); } } }
-        }
+        }/**/
 
         [ConstructorParameters(new object[] { (byte)0x40, (int)0, })]
-        public class TCPadding : TypeCode
+        public class TC_Padding : TypeCode
         {
             #region Attributes
             int length;
             #endregion
 
             #region Constructors
-            internal TCPadding(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler, s, null) { }
+            internal TC_Padding(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler, s, null) { }
 
-            public TCPadding(int APIversion, EventHandler handler, TCPadding basis)
+            public TC_Padding(int APIversion, EventHandler handler, TC_Padding basis)
                 : this(APIversion, handler, 0x40, basis.length) { }
-            private TCPadding(int APIversion, EventHandler handler, byte tc, int length)
+            private TC_Padding(int APIversion, EventHandler handler, byte tc, int length)
                 : base(APIversion, handler, null) { this.length = length; }
             #endregion
 
@@ -879,19 +879,19 @@ namespace CatalogResource
 
             public override int CompareTo(TypeCode other)
             {
-                TCPadding tc = other as TCPadding;
+                TC_Padding tc = other as TC_Padding;
                 if (tc == null) return -1;
                 return length.CompareTo(tc.length);
             }
 
             public override int GetHashCode(TypeCode obj)
             {
-                TCPadding tc = obj as TCPadding;
+                TC_Padding tc = obj as TC_Padding;
                 if (tc == null) base.GetHashCode(obj);
                 return length.GetHashCode();
             }
 
-            public override AHandlerElement Clone(EventHandler handler) { return new TCPadding(requestedApiVersion, handler, this); }
+            public override AHandlerElement Clone(EventHandler handler) { return new TC_Padding(requestedApiVersion, handler, this); }
 
             public int Length { get { return length; } set { if (length != value) { length = value; OnElementChanged(); } } }
         }
@@ -912,13 +912,13 @@ namespace CatalogResource
                 byte controlCode = r.ReadByte();
                 switch (controlCode)
                 {
-                    case 0x40: inc = false; return new TCPadding(0, handler, s);
+                    case 0x40: inc = false; return new TC_Padding(0, handler, s);
                     //case 0x2F: inc = true; return new TypeCode2F(0, handler, s);
                     default: inc = true; return TypeCode.CreateTypeCode(0, elementHandler, s, new byte[] { controlCode, r.ReadByte() });
                 }
             }
 
-            protected override void WriteCount(Stream s, uint count) { foreach (TypeCode tc in this) if (tc is TCPadding) count--; (new BinaryWriter(s)).Write(count); }
+            protected override void WriteCount(Stream s, uint count) { foreach (TypeCode tc in this) if (tc is TC_Padding) count--; (new BinaryWriter(s)).Write(count); }
             protected override void WriteElement(Stream s, TypeCode element) { element.UnParse(s); }
             #endregion
 
@@ -934,20 +934,20 @@ namespace CatalogResource
 
                 if (fields[0].GetType().Equals(typeof(byte)))
                 {
-                    if ((byte)fields[0] == 0x40) return typeof(TCPadding);
-                    else if ((byte)fields[0] == 0x2F) return typeof(TypeCode2F);
+                    if ((byte)fields[0] == 0x40) return typeof(TC_Padding);
+                    //else if ((byte)fields[0] == 0x2F) return typeof(TypeCode2F);
                 }
                 else if (fields[0].GetType().Equals(typeof(byte[])))
                 {
                     switch (((byte[])fields[0])[1])
                     {
-                        case 0x01: return typeof(TCString);
-                        case 0x02: return typeof(TCRGBA);
-                        case 0x03: return typeof(TCTGIIndex);
-                        case 0x04: return typeof(TCSingle);
-                        case 0x05: return typeof(TCXY);
-                        case 0x06: return typeof(TCXYZ);
-                        case 0x07: return typeof(TCBoolean);
+                        case 0x01: return typeof(TC01_String);
+                        case 0x02: return typeof(TC02_ARGB);
+                        case 0x03: return typeof(TC03_TGIIndex);
+                        case 0x04: return typeof(TC04_Single);
+                        case 0x05: return typeof(TC05_XY);
+                        case 0x06: return typeof(TC06_XYZ);
+                        case 0x07: return typeof(TC07_Boolean);
                     }
                     throw new InvalidDataException(String.Format("Unknown TypeCode 0x{0:X2}", ((byte[])fields[0])[1]));
                 }
@@ -961,8 +961,8 @@ namespace CatalogResource
         {
             #region Attributes
             byte xmlindex;
-            TCString unknown1 = null;
-            TCString unknown2 = null;
+            TC01_String unknown1 = null;
+            TC01_String unknown2 = null;
             TypeCodeList tcList = null;
             MaterialBlockList mbList = null;
             #endregion
@@ -971,8 +971,8 @@ namespace CatalogResource
             public MaterialBlock(int APIversion, EventHandler handler)
                 : base(APIversion, handler)
             {
-                unknown1 = new TCString(0, null, null, 0);
-                unknown2 = new TCString(0, null, null, 0);
+                unknown1 = new TC01_String(0, null, null, 0);
+                unknown2 = new TC01_String(0, null, null, 0);
                 tcList = new TypeCodeList(handler);
                 mbList = new MaterialBlockList(handler);
             }
@@ -982,14 +982,14 @@ namespace CatalogResource
             public MaterialBlock(int APIversion, EventHandler handler, MaterialBlock basis)
                 : this(APIversion, handler, basis.xmlindex, basis.unknown1, basis.unknown2, basis.tcList, basis.mbList) { }
 
-            public MaterialBlock(int APIversion, EventHandler handler, byte xmlindex, TCString unknown1, TCString unknown2,
+            public MaterialBlock(int APIversion, EventHandler handler, byte xmlindex, TC01_String unknown1, TC01_String unknown2,
                 IList<TypeCode> ltc, IList<MaterialBlock> lmb)
                 : base(APIversion, handler)
             {
                 this.handler = handler;
                 this.xmlindex = xmlindex;
-                this.unknown1 = (TCString)unknown1.Clone(handler);
-                this.unknown2 = (TCString)unknown2.Clone(handler);
+                this.unknown1 = (TC01_String)unknown1.Clone(handler);
+                this.unknown2 = (TC01_String)unknown2.Clone(handler);
                 tcList = new TypeCodeList(handler, ltc);
                 mbList = new MaterialBlockList(handler, lmb);
             }
@@ -999,8 +999,8 @@ namespace CatalogResource
             protected void Parse(Stream s)
             {
                 this.xmlindex = (new BinaryReader(s)).ReadByte();
-                this.unknown1 = new TCString(requestedApiVersion, handler, s, null);
-                this.unknown2 = new TCString(requestedApiVersion, handler, s, null);
+                this.unknown1 = new TC01_String(requestedApiVersion, handler, s, null);
+                this.unknown2 = new TC01_String(requestedApiVersion, handler, s, null);
                 this.tcList = new TypeCodeList(handler, s);
                 this.mbList = new MaterialBlockList(handler, s);
             }
@@ -1071,9 +1071,9 @@ namespace CatalogResource
             [ElementPriority(1)]
             public byte XMLIndex { get { return xmlindex; } set { if (xmlindex != value) { xmlindex = value; OnElementChanged(); } } }
             [ElementPriority(2)]
-            public TCString Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; OnElementChanged(); } } }
+            public TC01_String Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; OnElementChanged(); } } }
             [ElementPriority(3)]
-            public TCString Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; OnElementChanged(); } } }
+            public TC01_String Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; OnElementChanged(); } } }
             [ElementPriority(4)]
             public TypeCodeList TypeCodes { get { return tcList; } set { if (tcList != (value as TypeCodeList)) { tcList = new TypeCodeList(handler, value); OnElementChanged(); } } }
             [ElementPriority(5)]
@@ -1090,7 +1090,7 @@ namespace CatalogResource
                         TypedValue tv = this[f];
                         string h = String.Format("\n---------\n---------\n{0}: {1}\n---------\n", tv.Type.Name, f);
                         string t = "---------\n";
-                        if (typeof(TCString).IsAssignableFrom(tv.Type)) s += h + (tv.Value as TCString).Value + t;
+                        if (typeof(TC01_String).IsAssignableFrom(tv.Type)) s += h + (tv.Value as TC01_String).Value + t;
                         else if (typeof(TypeCodeList).IsAssignableFrom(tv.Type)) s += h + (tv.Value as TypeCodeList).Value + t;
                         else if (typeof(MaterialBlockList).IsAssignableFrom(tv.Type)) s += h + (tv.Value as MaterialBlockList).Value + t;
                         else s += string.Format("{0}: {1}\n", f, "" + tv);
