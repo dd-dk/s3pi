@@ -60,7 +60,7 @@ namespace TextResource
             set
             {
                 MemoryStream ms = new MemoryStream();
-                (new BinaryWriter(ms)).Write(value.ReadToEnd());
+                (new BinaryWriter(ms)).Write(value.ReadToEnd().ToCharArray());
                 ms.Flush();
                 ms.Position = 0;
                 stream = ms;
