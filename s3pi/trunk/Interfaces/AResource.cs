@@ -119,60 +119,34 @@ namespace s3pi.Interfaces
             protected EventHandler elementHandler;
 
             #region Constructors
-            // base class constructors...
             /// <summary>
             /// Initializes a new instance of the <see cref="DependentList{T}"/> class
-            /// that is empty
-            /// and with an unlimited size.
+            /// that is empty.
             /// </summary>
             /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
-            protected DependentList(EventHandler handler) : this(handler, -1) { }
+            /// <param name="size">Optional; -1 for unlimited size, otherwise the maximum number of elements in the list.</param>
+            protected DependentList(EventHandler handler, long size = -1) : base(handler, size) { }
             /// <summary>
             /// Initializes a new instance of the <see cref="DependentList{T}"/> class
-            /// that is empty
-            /// and with an unlimited size.
-            /// </summary>
-            /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
-            /// <param name="size">Maximum number of elements in the list.</param>
-            protected DependentList(EventHandler handler, long size) : base(handler, size) { }
-            /// <summary>
-            /// Initializes a new instance of the <see cref="DependentList{T}"/> class
-            /// filled with the content of <paramref name="ilt"/>
-            /// and with an unlimited size.
+            /// filled with the content of <paramref name="ilt"/>.
             /// </summary>
             /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
             /// <param name="ilt">The <see cref="IList{T}"/> to use as the initial content of the list.</param>
-            protected DependentList(EventHandler handler, IList<T> ilt) : this(handler, -1, ilt) { }
-            /// <summary>
-            /// Initializes a new instance of the <see cref="DependentList{T}"/> class
-            /// filled with the content of <paramref name="ilt"/>
-            /// and with maximum size of <paramref name="size"/>.
-            /// </summary>
-            /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
-            /// <param name="size">Maximum number of elements in the list.</param>
-            /// <param name="ilt">The <see cref="IList{T}"/> to use as the initial content of the list.</param>
+            /// <param name="size">Optional; -1 for unlimited size, otherwise the maximum number of elements in the list.</param>
             /// <remarks>Does not throw an exception if <paramref name="ilt"/>.Count is greater than <paramref name="size"/>.
             /// An exception will be thrown on any attempt to add further items unless the Count is reduced first.</remarks>
-            protected DependentList(EventHandler handler, long size, IList<T> ilt) : base(handler, size, ilt) { }
+            protected DependentList(EventHandler handler, IList<T> ilt, long size = -1) : base(handler, ilt, size) { }
 
             // Add stream-based constructors and support
             /// <summary>
             /// Initializes a new instance of the <see cref="DependentList{T}"/> class
-            /// filled from <see cref="System.IO.Stream"/> <paramref name="s"/>
-            /// and with an unlimited size.
+            /// filled from <see cref="System.IO.Stream"/> <paramref name="s"/>.
             /// </summary>
             /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
             /// <param name="s">The <see cref="System.IO.Stream"/> to read for the initial content of the list.</param>
-            protected DependentList(EventHandler handler, Stream s) : this(handler, -1, s) { }
-            /// <summary>
-            /// Initializes a new instance of the <see cref="DependentList{T}"/> class
-            /// filled from <see cref="System.IO.Stream"/> <paramref name="s"/>
-            /// </summary>
-            /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
-            /// <param name="size">Maximum number of elements in the list.</param>
-            /// <param name="s">The <see cref="System.IO.Stream"/> to read for the initial content of the list.</param>
+            /// <param name="size">Optional; -1 for unlimited size, otherwise the maximum number of elements in the list.</param>
             /// <exception cref="System.InvalidOperationException">Thrown when list size exceeded.</exception>
-            protected DependentList(EventHandler handler, long size, Stream s) : base(null, size) { elementHandler = handler; Parse(s); this.handler = handler; }
+            protected DependentList(EventHandler handler, Stream s, long size = -1) : base(null, size) { elementHandler = handler; Parse(s); this.handler = handler; }
             #endregion
 
             #region Data I/O
@@ -531,191 +505,92 @@ namespace s3pi.Interfaces
             /// <summary>
             /// Initializes a new instance of the <see cref="CountedTGIBlockList"/> class
             /// that is empty
-            /// with <see cref="TGIBlock.Order"/> of "TGI"
-            /// and with an unlimited size.
+            /// with <see cref="TGIBlock.Order"/> of "TGI".
             /// </summary>
             /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
-            public CountedTGIBlockList(EventHandler handler) : this(handler, -1, "TGI") { }
+            /// <param name="size">Optional; -1 for unlimited size, otherwise the maximum number of elements in the list.</param>
+            public CountedTGIBlockList(EventHandler handler, long size = -1) : this(handler, "TGI", size) { }
             /// <summary>
             /// Initializes a new instance of the <see cref="CountedTGIBlockList"/> class
             /// filled with the content of <paramref name="ilt"/>
-            /// with <see cref="TGIBlock.Order"/> of "TGI"
-            /// and with an unlimited size.
+            /// with <see cref="TGIBlock.Order"/> of "TGI".
             /// </summary>
             /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
-            /// <param name="ilt">The <c>IList&lt;TGIBlock&gt;</c> to use as the initial content of the list.</param>
-            public CountedTGIBlockList(EventHandler handler, IList<TGIBlock> ilt) : this(handler, -1, "TGI", ilt) { }
+            /// <param name="ilt">The <see cref="IList{TGIBlock}"/> to use as the initial content of the list.</param>
+            /// <param name="size">Optional; -1 for unlimited size, otherwise the maximum number of elements in the list.</param>
+            public CountedTGIBlockList(EventHandler handler, IList<TGIBlock> ilt, long size = -1) : this(handler, "TGI", ilt, size) { }
             /// <summary>
             /// Initializes a new instance of the <see cref="CountedTGIBlockList"/> class
             /// filled with <paramref name="count"/> elements from <see cref="System.IO.Stream"/> <paramref name="s"/>
-            /// with <see cref="TGIBlock.Order"/> of "TGI"
-            /// and with an unlimited size.
+            /// with <see cref="TGIBlock.Order"/> of "TGI".
             /// </summary>
             /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
             /// <param name="count">The number of list elements to read.</param>
             /// <param name="s">The <see cref="System.IO.Stream"/> to read for the initial content of the list.</param>
-            public CountedTGIBlockList(EventHandler handler, uint count, Stream s) : this(handler, -1, "TGI", count, s) { }
+            /// <param name="size">Optional; -1 for unlimited size, otherwise the maximum number of elements in the list.</param>
+            public CountedTGIBlockList(EventHandler handler, uint count, Stream s, long size = -1) : this(handler, "TGI", count, s, size) { }
 
             /// <summary>
             /// Initializes a new instance of the <see cref="CountedTGIBlockList"/> class
             /// that is empty
-            /// with the specified <see cref="TGIBlock.Order"/>
-            /// and with an unlimited size.
+            /// with the specified <see cref="TGIBlock.Order"/>.
             /// </summary>
             /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
             /// <param name="order">The <see cref="TGIBlock.Order"/> of the <see cref="TGIBlock"/> values.</param>
-            public CountedTGIBlockList(EventHandler handler, TGIBlock.Order order) : this(handler, -1, order) { }
+            /// <param name="size">Optional; -1 for unlimited size, otherwise the maximum number of elements in the list.</param>
+            public CountedTGIBlockList(EventHandler handler, TGIBlock.Order order, long size = -1) : this(handler, "" + order, size) { }
             /// <summary>
             /// Initializes a new instance of the <see cref="CountedTGIBlockList"/> class
             /// filled with the content of <paramref name="ilt"/>
-            /// with the specified <see cref="TGIBlock.Order"/>
-            /// and with an unlimited size.
+            /// with the specified <see cref="TGIBlock.Order"/>.
             /// </summary>
             /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
             /// <param name="order">The <see cref="TGIBlock.Order"/> of the <see cref="TGIBlock"/> values.</param>
-            /// <param name="ilt">The <c>IList&lt;TGIBlock&gt;</c> to use as the initial content of the list.</param>
-            public CountedTGIBlockList(EventHandler handler, TGIBlock.Order order, IList<TGIBlock> ilt) : this(handler, -1, order, ilt) { }
+            /// <param name="ilt">The <see cref="IList{TGIBlock}"/> to use as the initial content of the list.</param>
+            /// <param name="size">Optional; -1 for unlimited size, otherwise the maximum number of elements in the list.</param>
+            public CountedTGIBlockList(EventHandler handler, TGIBlock.Order order, IList<TGIBlock> ilt, long size = -1) : this(handler, "" + order, ilt, size) { }
             /// <summary>
             /// Initializes a new instance of the <see cref="CountedTGIBlockList"/> class
             /// filled with <paramref name="count"/> elements from <see cref="System.IO.Stream"/> <paramref name="s"/>
-            /// with the specified <see cref="TGIBlock.Order"/>
-            /// and with an unlimited size.
+            /// with the specified <see cref="TGIBlock.Order"/>.
             /// </summary>
             /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
             /// <param name="order">The <see cref="TGIBlock.Order"/> of the <see cref="TGIBlock"/> values.</param>
             /// <param name="count">The number of list elements to read.</param>
             /// <param name="s">The <see cref="System.IO.Stream"/> to read for the initial content of the list.</param>
-            public CountedTGIBlockList(EventHandler handler, TGIBlock.Order order, uint count, Stream s) : this(handler, -1, order, count, s) { }
+            /// <param name="size">Optional; -1 for unlimited size, otherwise the maximum number of elements in the list.</param>
+            public CountedTGIBlockList(EventHandler handler, TGIBlock.Order order, uint count, Stream s, long size = -1) : this(handler, "" + order, count, s, size) { }
 
             /// <summary>
             /// Initializes a new instance of the <see cref="CountedTGIBlockList"/> class
             /// that is empty
-            /// with the specified <see cref="TGIBlock.Order"/>
-            /// and with an unlimited size.
+            /// with the specified <see cref="TGIBlock.Order"/>.
             /// </summary>
             /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
             /// <param name="order">A string representing the <see cref="TGIBlock.Order"/> of the <see cref="TGIBlock"/> values.</param>
-            public CountedTGIBlockList(EventHandler handler, string order) : this(handler, -1, order) { }
+            /// <param name="size">Optional; -1 for unlimited size, otherwise the maximum number of elements in the list.</param>
+            public CountedTGIBlockList(EventHandler handler, string order, long size = -1) : base(handler, size) { this.order = order; }
             /// <summary>
             /// Initializes a new instance of the <see cref="CountedTGIBlockList"/> class
             /// filled with the content of <paramref name="ilt"/>
-            /// with the specified <see cref="TGIBlock.Order"/>
-            /// and with an unlimited size.
+            /// with the specified <see cref="TGIBlock.Order"/>.
             /// </summary>
             /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
             /// <param name="order">A string representing the <see cref="TGIBlock.Order"/> of the <see cref="TGIBlock"/> values.</param>
-            /// <param name="ilt">The <c>IList&lt;TGIBlock&gt;</c> to use as the initial content of the list.</param>
-            public CountedTGIBlockList(EventHandler handler, string order, IList<TGIBlock> ilt) : this(handler, -1, order, ilt) { }
+            /// <param name="ilt">The <see cref="IList{TGIBlock}"/> to use as the initial content of the list.</param>
+            /// <param name="size">Optional; -1 for unlimited size, otherwise the maximum number of elements in the list.</param>
+            public CountedTGIBlockList(EventHandler handler, string order, IList<TGIBlock> ilt, long size = -1) : base(handler, ilt, size) { this.order = order; }
             /// <summary>
             /// Initializes a new instance of the <see cref="CountedTGIBlockList"/> class
             /// filled with <paramref name="count"/> elements from <see cref="System.IO.Stream"/> <paramref name="s"/>
-            /// with the specified <see cref="TGIBlock.Order"/>
-            /// and with an unlimited size.
+            /// with the specified <see cref="TGIBlock.Order"/>.
             /// </summary>
             /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
             /// <param name="order">A string representing the <see cref="TGIBlock.Order"/> of the <see cref="TGIBlock"/> values.</param>
             /// <param name="count">The number of list elements to read.</param>
             /// <param name="s">The <see cref="System.IO.Stream"/> to read for the initial content of the list.</param>
-            public CountedTGIBlockList(EventHandler handler, string order, uint count, Stream s) : this(handler, -1, order, count, s) { }
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="CountedTGIBlockList"/> class
-            /// that is empty
-            /// with <see cref="TGIBlock.Order"/> of "TGI"
-            /// and with a specified maximum number of entries.
-            /// </summary>
-            /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
-            /// <param name="size">Maximum number of elements in the list.</param>
-            public CountedTGIBlockList(EventHandler handler, long size) : this(handler, size, "TGI") { }
-            /// <summary>
-            /// Initializes a new instance of the <see cref="CountedTGIBlockList"/> class
-            /// filled with the content of <paramref name="ilt"/>
-            /// with <see cref="TGIBlock.Order"/> of "TGI"
-            /// and with a specified maximum number of entries.
-            /// </summary>
-            /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
-            /// <param name="size">Maximum number of elements in the list.</param>
-            /// <param name="ilt">The <c>IList&lt;TGIBlock&gt;</c> to use as the initial content of the list.</param>
-            public CountedTGIBlockList(EventHandler handler, long size, IList<TGIBlock> ilt) : this(handler, size, "TGI", ilt) { }
-            /// <summary>
-            /// Initializes a new instance of the <see cref="CountedTGIBlockList"/> class
-            /// filled with <paramref name="count"/> elements from <see cref="System.IO.Stream"/> <paramref name="s"/>
-            /// with <see cref="TGIBlock.Order"/> of "TGI"
-            /// and with a specified maximum number of entries.
-            /// </summary>
-            /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
-            /// <param name="size">Maximum number of elements in the list.</param>
-            /// <param name="count">The number of list elements to read.</param>
-            /// <param name="s">The <see cref="System.IO.Stream"/> to read for the initial content of the list.</param>
-            public CountedTGIBlockList(EventHandler handler, long size, uint count, Stream s) : this(handler, size, "TGI", count, s) { }
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="CountedTGIBlockList"/> class
-            /// that is empty
-            /// with the specified <see cref="TGIBlock.Order"/>
-            /// and with a specified maximum number of entries.
-            /// </summary>
-            /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
-            /// <param name="size">Maximum number of elements in the list.</param>
-            /// <param name="order">The <see cref="TGIBlock.Order"/> of the <see cref="TGIBlock"/> values.</param>
-            public CountedTGIBlockList(EventHandler handler, long size, TGIBlock.Order order) : this(handler, size, "" + order) { }
-            /// <summary>
-            /// Initializes a new instance of the <see cref="CountedTGIBlockList"/> class
-            /// filled with the content of <paramref name="ilt"/>
-            /// with the specified <see cref="TGIBlock.Order"/>
-            /// and with a specified maximum number of entries.
-            /// </summary>
-            /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
-            /// <param name="size">Maximum number of elements in the list.</param>
-            /// <param name="order">The <see cref="TGIBlock.Order"/> of the <see cref="TGIBlock"/> values.</param>
-            /// <param name="ilt">The <c>IList&lt;TGIBlock&gt;</c> to use as the initial content of the list.</param>
-            public CountedTGIBlockList(EventHandler handler, long size, TGIBlock.Order order, IList<TGIBlock> ilt) : this(handler, size, "" + order, ilt) { }
-            /// <summary>
-            /// Initializes a new instance of the <see cref="CountedTGIBlockList"/> class
-            /// filled with <paramref name="count"/> elements from <see cref="System.IO.Stream"/> <paramref name="s"/>
-            /// with the specified <see cref="TGIBlock.Order"/>
-            /// and with a specified maximum number of entries.
-            /// </summary>
-            /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
-            /// <param name="size">Maximum number of elements in the list.</param>
-            /// <param name="order">The <see cref="TGIBlock.Order"/> of the <see cref="TGIBlock"/> values.</param>
-            /// <param name="count">The number of list elements to read.</param>
-            /// <param name="s">The <see cref="System.IO.Stream"/> to read for the initial content of the list.</param>
-            public CountedTGIBlockList(EventHandler handler, long size, TGIBlock.Order order, uint count, Stream s) : this(handler, size, "" + order, count, s) { }
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="CountedTGIBlockList"/> class
-            /// that is empty
-            /// with the specified <see cref="TGIBlock.Order"/>
-            /// and with a specified maximum number of entries.
-            /// </summary>
-            /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
-            /// <param name="size">Maximum number of elements in the list.</param>
-            /// <param name="order">A string representing the <see cref="TGIBlock.Order"/> of the <see cref="TGIBlock"/> values.</param>
-            public CountedTGIBlockList(EventHandler handler, long size, string order) : base(handler, size) { this.order = order; }
-            /// <summary>
-            /// Initializes a new instance of the <see cref="CountedTGIBlockList"/> class
-            /// filled with the content of <paramref name="ilt"/>
-            /// with the specified <see cref="TGIBlock.Order"/>
-            /// and with a specified maximum number of entries.
-            /// </summary>
-            /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
-            /// <param name="size">Maximum number of elements in the list.</param>
-            /// <param name="order">A string representing the <see cref="TGIBlock.Order"/> of the <see cref="TGIBlock"/> values.</param>
-            /// <param name="ilt">The <c>IList&lt;TGIBlock&gt;</c> to use as the initial content of the list.</param>
-            public CountedTGIBlockList(EventHandler handler, long size, string order, IList<TGIBlock> ilt) : base(handler, size, ilt) { this.order = order; }
-            /// <summary>
-            /// Initializes a new instance of the <see cref="CountedTGIBlockList"/> class
-            /// filled with <paramref name="count"/> elements from <see cref="System.IO.Stream"/> <paramref name="s"/>
-            /// with the specified <see cref="TGIBlock.Order"/>
-            /// and with a specified maximum number of entries.
-            /// </summary>
-            /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
-            /// <param name="size">Maximum number of elements in the list.</param>
-            /// <param name="order">A string representing the <see cref="TGIBlock.Order"/> of the <see cref="TGIBlock"/> values.</param>
-            /// <param name="count">The number of list elements to read.</param>
-            /// <param name="s">The <see cref="System.IO.Stream"/> to read for the initial content of the list.</param>
-            public CountedTGIBlockList(EventHandler handler, long size, string order, uint count, Stream s) : base(null, size) { this.origCount = count; this.order = order; elementHandler = handler; Parse(s); this.handler = handler; }
+            /// <param name="size">Optional; -1 for unlimited size, otherwise the maximum number of elements in the list.</param>
+            public CountedTGIBlockList(EventHandler handler, string order, uint count, Stream s, long size = -1) : base(null, size) { this.origCount = count; this.order = order; elementHandler = handler; Parse(s); this.handler = handler; }
             #endregion
 
             #region Data I/O
@@ -810,7 +685,7 @@ namespace s3pi.Interfaces
             /// filled with the content of <paramref name="ilt"/>.
             /// </summary>
             /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
-            /// <param name="ilt">The <c>IList&lt;TGIBlock&gt;</c> to use as the initial content of the list.</param>
+            /// <param name="ilt">The <see cref="IList{TGIBlock}"/> to use as the initial content of the list.</param>
             /// <param name="addEight">When true, invoke fudge factor in parse/unparse</param>
             public TGIBlockList(EventHandler handler, IList<TGIBlock> ilt, bool addEight = false) : base(handler, ilt) { this.addEight = addEight; }
             /// <summary>
@@ -899,29 +774,30 @@ namespace s3pi.Interfaces
         /// </summary>
         /// <typeparam name="T">A simple data type (such as <see cref="UInt32"/>).</typeparam>
         /// <example>
-        /// The following code shows how to create a list of UInt32 values, with a UInt32 entry count
+        /// The following method shows a way to create a list of UInt32 values, with a UInt32 entry count
         /// stored in the stream immediately before the list.
         /// <code>
         /// <![CDATA[
-        /// class hasUInt32List
+        /// SimpleList<UInt32> ReadUInt32List(EventHandler e, Stream s)
         /// {
-        ///     SimpleList<uint> uintList = new SimpleList<uint>(null,
+        ///     return new SimpleList<UInt32>(e,
         ///         s => new BinaryReader(s).ReadUInt32(),
         ///         (s, value) => new BinaryWriter(s).Write(value));
         /// }
         /// ]]>
         /// </code>
-        /// For more complex cases, or where repeated use of the same kind of . is needed,
-        /// it can be worthwhile extending the class, as shown:
+        /// For more complex cases, or where repeated use of the same kind of <see cref="SimpleList{T}"/> is needed,
+        /// it can be worthwhile extending the class, as shown below.  This example is for a list of byte values prefixed
+        /// by a one byte count.  It shows that the list length can also be specified (here using <c>Byte.MaxValue</c>
         /// <code>
         /// <![CDATA[
-        /// public class ByteList : AResource.SimpleList<byte>
+        /// public class ByteList : AResource.SimpleList<Byte>
         /// {
         ///     static string fmt = "0x{1:X2}; ";
         ///     
-        ///     public ByteList(EventHandler handler) : base(handler, ReadByte, WriteByte, fmt, ReadListCount, WriteListCount) { }
-        ///     public ByteList(EventHandler handler, Stream s) : base(handler, s, ReadByte, WriteByte, fmt, ReadListCount, WriteListCount) { }
-        ///     public ByteList(EventHandler handler, IList<HandlerElement<byte>> le) : base(handler, le, ReadByte, WriteByte, fmt, ReadListCount, WriteListCount) { }
+        ///     public ByteList(EventHandler handler) : base(handler, ReadByte, WriteByte, fmt, Byte.MaxValue, ReadListCount, WriteListCount) { }
+        ///     public ByteList(EventHandler handler, Stream s) : base(handler, s, ReadByte, WriteByt, fmte, Byte.MaxValue, ReadListCount, WriteListCount) { }
+        ///     public ByteList(EventHandler handler, IList<HandlerElement<Byte>> le) : base(handler, le, ReadByte, WriteByte fmt,, Byte.MaxValue, ReadListCount, WriteListCount) { }
         ///     
         ///     static uint ReadListCount(Stream s) { return new BinaryReader(s).ReadByte(); }
         ///     static void WriteListCount(Stream s, uint count) { new BinaryWriter(s).Write((byte)count); }
@@ -975,74 +851,36 @@ namespace s3pi.Interfaces
             /// <param name="createElement">Required; the method to create a new element in the list from a stream.</param>
             /// <param name="writeElement">Required; the method to create a new element in the list from a stream.</param>
             /// <param name="valFormat">Optional, default is <c>"0x{1:X8}\n"</c>; the method to create a new element in the list from a stream.</param>
+            /// <param name="size">Optional maximum number of elements in the list.</param>
             /// <param name="readCount">Optional; default is to read a <see cref="UInt32"/> from the <see cref="Stream"/>.</param>
             /// <param name="writeCount">Optional; default is to write a <see cref="UInt32"/> to the <see cref="Stream"/>.</param>
-            public SimpleList(EventHandler handler, CreateElementMethod createElement, WriteElementMethod writeElement, string valFormat = "0x{1:X8}\n", ReadCountMethod readCount = null, WriteCountMethod writeCount = null) : this(handler, -1, createElement, writeElement, valFormat, readCount, writeCount) { }
+            public SimpleList(EventHandler handler, CreateElementMethod createElement, WriteElementMethod writeElement, string valFormat = "0x{1:X8}\n", long size = -1, ReadCountMethod readCount = null, WriteCountMethod writeCount = null) : base(handler, size) { this.createElement = createElement; this.writeElement = writeElement; this.valFormat = valFormat; this.readCount = readCount; this.writeCount = writeCount; }
             /// <summary>
             /// Initializes a new instance of the <see cref="SimpleList{T}"/> class
-            /// with a maximum size of <paramref name="size"/>
-            /// that is empty.
+            /// from <paramref name="iList"/>.
             /// </summary>
             /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
-            /// <param name="size">Maximum number of elements in the list.</param>
+            /// <param name="iList">The source to use as the initial content of the list.</param>
             /// <param name="createElement">Required; the method to create a new element in the list from a stream.</param>
             /// <param name="writeElement">Required; the method to create a new element in the list from a stream.</param>
             /// <param name="valFormat">Optional, default is <c>"0x{1:X8}\n"</c>; the method to create a new element in the list from a stream.</param>
+            /// <param name="size">Optional maximum number of elements in the list.</param>
             /// <param name="readCount">Optional; default is to read a <see cref="UInt32"/> from the <see cref="Stream"/>.</param>
             /// <param name="writeCount">Optional; default is to write a <see cref="UInt32"/> to the <see cref="Stream"/>.</param>
-            public SimpleList(EventHandler handler, long size, CreateElementMethod createElement, WriteElementMethod writeElement, string valFormat = "0x{1:X8}\n", ReadCountMethod readCount = null, WriteCountMethod writeCount = null) : base(handler, size) { this.createElement = createElement; this.writeElement = writeElement; this.valFormat = valFormat; this.readCount = readCount; this.writeCount = writeCount; }
+            public SimpleList(EventHandler handler, IList<HandlerElement<T>> iList, CreateElementMethod createElement, WriteElementMethod writeElement, string valFormat = "0x{1:X8}\n", long size = -1, ReadCountMethod readCount = null, WriteCountMethod writeCount = null) : base(handler, iList, size) { this.createElement = createElement; this.writeElement = writeElement; this.valFormat = valFormat; this.readCount = readCount; this.writeCount = writeCount; }
             /// <summary>
             /// Initializes a new instance of the <see cref="SimpleList{T}"/> class
-            /// initialised from <paramref name="iList"/>.
-            /// </summary>
-            /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
-            /// <param name="iList">The <c>IList&lt;HandlerElement&lt;T&gt;&gt;</c> to use as the initial content of the list.</param>
-            /// <param name="createElement">Required; the method to create a new element in the list from a stream.</param>
-            /// <param name="writeElement">Required; the method to create a new element in the list from a stream.</param>
-            /// <param name="valFormat">Optional, default is <c>"0x{1:X8}\n"</c>; the method to create a new element in the list from a stream.</param>
-            /// <param name="readCount">Optional; default is to read a <see cref="UInt32"/> from the <see cref="Stream"/>.</param>
-            /// <param name="writeCount">Optional; default is to write a <see cref="UInt32"/> to the <see cref="Stream"/>.</param>
-            public SimpleList(EventHandler handler, IList<HandlerElement<T>> iList, CreateElementMethod createElement, WriteElementMethod writeElement, string valFormat = "0x{1:X8}\n", ReadCountMethod readCount = null, WriteCountMethod writeCount = null) : this(handler, -1, iList, createElement, writeElement, valFormat, readCount, writeCount) { }
-            /// <summary>
-            /// Initializes a new instance of the <see cref="SimpleList{T}"/> class
-            /// with a maximum size of <paramref name="size"/>
-            /// initialised from <paramref name="iList"/>.
-            /// </summary>
-            /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
-            /// <param name="size">Maximum number of elements in the list.</param>
-            /// <param name="iList">The <c>IList&lt;HandlerElement&lt;T&gt;&gt;</c> to use as the initial content of the list.</param>
-            /// <param name="createElement">Required; the method to create a new element in the list from a stream.</param>
-            /// <param name="writeElement">Required; the method to create a new element in the list from a stream.</param>
-            /// <param name="valFormat">Optional, default is <c>"0x{1:X8}\n"</c>; the method to create a new element in the list from a stream.</param>
-            /// <param name="readCount">Optional; default is to read a <see cref="UInt32"/> from the <see cref="Stream"/>.</param>
-            /// <param name="writeCount">Optional; default is to write a <see cref="UInt32"/> to the <see cref="Stream"/>.</param>
-            public SimpleList(EventHandler handler, long size, IList<HandlerElement<T>> iList, CreateElementMethod createElement, WriteElementMethod writeElement, string valFormat = "0x{1:X8}\n", ReadCountMethod readCount = null, WriteCountMethod writeCount = null) : base(handler, size, iList) { this.createElement = createElement; this.writeElement = writeElement; this.valFormat = valFormat; this.readCount = readCount; this.writeCount = writeCount; }
-            /// <summary>
-            /// Initializes a new instance of the <see cref="SimpleList{T}"/> class
-            /// initialised from <paramref name="s"/>.
+            /// from <paramref name="s"/>.
             /// </summary>
             /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
             /// <param name="s">The <see cref="Stream"/> to read for the initial content of the list.</param>
             /// <param name="createElement">Required; the method to create a new element in the list from a stream.</param>
             /// <param name="writeElement">Required; the method to create a new element in the list from a stream.</param>
             /// <param name="valFormat">Optional, default is <c>"0x{1:X8}\n"</c>; the method to create a new element in the list from a stream.</param>
+            /// <param name="size">Optional maximum number of elements in the list.</param>
             /// <param name="readCount">Optional; default is to read a <see cref="UInt32"/> from the <see cref="Stream"/>.</param>
             /// <param name="writeCount">Optional; default is to write a <see cref="UInt32"/> to the <see cref="Stream"/>.</param>
-            public SimpleList(EventHandler handler, Stream s, CreateElementMethod createElement, WriteElementMethod writeElement, string valFormat = "0x{1:X8}\n", ReadCountMethod readCount = null, WriteCountMethod writeCount = null) : this(handler, -1, s, createElement, writeElement, valFormat, readCount, writeCount) { }
-            /// <summary>
-            /// Initializes a new instance of the <see cref="SimpleList{T}"/> class
-            /// with a maximum size of <paramref name="size"/>
-            /// initialised from <paramref name="s"/>.
-            /// </summary>
-            /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
-            /// <param name="size">Maximum number of elements in the list.</param>
-            /// <param name="s">The <see cref="Stream"/> to read for the initial content of the list.</param>
-            /// <param name="createElement">Required; the method to create a new element in the list from a stream.</param>
-            /// <param name="writeElement">Required; the method to create a new element in the list from a stream.</param>
-            /// <param name="valFormat">Optional, default is <c>"0x{1:X8}\n"</c>; the method to create a new element in the list from a stream.</param>
-            /// <param name="readCount">Optional; default is to read a <see cref="UInt32"/> from the <see cref="Stream"/>.</param>
-            /// <param name="writeCount">Optional; default is to write a <see cref="UInt32"/> to the <see cref="Stream"/>.</param>
-            public SimpleList(EventHandler handler, long size, Stream s, CreateElementMethod createElement, WriteElementMethod writeElement, string valFormat = "0x{1:X8}\n", ReadCountMethod readCount = null, WriteCountMethod writeCount = null) : this(null, size, createElement, writeElement, valFormat, readCount, writeCount) { elementHandler = handler; Parse(s); this.handler = handler; }
+            public SimpleList(EventHandler handler, Stream s, CreateElementMethod createElement, WriteElementMethod writeElement, string valFormat = "0x{1:X8}\n", long size = -1, ReadCountMethod readCount = null, WriteCountMethod writeCount = null) : this(null, createElement, writeElement, valFormat, size, readCount, writeCount) { elementHandler = handler; Parse(s); this.handler = handler; }
             #endregion
 
             #region Data I/O
@@ -1074,7 +912,7 @@ namespace s3pi.Interfaces
             #endregion
 
             /// <summary>
-            /// Add a default element to a <see cref="SimpleList{T}".
+            /// Add a default element to a <see cref="SimpleList{T}"/>.
             /// </summary>
             /// <exception cref="NotImplementedException">Lists of abstract classes will fail
             /// with a NotImplementedException.</exception>
