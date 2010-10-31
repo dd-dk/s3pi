@@ -391,4 +391,67 @@ namespace s3pi.Interfaces
             if (handler != null) handler(this, EventArgs.Empty);
         }
     }
+
+    /// <summary>
+    /// An extension to <see cref="AHandlerElement"/>, for simple data types (such as <see cref="UInt32"/>).
+    /// </summary>
+    /// <typeparam name="T">A simple data type (such as <see cref="UInt32"/>).</typeparam>
+    /// <remarks>For an example of use, see <see cref="AResource.SimpleList{T}"/>.</remarks>
+    /// <seealso cref="AResource.SimpleList{T}"/>
+    public class HandlerElement<T> : AHandlerElement, IEquatable<HandlerElement<T>>
+        where T : struct, IEquatable<T>
+    {
+        const int recommendedApiVersion = 1;
+        T val;
+
+        /// <summary>
+        /// Initialize a new instance with a default value.
+        /// </summary>
+        /// <param name="APIversion">The requested API version.</param>
+        /// <param name="handler">The <see cref="EventHandler"/> delegate to invoke if the <see cref="AHandlerElement"/> changes.</param>
+        public HandlerElement(int APIversion, EventHandler handler) : this(APIversion, handler, default(T)) { }
+
+        /// <summary>
+        /// Initialize a new instance with an initial value of <paramref name="basis"/>.
+        /// </summary>
+        /// <param name="APIversion">The requested API version.</param>
+        /// <param name="handler">The <see cref="EventHandler"/> delegate to invoke if the <see cref="AHandlerElement"/> changes.</param>
+        /// <param name="basis">Initial value for instance.</param>
+        public HandlerElement(int APIversion, EventHandler handler, T basis) : base(APIversion, handler) { val = basis; }
+
+        /// <summary>
+        /// Get a copy of the HandlerElement but with a new change <see cref="EventHandler"/>.
+        /// </summary>
+        /// <param name="handler">The replacement HandlerElement delegate.</param>
+        /// <returns>Return a copy of the HandlerElement but with a new change <see cref="EventHandler"/>.</returns>
+        public override AHandlerElement Clone(EventHandler handler)
+        {
+            return new HandlerElement<T>(requestedApiVersion, handler, val);
+        }
+
+        /// <summary>
+        /// The best supported version of the API available
+        /// </summary>
+        public override int RecommendedApiVersion
+        {
+            get { return recommendedApiVersion; }
+        }
+
+        /// <summary>
+        /// The list of available field names on this API object.
+        /// </summary>
+        public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
+
+        /// <summary>
+        /// The value of the object.
+        /// </summary>
+        public T Val { get { return val; } set { if (!val.Equals(value)) { val = value; OnElementChanged(); } } }
+
+        /// <summary>
+        /// Indicates whether the current object is equal to another object of the same type.
+        /// </summary>
+        /// <param name="other">An object to compare with this object.</param>
+        /// <returns>true if the current object is equal to the other parameter; otherwise, false.</returns>
+        public bool Equals(HandlerElement<T> other) { return val.Equals(other.val); }
+    }
 }
