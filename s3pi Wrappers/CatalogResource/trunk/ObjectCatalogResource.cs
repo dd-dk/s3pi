@@ -28,7 +28,7 @@ namespace CatalogResource
     {
         #region Attributes
         MaterialList materialList = null;
-        string unknown1 = "";
+        string unknown1 = "";//Version>=0x16
         uint unknown2;
         byte unknown3;
         Fire fireType;
@@ -36,24 +36,26 @@ namespace CatalogResource
         byte isReposessable;
         uint inWorldEditable;
         uint objkIndex;
-        Misc8 unknown8;
-        Misc9 unknown9;
-        Misc10 unknown10;
-        Misc11 unknown11;
-        uint unknown12;
+        ObjectType objectTypeFlags;
+        WallPlacement wallPlacementFlags;
+        Movement movementFlags;
+        uint cutoutTilesPerLevel;
+        uint levels;
         MTDoorList mtDoorList = null;
-        byte unknown13;
+        byte isScriptEnabled;
         uint diagonalIndex;
-        uint hash;
+        uint ambienceTypeHash;
         RoomCategory roomCategoryFlags;
         FunctionCategory functionCategoryFlags;
         FunctionSubCategory functionSubCategoryFlags;
         RoomSubCategory roomSubCategoryFlags;
         BuildCategory buildCategoryFlags;
-        uint sinkDDSIndex;
-        uint unknown16;
-        uint unknown17;
-        uint unknown18;
+        uint surfaceCutoutDDSIndex;
+        uint floorCutoutDDSIndex;//Version>=0x17
+        uint floorCutoutLevelOffset;//Version>=0x17
+        float floorCutoutBoundsLength;//Version>=0x17
+        UIntList buildableShellDisplayStateHashes;//Version>=0x18
+        uint levelBelowOBJDIndex;//Version>=0x19
         SlotPlacement slotPlacementFlags;
         string materialGrouping1 = "";
         string materialGrouping2 = "";
@@ -79,21 +81,21 @@ namespace CatalogResource
             this.isReposessable = basis.isReposessable;
             this.inWorldEditable = basis.inWorldEditable;
             this.objkIndex = basis.objkIndex;
-            this.unknown8 = basis.unknown8;
-            this.unknown9 = basis.unknown9;
-            this.unknown10 = basis.unknown10;
-            this.unknown11 = basis.unknown11;
-            this.unknown12 = basis.unknown12;
+            this.objectTypeFlags = basis.objectTypeFlags;
+            this.wallPlacementFlags = basis.wallPlacementFlags;
+            this.movementFlags = basis.movementFlags;
+            this.cutoutTilesPerLevel = basis.cutoutTilesPerLevel;
+            this.levels = basis.levels;
             this.mtDoorList = new MTDoorList(OnResourceChanged, basis.mtDoorList);
-            this.unknown13 = basis.unknown13;
+            this.isScriptEnabled = basis.isScriptEnabled;
             this.diagonalIndex = basis.diagonalIndex;
-            this.hash = basis.hash;
+            this.ambienceTypeHash = basis.ambienceTypeHash;
             this.roomCategoryFlags = basis.roomCategoryFlags;
             this.functionCategoryFlags = basis.functionCategoryFlags;
             this.functionSubCategoryFlags = basis.functionSubCategoryFlags;
             this.roomSubCategoryFlags = basis.roomSubCategoryFlags;
             this.buildCategoryFlags = basis.buildCategoryFlags;
-            this.sinkDDSIndex = basis.sinkDDSIndex;
+            this.surfaceCutoutDDSIndex = basis.surfaceCutoutDDSIndex;
             this.slotPlacementFlags = basis.slotPlacementFlags;
             this.materialGrouping1 = basis.materialGrouping1;
             this.materialGrouping2 = basis.materialGrouping2;
@@ -103,70 +105,134 @@ namespace CatalogResource
             this.topicRatings = (TopicRating[])basis.topicRatings.Clone();
             this.fallbackIndex = basis.fallbackIndex;
         }
+
+        // Version <0x16
         public ObjectCatalogResource(int APIversion,
-            uint version, IList<Material> materialList, Common common, uint unknown2, byte unknown3, Fire fireType,
+            uint version, IList<Material> materialList,
+            Common common, uint unknown2, byte unknown3, Fire fireType,
             byte isStealable, byte isReposessable, uint inWorldEditable, uint objkIndex,
-            Misc8 unknown8, Misc9 unknown9, Misc10 unknown10, Misc11 unknown11,
-            uint unknown12, IList<MTDoor> mtDoorList, byte unknown13, uint diagonalIndex, uint hash,
+            ObjectType objectTypeFlags, WallPlacement wallPlacementFlags, Movement movementFlags, uint cutoutTilesPerLevel,
+            uint levels, IList<MTDoor> mtDoorList, byte isScriptEnabled, uint diagonalIndex, uint hash,
             uint roomFlags, uint functionCategoryFlags, ulong subFunctionFlags, ulong subRoomFlags, uint buildCategoryFlags, uint sinkDDSIndex,
             uint slotPlacementFlags, string materialGrouping1, string materialGrouping2, Moodlet moodletGiven, int moodletScore, uint unknown21,
-            TopicRating[] topicRatings,
-            uint fallbackIndex, TGIBlockList ltgib)
+            TopicRating[] topicRatings, uint fallbackIndex, TGIBlockList ltgib)
             : this(APIversion,
             version, materialList,
             "",
             common, unknown2, unknown3, fireType,
             isStealable, isReposessable, inWorldEditable, objkIndex,
-            unknown8, unknown9, unknown10, unknown11,
-            unknown12, mtDoorList, unknown13, diagonalIndex, hash,
+            objectTypeFlags, wallPlacementFlags, movementFlags, cutoutTilesPerLevel,
+            levels, mtDoorList, isScriptEnabled, diagonalIndex, hash,
             roomFlags, functionCategoryFlags, subFunctionFlags, subRoomFlags, buildCategoryFlags, sinkDDSIndex,
             0, 0, 0,
+            new UIntList(null),
+            0,
             slotPlacementFlags, materialGrouping1, materialGrouping2, moodletGiven, moodletScore, unknown21,
-            topicRatings,
-            fallbackIndex, ltgib)
+            topicRatings, fallbackIndex, ltgib)
         {
             if (checking) if (version >= 0x00000016)
                     throw new InvalidOperationException(String.Format("Constructor requires Unknown1 for version {0}", version));
         }
+        // Version <0x17
         public ObjectCatalogResource(int APIversion,
             uint version, IList<Material> materialList,
             string unknown1,
             Common common, uint unknown2, byte unknown3, Fire fireType,
             byte isStealable, byte isReposessable, uint inWorldEditable, uint objkIndex,
-            Misc8 unknown8, Misc9 unknown9, Misc10 unknown10, Misc11 unknown11,
-            uint unknown12, IList<MTDoor> mtDoorList, byte unknown13, uint diagonalIndex, uint hash,
+            ObjectType objectTypeFlags, WallPlacement wallPlacementFlags, Movement movementFlags, uint cutoutTilesPerLevel,
+            uint levels, IList<MTDoor> mtDoorList, byte isScriptEnabled, uint diagonalIndex, uint hash,
             uint roomFlags, uint functionCategoryFlags, ulong subFunctionFlags, ulong subRoomFlags, uint buildCategoryFlags, uint sinkDDSIndex,
             uint slotPlacementFlags, string materialGrouping1, string materialGrouping2, Moodlet moodletGiven, int moodletScore, uint unknown21,
-            TopicRating[] topicRatings,
-            uint fallbackIndex, TGIBlockList ltgib)
+            TopicRating[] topicRatings, uint fallbackIndex, TGIBlockList ltgib)
             : this(APIversion,
             version, materialList,
             unknown1,
             common, unknown2, unknown3, fireType,
             isStealable, isReposessable, inWorldEditable, objkIndex,
-            unknown8, unknown9, unknown10, unknown11,
-            unknown12, mtDoorList, unknown13, diagonalIndex, hash,
+            objectTypeFlags, wallPlacementFlags, movementFlags, cutoutTilesPerLevel,
+            levels, mtDoorList, isScriptEnabled, diagonalIndex, hash,
             roomFlags, functionCategoryFlags, subFunctionFlags, subRoomFlags, buildCategoryFlags, sinkDDSIndex,
             0, 0, 0,
+            new UIntList(null),
+            0,
             slotPlacementFlags, materialGrouping1, materialGrouping2, moodletGiven, moodletScore, unknown21,
-            topicRatings,
-            fallbackIndex, ltgib)
+            topicRatings, fallbackIndex, ltgib)
         {
             if (checking) if (version >= 0x00000017)
                     throw new InvalidOperationException(String.Format("Constructor requires Unknown16, Unknown17 and Unknown18 for version {0}", version));
+        }
+        // Version <0x18
+        public ObjectCatalogResource(int APIversion,
+            uint version, IList<Material> materialList,
+            string unknown1,
+            Common common, uint unknown2, byte unknown3, Fire fireType,
+            byte isStealable, byte isReposessable, uint inWorldEditable, uint objkIndex,
+            ObjectType objectTypeFlags, WallPlacement wallPlacementFlags, Movement movementFlags, uint cutoutTilesPerLevel,
+            uint levels, IList<MTDoor> mtDoorList, byte isScriptEnabled, uint diagonalIndex, uint hash,
+            uint roomFlags, uint functionCategoryFlags, ulong subFunctionFlags, ulong subRoomFlags, uint buildCategoryFlags, uint sinkDDSIndex,
+            uint unknown16, uint unknown17, float unknown18,
+            uint slotPlacementFlags, string materialGrouping1, string materialGrouping2, Moodlet moodletGiven, int moodletScore, uint unknown21,
+            TopicRating[] topicRatings, uint fallbackIndex, TGIBlockList ltgib)
+            : this(APIversion,
+            version, materialList,
+            unknown1,
+            common, unknown2, unknown3, fireType,
+            isStealable, isReposessable, inWorldEditable, objkIndex,
+            objectTypeFlags, wallPlacementFlags, movementFlags, cutoutTilesPerLevel,
+            levels, mtDoorList, isScriptEnabled, diagonalIndex, hash,
+            roomFlags, functionCategoryFlags, subFunctionFlags, subRoomFlags, buildCategoryFlags, sinkDDSIndex,
+            unknown16, unknown17, unknown18,
+            new UIntList(null),
+            0,
+            slotPlacementFlags, materialGrouping1, materialGrouping2, moodletGiven, moodletScore, unknown21,
+            topicRatings, fallbackIndex, ltgib)
+        {
+            if (checking) if (version >= 0x00000018)
+                    throw new InvalidOperationException(String.Format("Constructor requires TGIIndexes for version {0}", version));
+        }
+        // Version <0x19
+        public ObjectCatalogResource(int APIversion,
+            uint version, IList<Material> materialList,
+            string unknown1,
+            Common common, uint unknown2, byte unknown3, Fire fireType,
+            byte isStealable, byte isReposessable, uint inWorldEditable, uint objkIndex,
+            ObjectType objectTypeFlags, WallPlacement wallPlacementFlags, Movement movementFlags, uint cutoutTilesPerLevel,
+            uint levels, IList<MTDoor> mtDoorList, byte isScriptEnabled, uint diagonalIndex, uint hash,
+            uint roomFlags, uint functionCategoryFlags, ulong subFunctionFlags, ulong subRoomFlags, uint buildCategoryFlags, uint sinkDDSIndex,
+            uint unknown16, uint unknown17, float unknown18,
+            UIntList tgiIndexes,
+            uint slotPlacementFlags, string materialGrouping1, string materialGrouping2, Moodlet moodletGiven, int moodletScore, uint unknown21,
+            TopicRating[] topicRatings, uint fallbackIndex, TGIBlockList ltgib)
+            : this(APIversion,
+            version, materialList,
+            unknown1,
+            common, unknown2, unknown3, fireType,
+            isStealable, isReposessable, inWorldEditable, objkIndex,
+            objectTypeFlags, wallPlacementFlags, movementFlags, cutoutTilesPerLevel,
+            levels, mtDoorList, isScriptEnabled, diagonalIndex, hash,
+            roomFlags, functionCategoryFlags, subFunctionFlags, subRoomFlags, buildCategoryFlags, sinkDDSIndex,
+            unknown16, unknown17, unknown18,
+            tgiIndexes,
+            0,
+            slotPlacementFlags, materialGrouping1, materialGrouping2, moodletGiven, moodletScore, unknown21,
+            topicRatings, fallbackIndex, ltgib)
+        {
+            if (checking) if (version >= 0x00000019)
+                    throw new InvalidOperationException(String.Format("Constructor requires IndexV19 for version {0}", version));
         }
         public ObjectCatalogResource(int APIversion,
             uint version, IList<Material> materialList,
             string unknown1,
             Common common, uint unknown2, byte unknown3, Fire fireType,
             byte isStealable, byte isReposessable, uint inWorldEditable, uint objkIndex,
-            Misc8 unknown8, Misc9 unknown9, Misc10 unknown10, Misc11 unknown11,
-            uint unknown12, IList<MTDoor> mtDoorList, byte unknown13, uint diagonalIndex, uint hash,
+            ObjectType objectTypeFlags, WallPlacement wallPlacementFlags, Movement movementFlags, uint cutoutTilesPerLevel,
+            uint levels, IList<MTDoor> mtDoorList, byte isScriptEnabled, uint diagonalIndex, uint hash,
             uint roomFlags, uint functionCategoryFlags, ulong subFunctionFlags, ulong subRoomFlags, uint buildCategoryFlags, uint sinkDDSIndex,
-            uint unknown16, uint unknown17, uint unknown18,
+            uint unknown16, uint unknown17, float unknown18,
+            UIntList tgiIndexes,
+            uint indexV19,
             uint slotPlacementFlags, string materialGrouping1, string materialGrouping2, Moodlet moodletGiven, int moodletScore, uint unknown21,
-            TopicRating[] topicRatings,
-            uint fallbackIndex, TGIBlockList ltgib)
+            TopicRating[] topicRatings, uint fallbackIndex, TGIBlockList ltgib)
             : base(APIversion, version, ltgib)
         {
             this.materialList = new MaterialList(OnResourceChanged, materialList);
@@ -179,24 +245,26 @@ namespace CatalogResource
             this.isReposessable = (byte)(isReposessable == 0 ? 0 : 1);
             this.inWorldEditable = inWorldEditable;
             this.objkIndex = objkIndex;
-            this.unknown8 = unknown8;
-            this.unknown9 = unknown9;
-            this.unknown10 = unknown10;
-            this.unknown11 = unknown11;
-            this.unknown12 = unknown12;
+            this.objectTypeFlags = objectTypeFlags;
+            this.wallPlacementFlags = wallPlacementFlags;
+            this.movementFlags = movementFlags;
+            this.cutoutTilesPerLevel = cutoutTilesPerLevel;
+            this.levels = levels;
             this.mtDoorList = new MTDoorList(OnResourceChanged, mtDoorList);
-            this.unknown13 = unknown13;
+            this.isScriptEnabled = isScriptEnabled;
             this.diagonalIndex = diagonalIndex;
-            this.hash = hash;
+            this.ambienceTypeHash = hash;
             this.roomCategoryFlags = (RoomCategory)roomFlags;
             this.functionCategoryFlags = (FunctionCategory)functionCategoryFlags;
             this.functionSubCategoryFlags = (FunctionSubCategory)subFunctionFlags;
             this.roomSubCategoryFlags = (RoomSubCategory)subRoomFlags;
             this.buildCategoryFlags = (BuildCategory)buildCategoryFlags;
-            this.sinkDDSIndex = sinkDDSIndex;
-            this.unknown16 = unknown16;
-            this.unknown17 = unknown17;
-            this.unknown18 = unknown18;
+            this.surfaceCutoutDDSIndex = sinkDDSIndex;
+            this.floorCutoutDDSIndex = unknown16;
+            this.floorCutoutLevelOffset = unknown17;
+            this.floorCutoutBoundsLength = unknown18;
+            this.buildableShellDisplayStateHashes = new UIntList(OnResourceChanged, tgiIndexes);
+            this.levelBelowOBJDIndex = indexV19;
             this.slotPlacementFlags = (SlotPlacement)slotPlacementFlags;
             this.materialGrouping1 = materialGrouping1;
             this.materialGrouping2 = materialGrouping2;
@@ -227,26 +295,34 @@ namespace CatalogResource
             this.isReposessable = r.ReadByte();
             this.inWorldEditable = r.ReadUInt32();
             this.objkIndex = r.ReadUInt32();
-            this.unknown8 = (Misc8)r.ReadUInt32();
-            this.unknown9 = (Misc9)r.ReadUInt32();
-            this.unknown10 = (Misc10)r.ReadUInt32();
-            this.unknown11 = (Misc11)r.ReadUInt32();
-            this.unknown12 = r.ReadUInt32();
+            this.objectTypeFlags = (ObjectType)r.ReadUInt32();
+            this.wallPlacementFlags = (WallPlacement)r.ReadUInt32();
+            this.movementFlags = (Movement)r.ReadUInt32();
+            this.cutoutTilesPerLevel = r.ReadUInt32();
+            this.levels = r.ReadUInt32();
             this.mtDoorList = new MTDoorList(OnResourceChanged, s);
-            this.unknown13 = r.ReadByte();
+            this.isScriptEnabled = r.ReadByte();
             this.diagonalIndex = r.ReadUInt32();
-            this.hash = r.ReadUInt32();
+            this.ambienceTypeHash = r.ReadUInt32();
             this.roomCategoryFlags = (RoomCategory)r.ReadUInt32();
             this.functionCategoryFlags = (FunctionCategory)r.ReadUInt32();
             this.functionSubCategoryFlags = (FunctionSubCategory)r.ReadUInt64();
             this.roomSubCategoryFlags = (RoomSubCategory)r.ReadUInt64();
             this.buildCategoryFlags = (BuildCategory)r.ReadUInt32();
-            this.sinkDDSIndex = r.ReadUInt32();
+            this.surfaceCutoutDDSIndex = r.ReadUInt32();
             if (this.version >= 0x00000017)
             {
-                this.unknown16 = r.ReadUInt32();
-                this.unknown17 = r.ReadUInt32();
-                this.unknown18 = r.ReadUInt32();
+                this.floorCutoutDDSIndex = r.ReadUInt32();
+                this.floorCutoutLevelOffset = r.ReadUInt32();
+                this.floorCutoutBoundsLength = r.ReadSingle();
+                if (this.version >= 0x00000018)
+                {
+                    buildableShellDisplayStateHashes = new UIntList(OnResourceChanged, s);
+                    if (this.version >= 0x00000019)
+                    {
+                        levelBelowOBJDIndex = r.ReadUInt32();
+                    }
+                }
             }
             this.slotPlacementFlags = (SlotPlacement)r.ReadUInt32();
             this.materialGrouping1 = r2.ReadString();
@@ -282,27 +358,36 @@ namespace CatalogResource
             w.Write(isReposessable);
             w.Write(inWorldEditable);
             w.Write(objkIndex);
-            w.Write((uint)unknown8);
-            w.Write((uint)unknown9);
-            w.Write((uint)unknown10);
-            w.Write((uint)unknown11);
-            w.Write(unknown12);
+            w.Write((uint)objectTypeFlags);
+            w.Write((uint)wallPlacementFlags);
+            w.Write((uint)movementFlags);
+            w.Write(cutoutTilesPerLevel);
+            w.Write(levels);
             if (mtDoorList == null) mtDoorList = new MTDoorList(OnResourceChanged);
             mtDoorList.UnParse(s);
-            w.Write(unknown13);
+            w.Write(isScriptEnabled);
             w.Write(diagonalIndex);
-            w.Write(hash);
+            w.Write(ambienceTypeHash);
             w.Write((uint)roomCategoryFlags);
             w.Write((uint)functionCategoryFlags);
             w.Write((ulong)functionSubCategoryFlags);
             w.Write((ulong)roomSubCategoryFlags);
             w.Write((uint)buildCategoryFlags);
-            w.Write(sinkDDSIndex);
+            w.Write(surfaceCutoutDDSIndex);
             if (this.version >= 0x00000017)
             {
-                w.Write(unknown16);
-                w.Write(unknown17);
-                w.Write(unknown18);
+                w.Write(floorCutoutDDSIndex);
+                w.Write(floorCutoutLevelOffset);
+                w.Write(floorCutoutBoundsLength);
+                if (this.version >= 0x00000018)
+                {
+                    if (buildableShellDisplayStateHashes == null) buildableShellDisplayStateHashes = new UIntList(OnResourceChanged);
+                    buildableShellDisplayStateHashes.UnParse(s);
+                    if (this.version >= 0x00000019)
+                    {
+                        w.Write(levelBelowOBJDIndex);
+                    }
+                }
             }
             w.Write((uint)slotPlacementFlags);
             Write7BitStr(s, materialGrouping1, System.Text.Encoding.BigEndianUnicode);
@@ -334,13 +419,21 @@ namespace CatalogResource
             get
             {
                 List<string> res = base.ContentFields;
-                if (this.version < 0x00000017)
+                if (this.version < 0x00000019)
                 {
-                    res.Remove("Unknown16");
-                    res.Remove("Unknown17");
-                    res.Remove("Unknown18");
-                    if (this.version < 0x00000016)
-                        res.Remove("Unknown1");
+                    res.Remove("LevelBelowOBJDIndex");
+                    if (this.version < 0x00000018)
+                    {
+                        res.Remove("BuildableShellDisplayStateHashes");
+                        if (this.version < 0x00000017)
+                        {
+                            res.Remove("FloorCutoutDDSIndex");
+                            res.Remove("FloorCutoutLevelOffset");
+                            res.Remove("FloorCutoutBoundsLength");
+                            if (this.version < 0x00000016)
+                                res.Remove("Unknown1");
+                        }
+                    }
                 }
                 return res;
             }
@@ -356,39 +449,107 @@ namespace CatalogResource
         }
 
         [Flags]
-        public enum Misc8 : uint
+        public enum ObjectType : uint
         {
-            KeepBuying = 0x00000002,
-            FadeOutFromBack = 0x00000040,
-            HangFromCeiling = 0x00000400,
-            ColumnarSupport = 0x00004000,
-            CanBeSteppedOver = 0x00010000,
+            Unknown00 = 0x00000001,
+            AutomaticallyBuyAnotherAfterPlacing = 0x00000002,
+            HidesFloorOnPlacement = 0x00000004,
+            IsDoor = 0x00000008,
+
+            IsWindow = 0x00000010,
+            IsGate = 0x00000020,
+            HideWhenWallDown = 0x00000040,
+            RabbitHole = 0x00000080,
+
+            IsDiagonal = 0x00000100,
+            ForceToFullGrid = 0x00000200,
+            RequireFloorAboveIfOutside = 0x00000400,
+            IsFireplace = 0x00000800,
+
+            IsChimney = 0x00001000,
+            IsFlora = 0x00002000,
+            IsColumn = 0x00004000,
+            TakeParentAlongWhenPicked = 0x00008000,
+
+            LiveDraggingEnabled = 0x00010000,
+            AllowOnSlope = 0x00020000,
+            LargeObject = 0x00040000,
+            FloatsOnWater = 0x00080000,
+
+            IsGarageDoor = 0x00100000,
+            IsMailbox = 0x00200000,
+            IgnorePatternSound = 0x00400000,
+            IsRoadBridge = 0x00800000,
+
+            AllowWallObjectOnGround = 0x01000000,
+            HasFloorCutout = 0x02000000,
+            BuildableShell = 0x04000000,
+            ElevationFromCeiling = 0x08000000,
+
+            CanDepressTerrain = 0x10000000,
+            IgnorePlatformElevation = 0x20000000,
+            CantBePlacedOnPlatform = 0x40000000,
+            IsShellDoor = 0x80000000,
         }
 
         [Flags]
-        public enum Misc9 : uint
+        public enum WallPlacement : uint
         {
-            RequiresWallBehind = 0x00000002,
-            NoWallToRight = 0x00000040,
-            NoWallToFront = 0x00000200,
-            Awning0A = 0x00000400,
-            Awning0B = 0x00000800,
-            Awning0E = 0x00004000,
-            Awning0F = 0x00008000,
-            CenterOnDiagonalWall = 0x00010000,
+            WallAtMinXEdge = 0x00000001,
+            WallAtMinZEdge = 0x00000002,
+            WallAtMaxXEdge = 0x00000004,
+            WallAtMaxZEdge = 0x00000008,
+
+            WallAt01To10Diag = 0x00000010,
+            WallAt00To11Diag = 0x00000020,
+            NoWallAtMinXEdge = 0x00000040,
+            NoWallAtMinZEdge = 0x00000080,
+
+            NoWallAtMaxXEdge = 0x00000100,
+            NoWallAtMaxZEdge = 0x00000200,
+            NoWallAt01To10Diag = 0x00000400,
+            NoWallAt00To11Diag = 0x00000800,
+
+            FlagsApplyToFences = 0x00001000,
+            ProhibitsFenceArch = 0x00002000,
+            OnWall = 0x00004000,
+            IntersectsObjectsOffWall = 0x00008000,
+
+            ApplyCutoutDiagonalShift = 0x00010000,
+            CanBeMovedUpDownOnWall = 0x00020000,
+            CannotBeMovedUpDownOnWall = 0x00040000,
+            //Unknown13 = 0x00080000,
+
+            //Unknown14 = 0x00100000,
+            //Unknown15 = 0x00200000,
+            //Unknown16 = 0x00400000,
+            //Unknown17 = 0x00800000,
+
+            //Unknown18 = 0x01000000,
+            //Unknown19 = 0x02000000,
+            //Unknown1A = 0x04000000,
+            //Unknown1B = 0x08000000,
+
+            //Unknown1C = 0x10000000,
+            //Unknown1D = 0x20000000,
+            //Unknown1E = 0x40000000,
+            //Unknown1F = 0x80000000,
         }
 
         [Flags]
-        public enum Misc10 : uint
+        public enum Movement : uint
         {
-            CannotBuyFromCatalog = 0x00000010,
-        }
+            Unknown00 = 0x00000001,
+            StaysAfterEvict = 0x00000002,
+            HandToolCannotMoveIt = 0x00000004,
+            HandToolCannotDeleteIt = 0x00000008,
 
-        public enum Misc11 : uint
-        {
-            Windows1Tile = 0x00000001,
-            Windows2Tile = 0x00000002,
-            Windows3Tile = 0x00000003,
+            HandToolCannotDuplicateIt = 0x00000010,
+            HandToolCanDuplicateWhenHiddenInCatalog = 0x00000020,
+            HandToolSkipRecursivePickupTests = 0x00000040,
+            GhostsCannotFloatThrough = 0x00000080,
+
+            //Unknown08 = 0x00000100,
         }
 
         [Flags]
@@ -756,6 +917,9 @@ namespace CatalogResource
             Speed,
             Inventing,
             Sculpting,
+            PlayPiano,
+            PlayBass,
+            PlayDrums,
         }
 
         public class TopicRating : AHandlerElement, IEquatable<TopicRating>
@@ -951,6 +1115,25 @@ namespace CatalogResource
             public String Value { get { string s = ""; for (int i = 0; i < Count; i++) s += string.Format("\n--{0}--\n", i) + this[i].Value; return s; } }
             #endregion
         }
+
+        public class UIntList : SimpleList<uint>
+        {
+            #region Constructors
+            public UIntList(EventHandler handler) : this(handler, -1) { }
+            public UIntList(EventHandler handler, long size) : base(handler, size, ReadUInt32, WriteUInt32) { }
+            public UIntList(EventHandler handler, IList<HandlerElement<uint>> uintList) : this(handler, -1, uintList) { }
+            public UIntList(EventHandler handler, long size, IList<HandlerElement<uint>> uintList) : base(handler, size, uintList, ReadUInt32, WriteUInt32) { }
+            public UIntList(EventHandler handler, Stream s) : this(handler, -1, s) { }
+            public UIntList(EventHandler handler, long size, Stream s) : base(handler, size, s, ReadUInt32, WriteUInt32) { }
+            #endregion
+
+            #region Data I/O
+            static UInt32 ReadUInt32(Stream s) { return new BinaryReader(s).ReadUInt32(); }
+            static void WriteUInt32(Stream s, UInt32 value) { new BinaryWriter(s).Write(value); }
+            #endregion
+
+            public override void Add() { this.Add(new HandlerElement<uint>(0, null)); }
+        }
         #endregion
 
         #region Content Fields
@@ -973,27 +1156,27 @@ namespace CatalogResource
         [ElementPriority(16)]
         public bool IsReposessable { get { return isReposessable != 0; } set { if (IsReposessable != value) { isReposessable = (byte)(value ? 1 : 0); OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(17)]
-        public bool InWorldEditable { get { return inWorldEditable != 0; } set { if (InWorldEditable != value) { inWorldEditable = (uint)(value ? 1 : 0); OnResourceChanged(this, new EventArgs()); } } }
+        public uint InWorldEditable { get { return inWorldEditable; } set { if (inWorldEditable != value) { inWorldEditable = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(18), TGIBlockListContentField("TGIBlocks")]
         public uint OBJKIndex { get { return objkIndex; } set { if (objkIndex != value) { objkIndex = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(19)]
-        public Misc8 Unknown8 { get { return unknown8; } set { if (unknown8 != value) { unknown8 = value; OnResourceChanged(this, new EventArgs()); } } }
+        public ObjectType ObjectTypeFlags { get { return objectTypeFlags; } set { if (objectTypeFlags != value) { objectTypeFlags = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(20)]
-        public Misc9 Unknown9 { get { return unknown9; } set { if (unknown9 != value) { unknown9 = value; OnResourceChanged(this, new EventArgs()); } } }
+        public WallPlacement WallPlacementFlags { get { return wallPlacementFlags; } set { if (wallPlacementFlags != value) { wallPlacementFlags = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(21)]
-        public Misc10 Unknown10 { get { return unknown10; } set { if (unknown10 != value) { unknown10 = value; OnResourceChanged(this, new EventArgs()); } } }
+        public Movement MovementFlags { get { return movementFlags; } set { if (movementFlags != value) { movementFlags = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(22)]
-        public Misc11 Unknown11 { get { return unknown11; } set { if (unknown11 != value) { unknown11 = value; OnResourceChanged(this, new EventArgs()); } } }
+        public uint CutoutTilesPerLevel { get { return cutoutTilesPerLevel; } set { if (cutoutTilesPerLevel != value) { cutoutTilesPerLevel = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(23)]
-        public uint Unknown12 { get { return unknown12; } set { if (unknown12 != value) { unknown12 = value; OnResourceChanged(this, new EventArgs()); } } }
+        public uint Levels { get { return levels; } set { if (levels != value) { levels = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(24)]
         public MTDoorList MTDoors { get { return mtDoorList; } set { if (mtDoorList != value) { mtDoorList = value == null ? null : new MTDoorList(OnResourceChanged, value); } OnResourceChanged(this, new EventArgs()); } }
         [ElementPriority(25)]
-        public byte Unknown13 { get { return unknown13; } set { if (unknown13 != value) { unknown13 = value; OnResourceChanged(this, new EventArgs()); } } }
+        public bool IsScriptEnabled { get { return isScriptEnabled != 0; } set { if (IsScriptEnabled != value) { isScriptEnabled = (byte)(value ? 1 : 0); OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(28), TGIBlockListContentField("TGIBlocks")]
         public uint DiagonalIndex { get { return diagonalIndex; } set { if (diagonalIndex != value) { diagonalIndex = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(29)]
-        public uint Hash { get { return hash; } set { if (hash != value) { hash = value; OnResourceChanged(this, new EventArgs()); } } }
+        public uint AmbienceTypeHash { get { return ambienceTypeHash; } set { if (ambienceTypeHash != value) { ambienceTypeHash = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(30)]
         public RoomCategory RoomCategoryFlags { get { return roomCategoryFlags; } set { if (roomCategoryFlags != value) { roomCategoryFlags = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(31)]
@@ -1005,38 +1188,50 @@ namespace CatalogResource
         [ElementPriority(34)]
         public BuildCategory BuildCategoryFlags { get { return buildCategoryFlags; } set { if (buildCategoryFlags != value) { buildCategoryFlags = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(35), TGIBlockListContentField("TGIBlocks")]
-        public uint SinkDDSIndex { get { return sinkDDSIndex; } set { if (sinkDDSIndex != value) { sinkDDSIndex = value; OnResourceChanged(this, new EventArgs()); } } }
-        [ElementPriority(36)]
-        public uint Unknown16
+        public uint SurfaceCutoutDDSIndex { get { return surfaceCutoutDDSIndex; } set { if (surfaceCutoutDDSIndex != value) { surfaceCutoutDDSIndex = value; OnResourceChanged(this, new EventArgs()); } } }
+        [ElementPriority(36), TGIBlockListContentField("TGIBlocks")]
+        public uint FloorCutoutDDSIndex
         {
-            get { if (version < 0x00000017) throw new InvalidOperationException(); return unknown16; }
-            set { if (version < 0x00000017) throw new InvalidOperationException(); if (unknown16 != value) { unknown16 = value; OnResourceChanged(this, new EventArgs()); } }
+            get { if (version < 0x00000017) throw new InvalidOperationException(); return floorCutoutDDSIndex; }
+            set { if (version < 0x00000017) throw new InvalidOperationException(); if (floorCutoutDDSIndex != value) { floorCutoutDDSIndex = value; OnResourceChanged(this, new EventArgs()); } }
         }
         [ElementPriority(37)]
-        public uint Unknown17
+        public uint FloorCutoutLevelOffset
         {
-            get { if (version < 0x00000017) throw new InvalidOperationException(); return unknown17; }
-            set { if (version < 0x00000017) throw new InvalidOperationException(); if (unknown17 != value) { unknown17 = value; OnResourceChanged(this, new EventArgs()); } }
+            get { if (version < 0x00000017) throw new InvalidOperationException(); return floorCutoutLevelOffset; }
+            set { if (version < 0x00000017) throw new InvalidOperationException(); if (floorCutoutLevelOffset != value) { floorCutoutLevelOffset = value; OnResourceChanged(this, new EventArgs()); } }
         }
         [ElementPriority(38)]
-        public uint Unknown18
+        public float FloorCutoutBoundsLength
         {
-            get { if (version < 0x00000017) throw new InvalidOperationException(); return unknown18; }
-            set { if (version < 0x00000017) throw new InvalidOperationException(); if (unknown18 != value) { unknown18 = value; OnResourceChanged(this, new EventArgs()); } }
+            get { if (version < 0x00000017) throw new InvalidOperationException(); return floorCutoutBoundsLength; }
+            set { if (version < 0x00000017) throw new InvalidOperationException(); if (floorCutoutBoundsLength != value) { floorCutoutBoundsLength = value; OnResourceChanged(this, new EventArgs()); } }
         }
         [ElementPriority(39)]
-        public SlotPlacement SlotPlacementFlags { get { return slotPlacementFlags; } set { if (slotPlacementFlags != value) { slotPlacementFlags = value; OnResourceChanged(this, new EventArgs()); } } }
-        [ElementPriority(40)]
-        public string MaterialGrouping1 { get { return materialGrouping1; } set { if (materialGrouping1 != value) { materialGrouping1 = value; OnResourceChanged(this, new EventArgs()); } } }
+        public UIntList BuildableShellDisplayStateHashes
+        {
+            get { if (version < 0x00000018) throw new InvalidOperationException(); return buildableShellDisplayStateHashes; }
+            set { if (version < 0x00000018) throw new InvalidOperationException(); if (buildableShellDisplayStateHashes != value) { buildableShellDisplayStateHashes = value == null ? null : new UIntList(OnResourceChanged, value); } OnResourceChanged(this, new EventArgs()); }
+        }
+        [ElementPriority(40), TGIBlockListContentField("TGIBlocks")]
+        public uint LevelBelowOBJDIndex
+        {
+            get { if (version < 0x00000019) throw new InvalidOperationException(); return levelBelowOBJDIndex; }
+            set { if (version < 0x00000019) throw new InvalidOperationException(); if (levelBelowOBJDIndex != value) { levelBelowOBJDIndex = value; OnResourceChanged(this, new EventArgs()); } }
+        }
         [ElementPriority(41)]
-        public string MaterialGrouping2 { get { return materialGrouping2; } set { if (materialGrouping2 != value) { materialGrouping2 = value; OnResourceChanged(this, new EventArgs()); } } }
+        public SlotPlacement SlotPlacementFlags { get { return slotPlacementFlags; } set { if (slotPlacementFlags != value) { slotPlacementFlags = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(42)]
-        public Moodlet MoodletGiven { get { return moodletGiven; } set { if (moodletGiven != value) { moodletGiven = value; OnResourceChanged(this, new EventArgs()); } } }
+        public string MaterialGrouping1 { get { return materialGrouping1; } set { if (materialGrouping1 != value) { materialGrouping1 = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(43)]
-        public int MoodletScore { get { return moodletScore; } set { if (moodletScore != value) { moodletScore = value; OnResourceChanged(this, new EventArgs()); } } }
+        public string MaterialGrouping2 { get { return materialGrouping2; } set { if (materialGrouping2 != value) { materialGrouping2 = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(44)]
-        public uint Unknown21 { get { return unknown21; } set { if (unknown21 != value) { unknown21 = value; OnResourceChanged(this, new EventArgs()); } } }
+        public Moodlet MoodletGiven { get { return moodletGiven; } set { if (moodletGiven != value) { moodletGiven = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(45)]
+        public int MoodletScore { get { return moodletScore; } set { if (moodletScore != value) { moodletScore = value; OnResourceChanged(this, new EventArgs()); } } }
+        [ElementPriority(46)]
+        public uint Unknown21 { get { return unknown21; } set { if (unknown21 != value) { unknown21 = value; OnResourceChanged(this, new EventArgs()); } } }
+        [ElementPriority(47)]
         public TopicRating[] TopicRatings
         {
             get { return topicRatings; }
@@ -1046,7 +1241,7 @@ namespace CatalogResource
                 if (!ArrayCompare(topicRatings, value)) { topicRatings = value == null ? null : (TopicRating[])value.Clone(); OnResourceChanged(this, new EventArgs()); }
             }
         }
-        [ElementPriority(46), TGIBlockListContentField("TGIBlocks")]
+        [ElementPriority(49), TGIBlockListContentField("TGIBlocks")]
         public uint FallbackIndex { get { return fallbackIndex; } set { if (fallbackIndex != value) { fallbackIndex = value; OnResourceChanged(this, new EventArgs()); } } }
         #endregion
     }

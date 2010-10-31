@@ -1352,6 +1352,7 @@ namespace CatalogResource
                     else if (typeof(MaterialList).IsAssignableFrom(tv.Type)) s += h + (tv.Value as MaterialList).Value + t;
                     else if (typeof(TGIBlockList).IsAssignableFrom(tv.Type)) s += h + (tv.Value as TGIBlockList).Value + t;
                     else if (typeof(ObjectCatalogResource.MTDoorList).IsAssignableFrom(tv.Type)) s += h + (tv.Value as ObjectCatalogResource.MTDoorList).Value + t;
+                    else if (typeof(ObjectCatalogResource.UIntList).IsAssignableFrom(tv.Type)) s += h + (tv.Value as ObjectCatalogResource.UIntList).Value + t;
                     else s += string.Format("{0}: {1}\n", f, "" + tv);
                 }
                 return s;
