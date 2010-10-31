@@ -1097,9 +1097,9 @@ namespace CatalogResource
         public class MTDoorList : AResource.DependentList<MTDoor>
         {
             #region Constructors
-            public MTDoorList(EventHandler handler) : base(handler, 256) { }
-            public MTDoorList(EventHandler handler, IList<MTDoor> mtDoorList) : base(handler, 256, mtDoorList) { }
-            public MTDoorList(EventHandler handler, Stream s) : base(handler, 256, s) { }
+            public MTDoorList(EventHandler handler) : base(handler, Byte.MaxValue) { }
+            public MTDoorList(EventHandler handler, IList<MTDoor> mtDoorList) : base(handler, mtDoorList, Byte.MaxValue) { }
+            public MTDoorList(EventHandler handler, Stream s) : base(handler, s, Byte.MaxValue) { }
             #endregion
 
             #region Data I/O
@@ -1118,13 +1118,11 @@ namespace CatalogResource
 
         public class UIntList : SimpleList<uint>
         {
+            static string fmt = "0x{1:X8}\n";
             #region Constructors
-            public UIntList(EventHandler handler) : this(handler, -1) { }
-            public UIntList(EventHandler handler, long size) : base(handler, size, ReadUInt32, WriteUInt32) { }
-            public UIntList(EventHandler handler, IList<HandlerElement<uint>> uintList) : this(handler, -1, uintList) { }
-            public UIntList(EventHandler handler, long size, IList<HandlerElement<uint>> uintList) : base(handler, size, uintList, ReadUInt32, WriteUInt32) { }
-            public UIntList(EventHandler handler, Stream s) : this(handler, -1, s) { }
-            public UIntList(EventHandler handler, long size, Stream s) : base(handler, size, s, ReadUInt32, WriteUInt32) { }
+            public UIntList(EventHandler handler, long size = -1) : base(handler, ReadUInt32, WriteUInt32, fmt, size) { }
+            public UIntList(EventHandler handler, IList<HandlerElement<uint>> uintList, long size = -1) : base(handler, uintList, ReadUInt32, WriteUInt32, fmt, size) { }
+            public UIntList(EventHandler handler, Stream s, long size = -1) : base(handler, s, ReadUInt32, WriteUInt32, fmt, size) { }
             #endregion
 
             #region Data I/O
