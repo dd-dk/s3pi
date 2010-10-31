@@ -76,51 +76,20 @@ namespace ModularResource
         #endregion
 
         #region Sub-classes
-        public class TGIIndex : AHandlerElement, IEquatable<TGIIndex>
+        public class TGIIndexList : AResource.SimpleList<UInt32>
         {
-            uint element;
-            public TGIIndex(int APIversion, EventHandler handler) : base(APIversion, handler) { }
-            public TGIIndex(int APIversion, EventHandler handler, TGIIndex basis) : this(APIversion, handler, basis.element) { }
-            public TGIIndex(int APIversion, EventHandler handler, uint value) : base(APIversion, handler) { element = value; }
-
-            #region AHandlerElement Members
-            public override AHandlerElement Clone(EventHandler handler) { return new TGIIndex(requestedApiVersion, handler, this); }
-
-            public override int RecommendedApiVersion { get { return 1; } }
-
-            public override List<string> ContentFields { get { return AApiVersionedFields.GetContentFields(requestedApiVersion, this.GetType()); } }
-            #endregion
-
-            #region IEquatable<TGIIndex> Members
-
-            public bool Equals(TGIIndex other) { return (element).Equals(other.element); }
-
-            #endregion
-
-            public uint Element { get { return element; } set { if (element != value) { element = value; OnElementChanged(); } } }
-            public string Value { get { return "0x" + ((uint)element).ToString("X8"); } }
-        }
-
-        public class TGIIndexList : AResource.DependentList<TGIIndex>
-        {
+            static string fmt = "0x{1:X8}\n";
             #region Constructors
-            public TGIIndexList(EventHandler handler) : base(handler, ushort.MaxValue) { }
-            public TGIIndexList(EventHandler handler, IList<TGIIndex> ltgii) : base(handler, ushort.MaxValue, ltgii) { }
-            internal TGIIndexList(EventHandler handler, Stream s) : base(handler, ushort.MaxValue, s) { }
+            public TGIIndexList(EventHandler handler) : base(handler, ReadUInt32, WriteUInt32, fmt, ushort.MaxValue, ReadListCount, WriteListCount) { }
+            public TGIIndexList(EventHandler handler, IList<HandlerElement<uint>> ltgii) : base(handler, ltgii, ReadUInt32, WriteUInt32, fmt, ushort.MaxValue, ReadListCount, WriteListCount) { }
+            internal TGIIndexList(EventHandler handler, Stream s) : base(handler, s, ReadUInt32, WriteUInt32, fmt, ushort.MaxValue, ReadListCount, WriteListCount) { }
             #endregion
 
             #region Data I/O
-            protected override uint ReadCount(Stream s) { return (new BinaryReader(s)).ReadUInt16(); }
-            protected override TGIIndex CreateElement(Stream s) { return new TGIIndex(0, elementHandler, (new BinaryReader(s)).ReadUInt32()); }
-
-            protected override void WriteCount(Stream s, uint count) { (new BinaryWriter(s)).Write((UInt16)count); }
-            protected override void WriteElement(Stream s, TGIIndex element) { (new BinaryWriter(s)).Write(element.Element); }
-            #endregion
-
-            public override void Add() { this.Add(new TGIIndex(0, null)); }
-
-            #region Content Fields
-            public String Value { get { string s = ""; for (int i = 0; i < Count; i++) s += string.Format("0x{0:X2}: 0x{1}\n", i, this[i].Element.ToString("X8")); return s; } }
+            static uint ReadListCount(Stream s) { return (new BinaryReader(s)).ReadUInt16(); }
+            static void WriteListCount(Stream s, uint count) { (new BinaryWriter(s)).Write((UInt16)count); }
+            static UInt32 ReadUInt32(Stream s) { return (new BinaryReader(s)).ReadUInt32(); }
+            static void WriteUInt32(Stream s, UInt32 value) { (new BinaryWriter(s)).Write(value); }
             #endregion
         }
         #endregion
