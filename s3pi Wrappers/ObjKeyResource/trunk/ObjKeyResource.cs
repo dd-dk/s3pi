@@ -165,9 +165,9 @@ namespace ObjKeyResource
         public class ComponentList : AResource.DependentList<ComponentElement>
         {
             #region Constructors
-            public ComponentList(EventHandler handler) : base(handler, 255) { }
-            public ComponentList(EventHandler handler, IList<ComponentElement> luint) : base(handler, 255, luint) { }
-            internal ComponentList(EventHandler handler, Stream s) : base(handler, 255, s) { }
+            public ComponentList(EventHandler handler) : base(handler, Byte.MaxValue) { }
+            public ComponentList(EventHandler handler, IList<ComponentElement> luint) : base(handler, luint, Byte.MaxValue) { }
+            internal ComponentList(EventHandler handler, Stream s) : base(handler, s, Byte.MaxValue) { }
             #endregion
 
             #region Data I/O
@@ -411,9 +411,9 @@ namespace ObjKeyResource
         public class ComponentDataList : AResource.DependentList<ComponentDataType>
         {
             #region Constructors
-            public ComponentDataList(EventHandler handler) : base(handler, 255) { }
-            public ComponentDataList(EventHandler handler, IList<ComponentDataType> luint) : base(handler, 255, luint) { }
-            internal ComponentDataList(EventHandler handler, Stream s) : base(handler, 255, s) { }
+            public ComponentDataList(EventHandler handler) : base(handler, Byte.MaxValue) { }
+            public ComponentDataList(EventHandler handler, IList<ComponentDataType> luint) : base(handler, luint, Byte.MaxValue) { }
+            internal ComponentDataList(EventHandler handler, Stream s) : base(handler, s, Byte.MaxValue) { }
             #endregion
 
             #region Data I/O
