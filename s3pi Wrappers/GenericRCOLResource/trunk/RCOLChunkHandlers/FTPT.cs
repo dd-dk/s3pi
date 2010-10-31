@@ -155,9 +155,9 @@ namespace s3pi.GenericRCOLResource
         public class PolygonPointList : AResource.DependentList<PolygonPoint>
         {
             #region Constructors
-            public PolygonPointList(EventHandler handler) : base(handler, 255) { }
-            public PolygonPointList(EventHandler handler, Stream s) : base(handler, 255, s) { }
-            public PolygonPointList(EventHandler handler, IList<PolygonPoint> lpp) : base(handler, 255, lpp) { }
+            public PolygonPointList(EventHandler handler) : base(handler, Byte.MaxValue) { }
+            public PolygonPointList(EventHandler handler, Stream s) : base(handler, s, Byte.MaxValue) { }
+            public PolygonPointList(EventHandler handler, IList<PolygonPoint> lpp) : base(handler, lpp, Byte.MaxValue) { }
             #endregion
 
             #region Data I/O

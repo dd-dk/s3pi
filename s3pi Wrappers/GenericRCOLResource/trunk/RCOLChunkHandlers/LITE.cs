@@ -400,9 +400,9 @@ namespace s3pi.GenericRCOLResource
             uint count;
 
             #region Constructors
-            public LongSectionList(EventHandler handler) : base(handler, 255) { }
-            public LongSectionList(EventHandler handler, uint count, Stream s) : base(null, 255) { this.count = count; elementHandler = handler; Parse(s); this.handler = handler; }
-            public LongSectionList(EventHandler handler, IList<LongSection> llp) : base(handler, 255, llp) { }
+            public LongSectionList(EventHandler handler) : base(handler, Byte.MaxValue) { }
+            public LongSectionList(EventHandler handler, uint count, Stream s) : base(null, Byte.MaxValue) { this.count = count; elementHandler = handler; Parse(s); this.handler = handler; }
+            public LongSectionList(EventHandler handler, IList<LongSection> llp) : base(handler, llp, Byte.MaxValue) { }
             #endregion
 
             #region Data I/O
@@ -513,9 +513,9 @@ namespace s3pi.GenericRCOLResource
             uint count;
 
             #region Constructors
-            public ShortSectionList(EventHandler handler) : base(handler, 255) { }
-            public ShortSectionList(EventHandler handler, uint count, Stream s) : base(null, 255) { this.count = count; elementHandler = handler; Parse(s); this.handler = handler; }
-            public ShortSectionList(EventHandler handler, IList<ShortSection> lss) : base(handler, 255, lss) { }
+            public ShortSectionList(EventHandler handler) : base(handler, Byte.MaxValue) { }
+            public ShortSectionList(EventHandler handler, uint count, Stream s) : base(null, Byte.MaxValue) { this.count = count; elementHandler = handler; Parse(s); this.handler = handler; }
+            public ShortSectionList(EventHandler handler, IList<ShortSection> lss) : base(handler, lss, Byte.MaxValue) { }
             #endregion
 
             #region Data I/O

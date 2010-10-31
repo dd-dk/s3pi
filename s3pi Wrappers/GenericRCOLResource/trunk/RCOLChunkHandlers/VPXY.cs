@@ -140,67 +140,21 @@ namespace s3pi.GenericRCOLResource
         #endregion
 
         #region Sub-types
-        public class ElementInt32 : AHandlerElement, IEquatable<ElementInt32>
+        public class IntList : AResource.SimpleList<Int32>
         {
-            const int recommendedApiVersion = 1;
-
-            #region Attributes
-            Int32 data;
-            #endregion
-
+            static string fmt = "0x{1:X8}; ";
             #region Constructors
-            public ElementInt32(int APIversion, EventHandler handler) : base(APIversion, handler) { }
-            public ElementInt32(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
-            public ElementInt32(int APIversion, EventHandler handler, ElementInt32 basis) : this(APIversion, handler, basis.data) { }
-            public ElementInt32(int APIversion, EventHandler handler, Int32 data) : base(APIversion, handler) { this.data = data; }
+            public IntList(EventHandler handler) : base(handler, ReadInt32, WriteInt32, fmt, byte.MaxValue, ReadListCount, WriteListCount) { }
+            public IntList(EventHandler handler, Stream s) : base(handler, s, ReadInt32, WriteInt32, fmt, byte.MaxValue, ReadListCount, WriteListCount) { }
+            public IntList(EventHandler handler, IList<HandlerElement<Int32>> ltgi) : base(handler, ltgi, ReadInt32, WriteInt32, fmt, byte.MaxValue, ReadListCount, WriteListCount) { }
             #endregion
 
             #region Data I/O
-            void Parse(Stream s) { data = new BinaryReader(s).ReadInt32(); }
-
-            internal void UnParse(Stream s) { new BinaryWriter(s).Write(data); }
+            static uint ReadListCount(Stream s) { return (new BinaryReader(s)).ReadByte(); }
+            static void WriteListCount(Stream s, uint count) { (new BinaryWriter(s)).Write((byte)count); }
+            static int ReadInt32(Stream s) { return new BinaryReader(s).ReadInt32(); }
+            static void WriteInt32(Stream s, int value) { new BinaryWriter(s).Write(value); }
             #endregion
-
-            #region AHandlerElement Members
-            public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
-
-            /// <summary>
-            /// The list of available field names on this API object
-            /// </summary>
-            public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
-
-            public override AHandlerElement Clone(EventHandler handler) { return new ElementInt32(requestedApiVersion, handler, this); }
-            #endregion
-
-            #region IEquatable<Entry> Members
-
-            public bool Equals(ElementInt32 other) { return this.data == other.data; }
-
-            #endregion
-
-            #region Content Fields
-            public Int32 Data { get { return data; } set { if (data != value) { data = value; OnElementChanged(); } } }
-
-            public string Value { get { return "Data: 0x" + data.ToString("X8"); } }
-            #endregion
-        }
-        public class IntList : AResource.DependentList<ElementInt32>
-        {
-            #region Constructors
-            public IntList(EventHandler handler) : base(handler, 255) { }
-            public IntList(EventHandler handler, Stream s) : base(handler, 255, s) { }
-            public IntList(EventHandler handler, IList<ElementInt32> ltgi) : base(handler, 255, ltgi) { }
-            #endregion
-
-            #region Data I/O
-            protected override uint ReadCount(Stream s) { return (new BinaryReader(s)).ReadByte(); }
-            protected override void WriteCount(Stream s, uint count) { (new BinaryWriter(s)).Write((byte)count); }
-
-            protected override ElementInt32 CreateElement(Stream s) { return new ElementInt32(0, elementHandler, s); }
-            protected override void WriteElement(Stream s, ElementInt32 element) { element.UnParse(s); }
-            #endregion
-
-            public override void Add() { this.Add(new ElementInt32(0, null)); }
         }
 
         public abstract class Entry : AHandlerElement, IEquatable<Entry>
@@ -248,7 +202,7 @@ namespace s3pi.GenericRCOLResource
 
             public Entry00(int APIversion, EventHandler handler, Entry00 basis)
                 : this(APIversion, handler, 0, basis.entryID, basis.tgiIndexes) { }
-            public Entry00(int APIversion, EventHandler handler, byte entryType, byte entryID, IList<ElementInt32> tgiIndexes)
+            public Entry00(int APIversion, EventHandler handler, byte entryType, byte entryID, IList<HandlerElement<int>> tgiIndexes)
                 : base(APIversion, handler) { this.entryID = entryID; this.tgiIndexes = new IntList(handler, tgiIndexes); }
 
             internal override void UnParse(Stream s)
@@ -276,10 +230,7 @@ namespace s3pi.GenericRCOLResource
             {
                 get
                 {
-                    string s = "";
-                    s += "EntryID: 0x" + entryID.ToString("X2") + "; TGIIndexes:";
-                    for (int i = 0; i < tgiIndexes.Count; i++) s += " [" + i + "] 0x" + tgiIndexes[i].Data.ToString("X8") + ";";
-                    return s.TrimEnd(';');
+                    return "EntryID: 0x" + entryID.ToString("X2") + "; TGIIndexes: " + tgiIndexes.Value;
                 }
             }
             #endregion
@@ -310,9 +261,9 @@ namespace s3pi.GenericRCOLResource
         public class EntryList : AResource.DependentList<Entry>
         {
             #region Constructors
-            public EntryList(EventHandler handler) : base(handler, 255) { }
-            public EntryList(EventHandler handler, Stream s) : base(handler, 255, s) { }
-            public EntryList(EventHandler handler, IList<Entry> le) : base(handler, 255, le) { }
+            public EntryList(EventHandler handler) : base(handler, Byte.MaxValue) { }
+            public EntryList(EventHandler handler, Stream s) : base(handler, s, Byte.MaxValue) { }
+            public EntryList(EventHandler handler, IList<Entry> le) : base(handler, le, Byte.MaxValue) { }
             #endregion
 
             #region Data I/O

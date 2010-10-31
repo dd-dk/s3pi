@@ -260,7 +260,7 @@ namespace s3pi.GenericRCOLResource
             #region Constructors
             public SevenFloatsList(EventHandler handler) : base(handler, max) { }
             public SevenFloatsList(EventHandler handler, Stream s) : base(null, max) { elementHandler = handler; Parse(s); this.handler = handler; }
-            public SevenFloatsList(EventHandler handler, IList<SevenFloats> lsf) : base(handler, max, lsf) { }
+            public SevenFloatsList(EventHandler handler, IList<SevenFloats> lsf) : base(handler, lsf, max) { }
             #endregion
 
             #region Data I/O
