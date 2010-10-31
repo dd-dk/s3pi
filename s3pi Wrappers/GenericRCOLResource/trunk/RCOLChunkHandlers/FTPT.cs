@@ -30,7 +30,7 @@ namespace s3pi.GenericRCOLResource
 
         #region Attributes
         uint tag = (uint)FOURCC("FTPT");
-        uint version = 6;
+        uint version = 7;
         AreaList footprintAreas;
         AreaList slotAreas;
         #endregion
@@ -41,15 +41,15 @@ namespace s3pi.GenericRCOLResource
         {
             this.handler = handler;
             this.version = basis.version;
-            this.footprintAreas = new AreaList(OnRCOLChanged, basis.footprintAreas);
-            this.slotAreas = new AreaList(OnRCOLChanged, basis.slotAreas);
+            this.footprintAreas = new AreaList(OnRCOLChanged, basis.footprintAreas, version);
+            this.slotAreas = new AreaList(OnRCOLChanged, basis.slotAreas, version);
         }
         public FTPT(int APIversion, EventHandler handler)
             : base(APIversion, null, null)
         {
             this.handler = handler;
-            this.footprintAreas = new AreaList(OnRCOLChanged);
-            this.slotAreas = new AreaList(OnRCOLChanged);
+            this.footprintAreas = new AreaList(OnRCOLChanged, version);
+            this.slotAreas = new AreaList(OnRCOLChanged, version);
         }
 
         #region ARCOLBlock
@@ -64,8 +64,8 @@ namespace s3pi.GenericRCOLResource
             if (checking) if (tag != (uint)FOURCC("FTPT"))
                     throw new InvalidDataException(String.Format("Invalid Tag read: '{0}'; expected: 'FTPT'; at 0x{1:X8}", FOURCC(tag), s.Position));
             version = r.ReadUInt32();
-            footprintAreas = new AreaList(OnRCOLChanged, s);
-            slotAreas = new AreaList(OnRCOLChanged, s);
+            footprintAreas = new AreaList(OnRCOLChanged, s, version);
+            slotAreas = new AreaList(OnRCOLChanged, s, version);
         }
 
         public override Stream UnParse()
@@ -75,9 +75,9 @@ namespace s3pi.GenericRCOLResource
 
             w.Write(tag);
             w.Write(version);
-            if (footprintAreas == null) footprintAreas = new AreaList(OnRCOLChanged);
+            if (footprintAreas == null) footprintAreas = new AreaList(OnRCOLChanged, version);
             footprintAreas.UnParse(ms);
-            if (slotAreas == null) slotAreas = new AreaList(OnRCOLChanged);
+            if (slotAreas == null) slotAreas = new AreaList(OnRCOLChanged, version);
             slotAreas.UnParse(ms);
 
             return ms;
@@ -95,7 +95,7 @@ namespace s3pi.GenericRCOLResource
             float x = 0f;
             float y = 0f;
             #endregion
-            
+
             #region Constructors
             public PolygonPoint(int APIversion, EventHandler handler) : base(APIversion, handler) { }
             public PolygonPoint(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
@@ -175,55 +175,123 @@ namespace s3pi.GenericRCOLResource
         [Flags]
         public enum AreaType : uint
         {
-            Unknown = 0,
-            Placement = 1,
-            Pathing = 2,
-            Shape = 4,
+            Unknown00 = 0x00,
+
+            ForPlacement = 0x01,
+            ForPathing = 0x02,
+            IsEnabled = 0x04,
+            IsDiscouraged = 0x08,
+
+            ForShell = 0x10,
+            Unknown20 = 0x20,
+            Unknown40 = 0x40,
+            Unknown80 = 0x80,
+        }
+        [Flags]
+        public enum AllowIntersection : uint
+        {
+            None = 0x00,
+
+            Unknown01 = 0x01,
+            Walls = 0x02,
+            Objects = 0x04,
+            Sims = 0x08,
+
+            Roofs = 0x10,
+            Fences = 0x20,
+            ModularStairs = 0x40,
+            ObjectsOfSameType = 0x80,
+        }
+        [Flags]
+        public enum SurfaceType : uint
+        {
+            Unknown00 = 0x00,
+
+            Terrain = 0x01,
+            Floor = 0x02,
+            Pool = 0x04,
+            Pond = 0x08,
+
+            Fence = 0x10,
+            AnySurface = 0x20,
+            Air = 0x40,
+            Roof = 0x80,
+        }
+        [Flags]
+        public enum SurfaceAttribute : uint
+        {
+            Unknown00 = 0x00,
+            Inside = 0x01,
+            Outside = 0x02,
+            Slope = 0x04,
+            Unknown08 = 0x08,
         }
         public class Area : AHandlerElement, IEquatable<Area>
         {
             const int recommendedApiVersion = 1;
 
+            uint version;//of FTPT - not a ContentFields property
+
             #region Attributes
             uint name;
-            byte unknown1;
-            AreaType areaType;
+            byte priority;
+            AreaType areaTypeFlags;
             PolygonPointList closedPolygon;
-            uint placementFlags1;
-            uint placementFlags2;
-            uint placementFlags3;
-            byte unknown2;
+            AllowIntersection allowIntersectionFlags;
+            SurfaceType surfaceTypeFlags;
+            SurfaceAttribute surfaceAttributeFlags;
+            byte levelOffset;
+            float elevationOffset;//FTPT.Version>=0x07
             float lowerX;
             float lowerY;
             float upperX;
             float upperY;
             #endregion
-            
+
             #region Constructors
-            public Area(int APIversion, EventHandler handler) : base(APIversion, handler) { closedPolygon = new PolygonPointList(handler); }
-            public Area(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
+            public Area(int APIversion, EventHandler handler, uint version) : base(APIversion, handler) { this.version = version; closedPolygon = new PolygonPointList(handler); }
+            public Area(int APIversion, EventHandler handler, Stream s, uint version) : base(APIversion, handler) { this.version = version; Parse(s); }
             public Area(int APIversion, EventHandler handler, Area basis)
-                : this(APIversion, handler,
-                basis.name, basis.unknown1, basis.areaType, basis.closedPolygon, basis.placementFlags1, basis.placementFlags2, basis.placementFlags3,
-                basis.unknown2, basis.lowerX, basis.lowerY, basis.upperX, basis.upperY) { }
-            /*public Area(int APIversion, EventHandler handler,
-                uint name, byte unknown1, AreaType areaType, uint placementFlags1, uint placementFlags2, uint placementFlags3,
-                byte unknown2, float lowerX, float lowerY, float upperX, float upperY)
-                : this(APIversion, handler, name, unknown1, areaType, new List<PolygonPoint>(),
-                placementFlags1, placementFlags2, placementFlags3, unknown2, lowerX, lowerY, upperX, upperY) { }/**/
-            public Area(int APIversion, EventHandler handler,
-                uint name, byte unknown1, AreaType areaType, IList<PolygonPoint> closedPolygon, uint placementFlags1, uint placementFlags2, uint placementFlags3,
-                byte unknown2, float lowerX, float lowerY, float upperX, float upperY)
+                : this(APIversion, handler, basis.version,
+                basis.name, basis.priority, basis.areaTypeFlags, basis.closedPolygon,
+                basis.allowIntersectionFlags, basis.surfaceTypeFlags, basis.surfaceAttributeFlags,
+                basis.levelOffset,
+                basis.elevationOffset,
+                basis.lowerX, basis.lowerY, basis.upperX, basis.upperY) { }
+            public Area(int APIversion, EventHandler handler, uint version,
+                uint name, byte priority, AreaType areaTypeFlags, IList<PolygonPoint> closedPolygon,
+                AllowIntersection allowIntersectionFlags, SurfaceType surfaceTypeFlags, SurfaceAttribute surfaceAttributeFlags,
+                byte levelOffset,
+                float lowerX, float lowerY, float upperX, float upperY)
+                : this(APIversion, handler, version,
+                name, priority, areaTypeFlags, closedPolygon,
+                allowIntersectionFlags, surfaceTypeFlags, surfaceAttributeFlags,
+                levelOffset,
+                0,
+                lowerX, lowerY, upperX, upperY)
+            {
+                if (checking) if (version >= 0x00000007)
+                        throw new InvalidOperationException(String.Format("Constructor requires ElevationOffset for version {0}", version));
+            }
+            public Area(int APIversion, EventHandler handler, uint version,
+                uint name, byte priority, AreaType areaTypeFlags, IList<PolygonPoint> closedPolygon,
+                AllowIntersection allowIntersectionFlags, SurfaceType surfaceTypeFlags, SurfaceAttribute surfaceAttributeFlags,
+                byte levelOffset,
+                float elevationOffset,
+                float lowerX, float lowerY, float upperX, float upperY)
                 : base(APIversion, handler)
             {
+                this.version = version;
+
                 this.name = name;
-                this.unknown1 = unknown1;
-                this.areaType = areaType;
+                this.priority = priority;
+                this.areaTypeFlags = areaTypeFlags;
                 this.closedPolygon = new PolygonPointList(handler, closedPolygon);
-                this.placementFlags1 = placementFlags1;
-                this.placementFlags2 = placementFlags2;
-                this.placementFlags3 = placementFlags3;
-                this.unknown2 = unknown2;
+                this.allowIntersectionFlags = allowIntersectionFlags;
+                this.surfaceTypeFlags = surfaceTypeFlags;
+                this.surfaceAttributeFlags = surfaceAttributeFlags;
+                this.levelOffset = levelOffset;
+                this.elevationOffset = elevationOffset;
                 this.lowerX = lowerX;
                 this.lowerY = lowerY;
                 this.upperX = upperX;
@@ -236,13 +304,14 @@ namespace s3pi.GenericRCOLResource
             {
                 BinaryReader r = new BinaryReader(s);
                 this.name = r.ReadUInt32();
-                this.unknown1 = r.ReadByte();
-                this.areaType = (AreaType)r.ReadUInt32();
+                this.priority = r.ReadByte();
+                this.areaTypeFlags = (AreaType)r.ReadUInt32();
                 this.closedPolygon = new PolygonPointList(handler, s);
-                this.placementFlags1 = r.ReadUInt32();
-                this.placementFlags2 = r.ReadUInt32();
-                this.placementFlags3 = r.ReadUInt32();
-                this.unknown2 = r.ReadByte();
+                this.allowIntersectionFlags = (AllowIntersection)r.ReadUInt32();
+                this.surfaceTypeFlags = (SurfaceType)r.ReadUInt32();
+                this.surfaceAttributeFlags = (SurfaceAttribute)r.ReadUInt32();
+                this.levelOffset = r.ReadByte();
+                this.elevationOffset = version >= 0x00000007 ? r.ReadSingle() : 0;
                 this.lowerX = r.ReadSingle();
                 this.lowerY = r.ReadSingle();
                 this.upperX = r.ReadSingle();
@@ -253,14 +322,15 @@ namespace s3pi.GenericRCOLResource
             {
                 BinaryWriter w = new BinaryWriter(s);
                 w.Write(name);
-                w.Write(unknown1);
-                w.Write((uint)areaType);
+                w.Write(priority);
+                w.Write((uint)areaTypeFlags);
                 if (closedPolygon == null) closedPolygon = new PolygonPointList(handler);
                 closedPolygon.UnParse(s);
-                w.Write(placementFlags1);
-                w.Write(placementFlags2);
-                w.Write(placementFlags3);
-                w.Write(unknown2);
+                w.Write((uint)allowIntersectionFlags);
+                w.Write((uint)surfaceTypeFlags);
+                w.Write((uint)surfaceAttributeFlags);
+                w.Write(levelOffset);
+                if (version >= 0x00000007) w.Write(elevationOffset);
                 w.Write(lowerX);
                 w.Write(lowerY);
                 w.Write(upperX);
@@ -274,7 +344,18 @@ namespace s3pi.GenericRCOLResource
             /// <summary>
             /// The list of available field names on this API object
             /// </summary>
-            public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
+            public override List<string> ContentFields
+            {
+                get
+                {
+                    List<string> res = GetContentFields(requestedApiVersion, this.GetType());
+                    if (version < 0x00000007)
+                    {
+                        res.Remove("ElevationOffset");
+                    }
+                    return res;
+                }
+            }
 
             public override AHandlerElement Clone(EventHandler handler) { return new Area(requestedApiVersion, handler, this); }
             #endregion
@@ -284,13 +365,13 @@ namespace s3pi.GenericRCOLResource
             public bool Equals(Area other)
             {
                 return name == other.name &&
-                    unknown1 == other.unknown1 &&
-                    areaType == other.areaType &&
+                    priority == other.priority &&
+                    areaTypeFlags == other.areaTypeFlags &&
                     closedPolygon == other.closedPolygon &&
-                    placementFlags1 == other.placementFlags1 &&
-                    placementFlags2 == other.placementFlags2 &&
-                    placementFlags3 == other.placementFlags3 &&
-                    unknown2 == other.unknown2 &&
+                    allowIntersectionFlags == other.allowIntersectionFlags &&
+                    surfaceTypeFlags == other.surfaceTypeFlags &&
+                    surfaceAttributeFlags == other.surfaceAttributeFlags &&
+                    levelOffset == other.levelOffset &&
                     lowerX == other.lowerX &&
                     lowerY == other.lowerY &&
                     upperX == other.upperX &&
@@ -300,17 +381,35 @@ namespace s3pi.GenericRCOLResource
             #endregion
 
             #region Content Fields
+            [ElementPriority(1)]
             public uint Name { get { return name; } set { if (name != value) { name = value; OnElementChanged(); } } }
-            public byte Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; OnElementChanged(); } } }
-            public AreaType AreaType { get { return areaType; } set { if (areaType != value) { areaType = value; OnElementChanged(); } } }
+            [ElementPriority(2)]
+            public byte Priority { get { return priority; } set { if (priority != value) { priority = value; OnElementChanged(); } } }
+            [ElementPriority(3)]
+            public AreaType AreaTypeFlags { get { return areaTypeFlags; } set { if (areaTypeFlags != value) { areaTypeFlags = value; OnElementChanged(); } } }
+            [ElementPriority(4)]
             public PolygonPointList ClosedPolygon { get { return closedPolygon; } set { if (closedPolygon != value) { closedPolygon = new PolygonPointList(handler, value); OnElementChanged(); } } }
-            public uint PlacementFlags1 { get { return placementFlags1; } set { if (placementFlags1 != value) { placementFlags1 = value; OnElementChanged(); } } }
-            public uint PlacementFlags2 { get { return placementFlags2; } set { if (placementFlags2 != value) { placementFlags2 = value; OnElementChanged(); } } }
-            public uint PlacementFlags3 { get { return placementFlags3; } set { if (placementFlags3 != value) { placementFlags3 = value; OnElementChanged(); } } }
-            public byte Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; OnElementChanged(); } } }
+            [ElementPriority(5)]
+            public AllowIntersection AllowIntersectionFlags { get { return allowIntersectionFlags; } set { if (allowIntersectionFlags != value) { allowIntersectionFlags = value; OnElementChanged(); } } }
+            [ElementPriority(6)]
+            public SurfaceType SurfaceTypeFlags { get { return surfaceTypeFlags; } set { if (surfaceTypeFlags != value) { surfaceTypeFlags = value; OnElementChanged(); } } }
+            [ElementPriority(7)]
+            public SurfaceAttribute SurfaceAttributeFlags { get { return surfaceAttributeFlags; } set { if (surfaceAttributeFlags != value) { surfaceAttributeFlags = value; OnElementChanged(); } } }
+            [ElementPriority(8)]
+            public byte LevelOffset { get { return levelOffset; } set { if (levelOffset != value) { levelOffset = value; OnElementChanged(); } } }
+            [ElementPriority(9)]
+            public float ElevationOffset
+            {
+                get { if (version < 0x00000007) throw new InvalidOperationException(); return elevationOffset; }
+                set { if (version < 0x00000007) throw new InvalidOperationException(); if (elevationOffset != value) { elevationOffset = value; OnElementChanged(); } }
+            }
+            [ElementPriority(10)]
             public float LowerX { get { return lowerX; } set { if (lowerX != value) { lowerX = value; OnElementChanged(); } } }
+            [ElementPriority(11)]
             public float LowerY { get { return lowerY; } set { if (lowerY != value) { lowerY = value; OnElementChanged(); } } }
+            [ElementPriority(12)]
             public float UpperX { get { return upperX; } set { if (upperX != value) { upperX = value; OnElementChanged(); } } }
+            [ElementPriority(13)]
             public float UpperY { get { return upperY; } set { if (upperY != value) { upperY = value; OnElementChanged(); } } }
 
             public string Value
@@ -319,13 +418,14 @@ namespace s3pi.GenericRCOLResource
                 {
                     string s = "";
                     s += "Name: 0x" + name.ToString("X8");
-                    s += "\nUnknown1: 0x" + unknown1.ToString("X8");
-                    s += "\nAreaType: " + new TypedValue(areaType.GetType(), areaType, "X");
+                    s += "\nPriority: 0x" + priority.ToString("X2");
+                    s += "\nAreaTypeFlags: " + this["AreaTypeFlags"];
                     s += "\nClosedPolygon: "; foreach (PolygonPoint pp in closedPolygon) s += pp.Value + "; "; s = s.TrimEnd(';', ' ');
-                    s += "\nPlacementFlags1: 0x" + placementFlags1.ToString("X8");
-                    s += "\nPlacementFlags2: 0x" + placementFlags2.ToString("X8");
-                    s += "\nPlacementFlags3: 0x" + placementFlags3.ToString("X8");
-                    s += "\nUnknown2: 0x" + unknown2.ToString("X8");
+                    s += "\nAllowIntersectionFlags: " + this["AllowIntersectionFlags"];
+                    s += "\nSurfaceTypeFlags: " + this["SurfaceTypeFlags"];
+                    s += "\nSurfaceAttributeFlags: " + this["SurfaceAttributeFlags"];
+                    s += "\nLevelOffset: 0x" + levelOffset.ToString("X8");
+                    if (version >= 0x00000007) s += "\nElevationOffset: " + elevationOffset.ToString();
                     s += "\nLowerX: " + lowerX;
                     s += "\nLowerY: " + lowerY;
                     s += "\nUpperX: " + upperX;
@@ -337,29 +437,30 @@ namespace s3pi.GenericRCOLResource
         }
         public class AreaList : AResource.DependentList<Area>
         {
+            uint version;
             #region Constructors
-            public AreaList(EventHandler handler) : base(handler, 255) { }
-            public AreaList(EventHandler handler, Stream s) : base(handler, 255, s) { }
-            public AreaList(EventHandler handler, IList<Area> lfpa) : base(handler, 255, lfpa) { }
+            public AreaList(EventHandler handler, uint version) : base(handler, 255) { this.version = version; }
+            public AreaList(EventHandler handler, Stream s, uint version) : base(null, 255) { this.version = version; elementHandler = handler; Parse(s); this.handler = handler; }
+            public AreaList(EventHandler handler, IList<Area> lfpa, uint version) : base(null, 255) { this.version = version; elementHandler = handler; this.AddRange(lfpa); this.handler = handler; }
             #endregion
 
             #region Data I/O
             protected override uint ReadCount(Stream s) { return (new BinaryReader(s)).ReadByte(); }
             protected override void WriteCount(Stream s, uint count) { (new BinaryWriter(s)).Write((byte)count); }
 
-            protected override Area CreateElement(Stream s) { return new Area(0, elementHandler, s); }
+            protected override Area CreateElement(Stream s) { return new Area(0, elementHandler, s, version); }
 
             protected override void WriteElement(Stream s, Area element) { element.UnParse(s); }
             #endregion
 
-            public override void Add() { this.Add(new Area(0, null)); }
+            public override void Add() { this.Add(new Area(0, null, version)); }
         }
         #endregion
 
         #region Content Fields
         public uint Version { get { return version; } set { if (version != value) { version = value; OnRCOLChanged(this, EventArgs.Empty); } } }
-        public AreaList FootprintAreas { get { return footprintAreas; } set { if (footprintAreas != value) { footprintAreas = new AreaList(OnRCOLChanged, value); OnRCOLChanged(this, EventArgs.Empty); } } }
-        public AreaList SlotAreas { get { return slotAreas; } set { if (slotAreas != value) { slotAreas = new AreaList(OnRCOLChanged, value); OnRCOLChanged(this, EventArgs.Empty); } } }
+        public AreaList FootprintAreas { get { return footprintAreas; } set { if (footprintAreas != value) { footprintAreas = new AreaList(OnRCOLChanged, value, version); OnRCOLChanged(this, EventArgs.Empty); } } }
+        public AreaList SlotAreas { get { return slotAreas; } set { if (slotAreas != value) { slotAreas = new AreaList(OnRCOLChanged, value, version); OnRCOLChanged(this, EventArgs.Empty); } } }
 
         public string Value
         {
