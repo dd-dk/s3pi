@@ -56,7 +56,7 @@ namespace s3pi.Interfaces
 
         #region AApiVersionedFields
         /// <summary>
-        /// A <c>List&lt;string&gt;</c> of available field names on object
+        /// A <see cref="List{String}"/> of available field names on object
         /// </summary>
         public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
         #endregion
@@ -890,6 +890,203 @@ namespace s3pi.Interfaces
             /// A displayable string representing the list.
             /// </summary>
             public String Value { get { string s = ""; for (int i = 0; i < Count; i++) s += string.Format("0x{0:X8}: {1}\n", i, this[i].Value); return s; } }
+            #endregion
+        }
+
+        /// <summary>
+        /// A flexible generic list that implements <see cref="DependentList{T}"/> for
+        /// a simple data type (such as <see cref="UInt32"/>).
+        /// </summary>
+        /// <typeparam name="T">A simple data type (such as <see cref="UInt32"/>).</typeparam>
+        /// <example>
+        /// The following code shows how to create a list of UInt32 values, with a UInt32 entry count
+        /// stored in the stream immediately before the list.
+        /// <code>
+        /// <![CDATA[
+        /// class hasUInt32List
+        /// {
+        ///     SimpleList<uint> uintList = new SimpleList<uint>(null,
+        ///         s => new BinaryReader(s).ReadUInt32(),
+        ///         (s, value) => new BinaryWriter(s).Write(value));
+        /// }
+        /// ]]>
+        /// </code>
+        /// For more complex cases, or where repeated use of the same kind of . is needed,
+        /// it can be worthwhile extending the class, as shown:
+        /// <code>
+        /// <![CDATA[
+        /// public class ByteList : AResource.SimpleList<byte>
+        /// {
+        ///     static string fmt = "0x{1:X2}; ";
+        ///     
+        ///     public ByteList(EventHandler handler) : base(handler, ReadByte, WriteByte, fmt, ReadListCount, WriteListCount) { }
+        ///     public ByteList(EventHandler handler, Stream s) : base(handler, s, ReadByte, WriteByte, fmt, ReadListCount, WriteListCount) { }
+        ///     public ByteList(EventHandler handler, IList<HandlerElement<byte>> le) : base(handler, le, ReadByte, WriteByte, fmt, ReadListCount, WriteListCount) { }
+        ///     
+        ///     static uint ReadListCount(Stream s) { return new BinaryReader(s).ReadByte(); }
+        ///     static void WriteListCount(Stream s, uint count) { new BinaryWriter(s).Write((byte)count); }
+        ///     static byte ReadByte(Stream s) { return new BinaryReader(s).ReadByte(); }
+        ///     static void WriteByte(Stream s, byte value) { new BinaryWriter(s).Write(value); }
+        /// }
+        /// ]]>
+        /// </code>
+        /// </example>
+        /// <seealso cref="HandlerElement{T}"/>
+        public class SimpleList<T> : DependentList<HandlerElement<T>>
+            where T: struct, IEquatable<T>
+        {
+            /// <summary>
+            /// Create a new element of type <typeparamref name="T"/> from a <see cref="Stream"/>.
+            /// </summary>
+            /// <param name="s">The <see cref="Stream"/> from which to read the element data.</param>
+            /// <returns>A new element of type <typeparamref name="T"/>.</returns>
+            public delegate T CreateElementMethod(Stream s);
+            /// <summary>
+            /// Write an element of type <typeparamref name="T"/> to a <see cref="Stream"/>.
+            /// </summary>
+            /// <param name="s">The <see cref="Stream"/> to which to write the value.</param>
+            /// <param name="value">The value of type <typeparamref name="T"/> to write.</param>
+            public delegate void WriteElementMethod(Stream s, T value);
+            /// <summary>
+            /// Return the number of list elements to read.
+            /// </summary>
+            /// <param name="s">A <see cref="Stream"/> that may contain the number of elements.</param>
+            /// <returns>The number of list elements to read.</returns>
+            public delegate uint ReadCountMethod(Stream s);
+            /// <summary>
+            /// Store the number of elements in the list.
+            /// </summary>
+            /// <param name="s">A <see cref="Stream"/> to which list elements will be written after the count.</param>
+            /// <param name="count">The number of list elements.</param>
+            public delegate void WriteCountMethod(Stream s, uint count);
+
+            CreateElementMethod createElement;
+            WriteElementMethod writeElement;
+            string valFormat = "0x{1:X8}\n";
+            ReadCountMethod readCount;
+            WriteCountMethod writeCount;
+
+            #region Constructors
+            /// <summary>
+            /// Initializes a new instance of the <see cref="SimpleList{T}"/> class
+            /// that is empty.
+            /// </summary>
+            /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
+            /// <param name="createElement">Required; the method to create a new element in the list from a stream.</param>
+            /// <param name="writeElement">Required; the method to create a new element in the list from a stream.</param>
+            /// <param name="valFormat">Optional, default is <c>"0x{1:X8}\n"</c>; the method to create a new element in the list from a stream.</param>
+            /// <param name="readCount">Optional; default is to read a <see cref="UInt32"/> from the <see cref="Stream"/>.</param>
+            /// <param name="writeCount">Optional; default is to write a <see cref="UInt32"/> to the <see cref="Stream"/>.</param>
+            public SimpleList(EventHandler handler, CreateElementMethod createElement, WriteElementMethod writeElement, string valFormat = "0x{1:X8}\n", ReadCountMethod readCount = null, WriteCountMethod writeCount = null) : this(handler, -1, createElement, writeElement, valFormat, readCount, writeCount) { }
+            /// <summary>
+            /// Initializes a new instance of the <see cref="SimpleList{T}"/> class
+            /// with a maximum size of <paramref name="size"/>
+            /// that is empty.
+            /// </summary>
+            /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
+            /// <param name="size">Maximum number of elements in the list.</param>
+            /// <param name="createElement">Required; the method to create a new element in the list from a stream.</param>
+            /// <param name="writeElement">Required; the method to create a new element in the list from a stream.</param>
+            /// <param name="valFormat">Optional, default is <c>"0x{1:X8}\n"</c>; the method to create a new element in the list from a stream.</param>
+            /// <param name="readCount">Optional; default is to read a <see cref="UInt32"/> from the <see cref="Stream"/>.</param>
+            /// <param name="writeCount">Optional; default is to write a <see cref="UInt32"/> to the <see cref="Stream"/>.</param>
+            public SimpleList(EventHandler handler, long size, CreateElementMethod createElement, WriteElementMethod writeElement, string valFormat = "0x{1:X8}\n", ReadCountMethod readCount = null, WriteCountMethod writeCount = null) : base(handler, size) { this.createElement = createElement; this.writeElement = writeElement; this.valFormat = valFormat; this.readCount = readCount; this.writeCount = writeCount; }
+            /// <summary>
+            /// Initializes a new instance of the <see cref="SimpleList{T}"/> class
+            /// initialised from <paramref name="iList"/>.
+            /// </summary>
+            /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
+            /// <param name="iList">The <c>IList&lt;HandlerElement&lt;T&gt;&gt;</c> to use as the initial content of the list.</param>
+            /// <param name="createElement">Required; the method to create a new element in the list from a stream.</param>
+            /// <param name="writeElement">Required; the method to create a new element in the list from a stream.</param>
+            /// <param name="valFormat">Optional, default is <c>"0x{1:X8}\n"</c>; the method to create a new element in the list from a stream.</param>
+            /// <param name="readCount">Optional; default is to read a <see cref="UInt32"/> from the <see cref="Stream"/>.</param>
+            /// <param name="writeCount">Optional; default is to write a <see cref="UInt32"/> to the <see cref="Stream"/>.</param>
+            public SimpleList(EventHandler handler, IList<HandlerElement<T>> iList, CreateElementMethod createElement, WriteElementMethod writeElement, string valFormat = "0x{1:X8}\n", ReadCountMethod readCount = null, WriteCountMethod writeCount = null) : this(handler, -1, iList, createElement, writeElement, valFormat, readCount, writeCount) { }
+            /// <summary>
+            /// Initializes a new instance of the <see cref="SimpleList{T}"/> class
+            /// with a maximum size of <paramref name="size"/>
+            /// initialised from <paramref name="iList"/>.
+            /// </summary>
+            /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
+            /// <param name="size">Maximum number of elements in the list.</param>
+            /// <param name="iList">The <c>IList&lt;HandlerElement&lt;T&gt;&gt;</c> to use as the initial content of the list.</param>
+            /// <param name="createElement">Required; the method to create a new element in the list from a stream.</param>
+            /// <param name="writeElement">Required; the method to create a new element in the list from a stream.</param>
+            /// <param name="valFormat">Optional, default is <c>"0x{1:X8}\n"</c>; the method to create a new element in the list from a stream.</param>
+            /// <param name="readCount">Optional; default is to read a <see cref="UInt32"/> from the <see cref="Stream"/>.</param>
+            /// <param name="writeCount">Optional; default is to write a <see cref="UInt32"/> to the <see cref="Stream"/>.</param>
+            public SimpleList(EventHandler handler, long size, IList<HandlerElement<T>> iList, CreateElementMethod createElement, WriteElementMethod writeElement, string valFormat = "0x{1:X8}\n", ReadCountMethod readCount = null, WriteCountMethod writeCount = null) : base(handler, size, iList) { this.createElement = createElement; this.writeElement = writeElement; this.valFormat = valFormat; this.readCount = readCount; this.writeCount = writeCount; }
+            /// <summary>
+            /// Initializes a new instance of the <see cref="SimpleList{T}"/> class
+            /// initialised from <paramref name="s"/>.
+            /// </summary>
+            /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
+            /// <param name="s">The <see cref="Stream"/> to read for the initial content of the list.</param>
+            /// <param name="createElement">Required; the method to create a new element in the list from a stream.</param>
+            /// <param name="writeElement">Required; the method to create a new element in the list from a stream.</param>
+            /// <param name="valFormat">Optional, default is <c>"0x{1:X8}\n"</c>; the method to create a new element in the list from a stream.</param>
+            /// <param name="readCount">Optional; default is to read a <see cref="UInt32"/> from the <see cref="Stream"/>.</param>
+            /// <param name="writeCount">Optional; default is to write a <see cref="UInt32"/> to the <see cref="Stream"/>.</param>
+            public SimpleList(EventHandler handler, Stream s, CreateElementMethod createElement, WriteElementMethod writeElement, string valFormat = "0x{1:X8}\n", ReadCountMethod readCount = null, WriteCountMethod writeCount = null) : this(handler, -1, s, createElement, writeElement, valFormat, readCount, writeCount) { }
+            /// <summary>
+            /// Initializes a new instance of the <see cref="SimpleList{T}"/> class
+            /// with a maximum size of <paramref name="size"/>
+            /// initialised from <paramref name="s"/>.
+            /// </summary>
+            /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
+            /// <param name="size">Maximum number of elements in the list.</param>
+            /// <param name="s">The <see cref="Stream"/> to read for the initial content of the list.</param>
+            /// <param name="createElement">Required; the method to create a new element in the list from a stream.</param>
+            /// <param name="writeElement">Required; the method to create a new element in the list from a stream.</param>
+            /// <param name="valFormat">Optional, default is <c>"0x{1:X8}\n"</c>; the method to create a new element in the list from a stream.</param>
+            /// <param name="readCount">Optional; default is to read a <see cref="UInt32"/> from the <see cref="Stream"/>.</param>
+            /// <param name="writeCount">Optional; default is to write a <see cref="UInt32"/> to the <see cref="Stream"/>.</param>
+            public SimpleList(EventHandler handler, long size, Stream s, CreateElementMethod createElement, WriteElementMethod writeElement, string valFormat = "0x{1:X8}\n", ReadCountMethod readCount = null, WriteCountMethod writeCount = null) : this(null, size, createElement, writeElement, valFormat, readCount, writeCount) { elementHandler = handler; Parse(s); this.handler = handler; }
+            #endregion
+
+            #region Data I/O
+            /// <summary>
+            /// Return the number of elements to be created.
+            /// </summary>
+            /// <param name="s"><see cref="System.IO.Stream"/> being processed.</param>
+            /// <returns>The number of elements to be created.</returns>
+            protected override uint ReadCount(Stream s) { return readCount == null ? base.ReadCount(s) : readCount(s); }
+            /// <summary>
+            /// Write the count of list elements to the stream.
+            /// </summary>
+            /// <param name="s"><see cref="System.IO.Stream"/> to write <paramref name="count"/> to.</param>
+            /// <param name="count">Value to write to <see cref="System.IO.Stream"/> <paramref name="s"/>.</param>
+            protected override void WriteCount(Stream s, uint count) { if (writeCount == null) base.WriteCount(s, count); else writeCount(s, count); }
+
+            /// <summary>
+            /// Creates an new list element of type <typeparamref name="T"/> by reading <paramref name="s"/>.
+            /// </summary>
+            /// <param name="s"><see cref="Stream"/> containing data.</param>
+            /// <returns>New list element.</returns>
+            protected override HandlerElement<T> CreateElement(Stream s) { return new HandlerElement<T>(0, elementHandler, createElement(s)); }
+            /// <summary>
+            /// Writes the value of a list element to <paramref name="s"/>.
+            /// </summary>
+            /// <param name="s"><see cref="Stream"/> containing data.</param>
+            /// <param name="element">List element for which to write the value to the <seealso cref="Stream"/>.</param>
+            protected override void WriteElement(Stream s, HandlerElement<T> element) { writeElement(s, element.Val); }
+            #endregion
+
+            /// <summary>
+            /// Add a default element to a <see cref="SimpleList{T}".
+            /// </summary>
+            /// <exception cref="NotImplementedException">Lists of abstract classes will fail
+            /// with a NotImplementedException.</exception>
+            /// <exception cref="InvalidOperationException">Thrown when list size exceeded.</exception>
+            /// <exception cref="NotSupportedException">The <see cref="DependentList{T}"/> is read-only.</exception>
+            public override void Add() { this.Add(new HandlerElement<uint>(0, null)); }
+
+            #region Content Fields
+            /// <summary>
+            /// Return the list content, formated for display only, using the element format supplied on the list constructor.
+            /// </summary>
+            public String Value { get { string fmt = "[{0:X" + Count.ToString("X").Length + "}]: " + valFormat; string s = ""; for (int i = 0; i < Count; i++) s += string.Format(fmt, i, this[i].Val); return s; } }
             #endregion
         }
         #endregion
