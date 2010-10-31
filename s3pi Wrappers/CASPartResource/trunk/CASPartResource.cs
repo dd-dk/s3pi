@@ -258,62 +258,21 @@ namespace CASPartResource
             public override void Add() { this.Add(new XMLEntry(0, null)); }
         }
 
-        public class ByteEntry : AHandlerElement, IEquatable<ByteEntry>
+        public class ByteEntryList : AResource.SimpleList<byte>
         {
-            const int recommendedApiVersion = 1;
-
-            #region Attributes
-            byte index;
-            #endregion
-
+            static string fmt = "0x{1:X2}; ";
             #region Constructors
-            public ByteEntry(int APIversion, EventHandler handler) : base(APIversion, handler) { }
-            public ByteEntry(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
-            public ByteEntry(int APIversion, EventHandler handler, ByteEntry basis) : this(APIversion, handler, basis.index) { }
-            public ByteEntry(int APIversion, EventHandler handler, byte index) : base(APIversion, handler) { this.index = index; }
+            public ByteEntryList(EventHandler handler) : base(handler, ReadByte, WriteByte, fmt, byte.MaxValue, ReadListCount, WriteListCount) { }
+            public ByteEntryList(EventHandler handler, Stream s) : base(handler, s, ReadByte, WriteByte, fmt, byte.MaxValue, ReadListCount, WriteListCount) { }
+            public ByteEntryList(EventHandler handler, IList<HandlerElement<byte>> le) : base(handler, le, ReadByte, WriteByte, fmt, byte.MaxValue, ReadListCount, WriteListCount) { }
             #endregion
 
             #region Data I/O
-            void Parse(Stream s) { index = new BinaryReader(s).ReadByte(); }
-
-            internal void UnParse(Stream s) { new BinaryWriter(s).Write(index); }
+            static uint ReadListCount(Stream s) { return new BinaryReader(s).ReadByte(); }
+            static void WriteListCount(Stream s, uint count) { new BinaryWriter(s).Write((byte)count); }
+            static byte ReadByte(Stream s) { return new BinaryReader(s).ReadByte(); }
+            static void WriteByte(Stream s, byte value) { new BinaryWriter(s).Write(value); }
             #endregion
-
-            #region AHandlerElement Members
-            public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
-            public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
-            public override AHandlerElement Clone(EventHandler handler) { return new ByteEntry(requestedApiVersion, handler, this); }
-            #endregion
-
-            #region IEquatable<XMLEntry> Members
-
-            public bool Equals(ByteEntry other) { return this.index == other.index; }
-
-            #endregion
-
-            #region Content Fields
-            [ElementPriority(1)]
-            public byte Index { get { return index; } set { if (index != value) { index = value; OnElementChanged(); } } }
-
-            public string Value { get { return string.Format("{0}: {1}\n", "Index", this["Index"]); } }
-            #endregion
-        }
-        public class ByteEntryList : AResource.DependentList<ByteEntry>
-        {
-            #region Constructors
-            public ByteEntryList(EventHandler handler) : base(handler) { }
-            public ByteEntryList(EventHandler handler, Stream s) : base(handler, s) { }
-            public ByteEntryList(EventHandler handler, IList<ByteEntry> le) : base(handler, le) { }
-            #endregion
-
-            #region Data I/O
-            protected override uint ReadCount(Stream s) { return new BinaryReader(s).ReadByte(); }
-            protected override void WriteCount(Stream s, uint count) { new BinaryWriter(s).Write((byte)count); }
-            protected override ByteEntry CreateElement(Stream s) { return new ByteEntry(0, elementHandler, s); }
-            protected override void WriteElement(Stream s, ByteEntry element) { element.UnParse(s); }
-            #endregion
-
-            public override void Add() { this.Add(new ByteEntry(0, null)); }
         }
 
         public class InnerEntry : AHandlerElement, IEquatable<InnerEntry>
@@ -395,9 +354,9 @@ namespace CASPartResource
         public class InnerEntryList : AResource.DependentList<InnerEntry>
         {
             #region Constructors
-            public InnerEntryList(EventHandler handler) : base(handler, 256) { }
-            public InnerEntryList(EventHandler handler, Stream s) : base(handler, 256, s) { }
-            public InnerEntryList(EventHandler handler, IList<InnerEntry> le) : base(handler, 256, le) { }
+            public InnerEntryList(EventHandler handler) : base(handler, Byte.MaxValue) { }
+            public InnerEntryList(EventHandler handler, Stream s) : base(handler, s, Byte.MaxValue) { }
+            public InnerEntryList(EventHandler handler, IList<InnerEntry> le) : base(handler, le, Byte.MaxValue) { }
             #endregion
 
             #region Data I/O
@@ -496,9 +455,9 @@ namespace CASPartResource
         public class OuterEntryList : AResource.DependentList<OuterEntry>
         {
             #region Constructors
-            public OuterEntryList(EventHandler handler) : base(handler, 256) { }
-            public OuterEntryList(EventHandler handler, Stream s) : base(handler, 256, s) { }
-            public OuterEntryList(EventHandler handler, IList<OuterEntry> le) : base(handler, 256, le) { }
+            public OuterEntryList(EventHandler handler) : base(handler, Byte.MaxValue) { }
+            public OuterEntryList(EventHandler handler, Stream s) : base(handler, s, Byte.MaxValue) { }
+            public OuterEntryList(EventHandler handler, IList<OuterEntry> le) : base(handler, le, Byte.MaxValue) { }
             #endregion
 
             #region Data I/O
@@ -577,10 +536,7 @@ namespace CASPartResource
                     }
                     else if (field.EndsWith("Indexes"))
                     {
-                        ByteEntryList indexes = this[field].Value as ByteEntryList;
-                        string fmt = "\n" + field + "[0x{0:X" + indexes.Count.ToString("X").Length + "}]: {1} ({2})";
-                        for (int i = 0; i < indexes.Count; i++)
-                            s += String.Format(fmt, i, indexes[i]["Index"], tgiBlocks[indexes[i].Index]);
+                        s += "\n" + field + ": " + (this[field].Value as ByteEntryList).Value.TrimEnd(';', ' ');
                     }
                     else if (field.Equals("XmlEntries"))
                     {

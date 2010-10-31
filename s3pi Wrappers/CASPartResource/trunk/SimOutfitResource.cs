@@ -480,9 +480,9 @@ namespace CASPartResource
         public class CASEntryList : AResource.DependentList<CASEntry>
         {
             #region Constructors
-            public CASEntryList(EventHandler handler) : base(handler, 256) { }
-            public CASEntryList(EventHandler handler, Stream s) : base(handler, 256, s) { }
-            public CASEntryList(EventHandler handler, IList<CASEntry> le) : base(handler, 256, le) { }
+            public CASEntryList(EventHandler handler) : base(handler, Byte.MaxValue) { }
+            public CASEntryList(EventHandler handler, Stream s) : base(handler, s, Byte.MaxValue) { }
+            public CASEntryList(EventHandler handler, IList<CASEntry> le) : base(handler, le, Byte.MaxValue) { }
             #endregion
 
             #region Data I/O
@@ -564,8 +564,8 @@ namespace CASPartResource
         {
             #region Constructors
             public FaceEntryList(EventHandler handler) : base(handler, Byte.MaxValue) { }
-            public FaceEntryList(EventHandler handler, Stream s) : base(handler, Byte.MaxValue, s) { }
-            public FaceEntryList(EventHandler handler, IList<FaceEntry> le) : base(handler, Byte.MaxValue, le) { }
+            public FaceEntryList(EventHandler handler, Stream s) : base(handler, s, Byte.MaxValue) { }
+            public FaceEntryList(EventHandler handler, IList<FaceEntry> le) : base(handler, le, Byte.MaxValue) { }
             #endregion
 
             #region Data I/O
