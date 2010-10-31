@@ -66,7 +66,7 @@ namespace TxtcResource
             entries = new EntryBlockList(OnResourceChanged, count, s);
             if (checking) if (tgiPos != s.Position)
                     throw new InvalidDataException(string.Format("TGI Block found at 0x{0:X8}; expected position 0x{1:X8}", s.Position, tgiPos));
-            tgiBlocks = new CountedTGIBlockList(OnResourceChanged, 255, "IGT", r.ReadByte(), s);
+            tgiBlocks = new CountedTGIBlockList(OnResourceChanged, "IGT", r.ReadByte(), s, Byte.MaxValue);
         }
 
         protected override Stream UnParse()
@@ -90,7 +90,7 @@ namespace TxtcResource
             if (version >= 8)
                 w.Write(unknown4);
             entries.UnParse(ms);
-            if (tgiBlocks == null) tgiBlocks = new CountedTGIBlockList(OnResourceChanged, 255, "IGT");
+            if (tgiBlocks == null) tgiBlocks = new CountedTGIBlockList(OnResourceChanged, "IGT", Byte.MaxValue);
             long tgiPosn = ms.Position;
             w.Write((byte)tgiBlocks.Count);
             tgiBlocks.UnParse(ms);
@@ -236,9 +236,9 @@ namespace TxtcResource
 
         public class SuperBlockList : AResource.DependentList<SuperBlock>
         {
-            public SuperBlockList(EventHandler handler) : base(handler, 255) { }
-            public SuperBlockList(EventHandler handler, Stream s) : base(handler, 255, s) { }
-            public SuperBlockList(EventHandler handler, IList<SuperBlock> lsb) : base(handler, 255, lsb) { }
+            public SuperBlockList(EventHandler handler) : base(handler, Byte.MaxValue) { }
+            public SuperBlockList(EventHandler handler, Stream s) : base(handler, s, Byte.MaxValue) { }
+            public SuperBlockList(EventHandler handler, IList<SuperBlock> lsb) : base(handler, lsb, Byte.MaxValue) { }
 
             protected override uint ReadCount(Stream s) { return (new BinaryReader(s)).ReadByte(); }
             protected override SuperBlock CreateElement(Stream s) { return new SuperBlock(0, elementHandler, s); }
