@@ -116,7 +116,7 @@ namespace s3pi.Interfaces
             /// Holds the <see cref="EventHandler"/> delegate to invoke if an element in the <see cref="DependentList{T}"/> changes.
             /// </summary>
             /// <remarks>Work around for list event handler triggering during stream constructor and other places.</remarks>
-            protected EventHandler elementHandler;
+            protected EventHandler elementHandler = null;
 
             #region Constructors
             /// <summary>
@@ -848,26 +848,39 @@ namespace s3pi.Interfaces
             /// that is empty.
             /// </summary>
             /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
-            /// <param name="createElement">Required; the method to create a new element in the list from a stream.</param>
-            /// <param name="writeElement">Required; the method to create a new element in the list from a stream.</param>
+            /// <param name="createElement">Optional; the method to create a new element in the list from a stream.  If null, return default{T}.</param>
+            /// <param name="writeElement">Optional; the method to create a new element in the list from a stream.  No operation if null.</param>
             /// <param name="valFormat">Optional, default is <c>"0x{1:X8}\n"</c>; the method to create a new element in the list from a stream.</param>
             /// <param name="size">Optional maximum number of elements in the list.</param>
             /// <param name="readCount">Optional; default is to read a <see cref="UInt32"/> from the <see cref="Stream"/>.</param>
             /// <param name="writeCount">Optional; default is to write a <see cref="UInt32"/> to the <see cref="Stream"/>.</param>
-            public SimpleList(EventHandler handler, CreateElementMethod createElement, WriteElementMethod writeElement, string valFormat = "0x{1:X8}\n", long size = -1, ReadCountMethod readCount = null, WriteCountMethod writeCount = null) : base(handler, size) { this.createElement = createElement; this.writeElement = writeElement; this.valFormat = valFormat; this.readCount = readCount; this.writeCount = writeCount; }
+            public SimpleList(EventHandler handler, CreateElementMethod createElement = null, WriteElementMethod writeElement = null, string valFormat = "0x{1:X8}\n", long size = -1, ReadCountMethod readCount = null, WriteCountMethod writeCount = null) : base(handler, size) { this.createElement = createElement; this.writeElement = writeElement; this.valFormat = valFormat; this.readCount = readCount; this.writeCount = writeCount; }
             /// <summary>
             /// Initializes a new instance of the <see cref="SimpleList{T}"/> class
             /// from <paramref name="iList"/>.
             /// </summary>
             /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
             /// <param name="iList">The source to use as the initial content of the list.</param>
-            /// <param name="createElement">Required; the method to create a new element in the list from a stream.</param>
-            /// <param name="writeElement">Required; the method to create a new element in the list from a stream.</param>
+            /// <param name="createElement">Optional; the method to create a new element in the list from a stream.  If null, return default{T}.</param>
+            /// <param name="writeElement">Optional; the method to create a new element in the list from a stream.  No operation if null.</param>
             /// <param name="valFormat">Optional, default is <c>"0x{1:X8}\n"</c>; the method to create a new element in the list from a stream.</param>
             /// <param name="size">Optional maximum number of elements in the list.</param>
             /// <param name="readCount">Optional; default is to read a <see cref="UInt32"/> from the <see cref="Stream"/>.</param>
             /// <param name="writeCount">Optional; default is to write a <see cref="UInt32"/> to the <see cref="Stream"/>.</param>
-            public SimpleList(EventHandler handler, IList<HandlerElement<T>> iList, CreateElementMethod createElement, WriteElementMethod writeElement, string valFormat = "0x{1:X8}\n", long size = -1, ReadCountMethod readCount = null, WriteCountMethod writeCount = null) : base(handler, iList, size) { this.createElement = createElement; this.writeElement = writeElement; this.valFormat = valFormat; this.readCount = readCount; this.writeCount = writeCount; }
+            public SimpleList(EventHandler handler, IList<HandlerElement<T>> iList, CreateElementMethod createElement = null, WriteElementMethod writeElement = null, string valFormat = "0x{1:X8}\n", long size = -1, ReadCountMethod readCount = null, WriteCountMethod writeCount = null) : base(handler, iList, size) { this.createElement = createElement; this.writeElement = writeElement; this.valFormat = valFormat; this.readCount = readCount; this.writeCount = writeCount; }
+            /// <summary>
+            /// Initializes a new instance of the <see cref="SimpleList{T}"/> class
+            /// from <paramref name="iList"/>, wrapping each entry in a <see cref="HandlerElement{T}"/> instance.
+            /// </summary>
+            /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
+            /// <param name="iList">The source to use as the initial content of the list.</param>
+            /// <param name="createElement">Optional; the method to create a new element in the list from a stream.  If null, return default{T}.</param>
+            /// <param name="writeElement">Optional; the method to create a new element in the list from a stream.  No operation if null.</param>
+            /// <param name="valFormat">Optional, default is <c>"0x{1:X8}\n"</c>; the method to create a new element in the list from a stream.</param>
+            /// <param name="size">Optional maximum number of elements in the list.</param>
+            /// <param name="readCount">Optional; default is to read a <see cref="UInt32"/> from the <see cref="Stream"/>.</param>
+            /// <param name="writeCount">Optional; default is to write a <see cref="UInt32"/> to the <see cref="Stream"/>.</param>
+            public SimpleList(EventHandler handler, IList<T> iList, CreateElementMethod createElement = null, WriteElementMethod writeElement = null, string valFormat = "0x{1:X8}\n", long size = -1, ReadCountMethod readCount = null, WriteCountMethod writeCount = null) : this(null, createElement, writeElement, valFormat, size, readCount, writeCount) { elementHandler = handler; this.AddRange(iList); this.handler = handler; }
             /// <summary>
             /// Initializes a new instance of the <see cref="SimpleList{T}"/> class
             /// from <paramref name="s"/>.
@@ -902,13 +915,13 @@ namespace s3pi.Interfaces
             /// </summary>
             /// <param name="s"><see cref="Stream"/> containing data.</param>
             /// <returns>New list element.</returns>
-            protected override HandlerElement<T> CreateElement(Stream s) { return new HandlerElement<T>(0, elementHandler, createElement(s)); }
+            protected override HandlerElement<T> CreateElement(Stream s) { return new HandlerElement<T>(0, elementHandler, createElement == null ? default(T) : createElement(s)); }
             /// <summary>
             /// Writes the value of a list element to <paramref name="s"/>.
             /// </summary>
             /// <param name="s"><see cref="Stream"/> containing data.</param>
             /// <param name="element">List element for which to write the value to the <seealso cref="Stream"/>.</param>
-            protected override void WriteElement(Stream s, HandlerElement<T> element) { writeElement(s, element.Val); }
+            protected override void WriteElement(Stream s, HandlerElement<T> element) { if (writeElement != null) writeElement(s, element.Val); }
             #endregion
 
             /// <summary>
@@ -918,7 +931,90 @@ namespace s3pi.Interfaces
             /// with a NotImplementedException.</exception>
             /// <exception cref="InvalidOperationException">Thrown when list size exceeded.</exception>
             /// <exception cref="NotSupportedException">The <see cref="DependentList{T}"/> is read-only.</exception>
-            public override void Add() { this.Add(new HandlerElement<uint>(0, null)); }
+            public override void Add() { this.Add(new HandlerElement<T>(0, elementHandler)); }
+
+            /// <summary>
+            /// Adds an entry to a <see cref="SimpleList{T}"/>.
+            /// </summary>
+            /// <param name="item">The object to add.</param>
+            /// <returns>True on success</returns>
+            /// <exception cref="InvalidOperationException">Thrown when list size exceeded.</exception>
+            /// <exception cref="NotSupportedException">The <see cref="DependentList{T}"/> is read-only.</exception>
+            public void Add(T item) { base.Add(new HandlerElement<T>(0, elementHandler, item)); }
+
+            /// <summary>
+            /// Adds the elements of the specified collection to the end of the <see cref="SimpleList{T}"/>.
+            /// </summary>
+            /// <param name="collection">The collection whose elements should be added to the end of the <see cref="SimpleList{T}"/>.
+            /// The collection itself cannot be null, but it can contain elements that are null, if type <typeparamref name="T"/> is a reference type.</param>
+            /// <exception cref="System.ArgumentNullException"><paramref name="collection"/> is null.</exception>
+            /// <exception cref="System.InvalidOperationException">Thrown when list size would be exceeded.</exception>
+            /// <exception cref="System.NotSupportedException">The <see cref="SimpleList{T}"/> is read-only.</exception>
+            /// <remarks>Calls <see cref="Add(T)"/> for each item in <paramref name="collection"/>.</remarks>
+            public void AddRange(IEnumerable<T> collection)
+            {
+                int newElements = new List<T>(collection).Count;
+                if (maxSize >= 0 && Count >= maxSize - newElements) throw new InvalidOperationException();
+
+                //Note that the following is required to allow for implementation specific processing on items added to the list:
+                EventHandler h = handler;
+                handler = null;
+                foreach (T item in collection) this.Add(item);
+                handler = h;
+
+                OnListChanged();
+            }
+
+            /// <summary>
+            /// Inserts an item to the <see cref="SimpleList{T}"/> at the specified index.
+            /// </summary>
+            /// <param name="index">The zero-based index at which item should be inserted.</param>
+            /// <param name="item">The object to insert into the <see cref="SimpleList{T}"/>.</param>
+            /// <exception cref="System.ArgumentOutOfRangeException"><paramref name="index"/> is not a valid index in the <see cref="SimpleList{T}"/>.</exception>
+            /// <exception cref="System.InvalidOperationException">Thrown when list size exceeded.</exception>
+            /// <exception cref="System.NotSupportedException">The <see cref="SimpleList{T}"/> is read-only.</exception>
+            public void Insert(int index, T item) { base.Insert(index, new HandlerElement<T>(0, elementHandler, item)); }
+
+            /// <summary>
+            /// Inserts the elements of a collection into the <see cref="SimpleList{T}"/> at the specified index.
+            /// </summary>
+            /// <param name="index">The zero-based index at which the new elements should be inserted.</param>
+            /// <param name="collection">The collection whose elements should be inserted into the <see cref="SimpleList{T}"/>.
+            /// The collection itself cannot be null, but it can contain elements that are null, if type <typeparamref name="T"/> is a reference type.</param>
+            /// <exception cref="System.ArgumentNullException"><paramref name="collection"/> is null.</exception>
+            /// <exception cref="System.ArgumentOutOfRangeException">
+            /// <paramref name="index"/> is less than 0.
+            /// -or-
+            /// <paramref name="index"/> is greater than <see cref="SimpleList{T}"/>.Count.
+            /// </exception>
+            /// <exception cref="System.InvalidOperationException">Thrown when list size would be exceeded.</exception>
+            /// <exception cref="System.NotSupportedException">The <see cref="SimpleList{T}"/> is read-only.</exception>
+            /// <remarks>Calls <see cref="Insert(int, T)"/> for each item in <paramref name="collection"/>.</remarks>
+            public void InsertRange(int index, IEnumerable<T> collection)
+            {
+                int newElements = new List<T>(collection).Count;
+                if (maxSize >= 0 && Count >= maxSize - newElements) throw new InvalidOperationException();
+
+                //Note that the following is required to allow for implementation specific processing on items inserted into the list:
+                EventHandler h = handler;
+                handler = null;
+                foreach (T item in collection) this.Insert(index++, item);
+                handler = h;
+
+                OnListChanged();
+            }
+
+            /// <summary>
+            /// Removes the first occurrence of an entry from the <see cref="SimpleList{T}"/> with the value given.
+            /// </summary>
+            /// <param name="item">The value to remove from the <see cref="SimpleList{T}"/>.</param>
+            /// <returns>
+            /// true if item was successfully removed from the <see cref="SimpleList{T}"/>
+            /// otherwise, false. This method also returns false if item is not found in
+            /// the original <see cref="SimpleList{T}"/>.
+            /// </returns>
+            /// <exception cref="System.NotSupportedException">The <see cref="AHandlerList{T}"/> is read-only.</exception>
+            public bool Remove(T item) { return base.Remove(this.Find(e => e.Val.Equals(item))); }
 
             #region Content Fields
             /// <summary>
