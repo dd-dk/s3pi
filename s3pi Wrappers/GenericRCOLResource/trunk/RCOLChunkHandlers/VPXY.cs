@@ -147,6 +147,7 @@ namespace s3pi.GenericRCOLResource
             public IntList(EventHandler handler) : base(handler, ReadInt32, WriteInt32, fmt, byte.MaxValue, ReadListCount, WriteListCount) { }
             public IntList(EventHandler handler, Stream s) : base(handler, s, ReadInt32, WriteInt32, fmt, byte.MaxValue, ReadListCount, WriteListCount) { }
             public IntList(EventHandler handler, IList<HandlerElement<Int32>> ltgi) : base(handler, ltgi, ReadInt32, WriteInt32, fmt, byte.MaxValue, ReadListCount, WriteListCount) { }
+            public IntList(EventHandler handler, IList<Int32> ltgi) : base(handler, ltgi, ReadInt32, WriteInt32, fmt, byte.MaxValue, ReadListCount, WriteListCount) { }
             #endregion
 
             #region Data I/O
@@ -203,6 +204,8 @@ namespace s3pi.GenericRCOLResource
             public Entry00(int APIversion, EventHandler handler, Entry00 basis)
                 : this(APIversion, handler, 0, basis.entryID, basis.tgiIndexes) { }
             public Entry00(int APIversion, EventHandler handler, byte entryType, byte entryID, IList<HandlerElement<int>> tgiIndexes)
+                : base(APIversion, handler) { this.entryID = entryID; this.tgiIndexes = new IntList(handler, tgiIndexes); }
+            public Entry00(int APIversion, EventHandler handler, byte entryType, byte entryID, IList<int> tgiIndexes)
                 : base(APIversion, handler) { this.entryID = entryID; this.tgiIndexes = new IntList(handler, tgiIndexes); }
 
             internal override void UnParse(Stream s)
