@@ -29,7 +29,7 @@ namespace s3pi.Helpers
     /// <summary>
     /// Use this class to turn {IPackage, IResourceIndexEntry} tuples into commands to be executed
     /// </summary>
-    public class Helpers : List<Helpers.Helper>
+    public class HelperManager : List<HelperManager.Helper>
     {
         static List<string> reserved = new List<string>(new string[] { // must be lower case
                 "wrapper", "label", "desc", "command", "arguments", "readonly", "ignorewritetimestamp",
@@ -46,7 +46,7 @@ namespace s3pi.Helpers
 
             // Parse *.helper in Helpers/ in folder where this assembly lives.
 
-            string folder = Path.Combine(Path.GetDirectoryName(typeof(Helpers).Module.FullyQualifiedName), "Helpers");
+            string folder = Path.Combine(Path.GetDirectoryName(typeof(HelperManager).Module.FullyQualifiedName), "Helpers");
             foreach (string file in Directory.GetFiles(folder, "*.helper"))
             {
                 StreamReader sr = new StreamReader(new FileStream(file, FileMode.Open, FileAccess.Read, FileShare.Read));
@@ -155,7 +155,7 @@ namespace s3pi.Helpers
         /// </summary>
         /// <param name="key">The resource index entry</param>
         /// <param name="res">The resource</param>
-        public Helpers(IResourceIndexEntry key, IResource res)
+        public HelperManager(IResourceIndexEntry key, IResource res)
         {
             if (helpers == null) ReadConfig();
 
@@ -284,7 +284,7 @@ namespace s3pi.Helpers
             catch (Exception ex)
             {
                 CopyableMessageBox.IssueException(ex,
-                    typeof(Helpers).Assembly.FullName + "\n" + String.Format("Application failed to start:\n{0}\n{1}", command, arguments),
+                    typeof(HelperManager).Assembly.FullName + "\n" + String.Format("Application failed to start:\n{0}\n{1}", command, arguments),
                     "Launch failed");
                 return false;
             }
