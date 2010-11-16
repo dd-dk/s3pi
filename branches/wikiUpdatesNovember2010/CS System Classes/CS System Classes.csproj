@@ -75,8 +75,6 @@
     <Compile Include="Sims3PackCRC.cs" />
     <Compile Include="FNVHash.cs" />
     <Compile Include="Properties\AssemblyVersion.cs" />
-    <Compile Include="ICloneableWithParent.cs" />
-    <Compile Include="IDependentList.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
