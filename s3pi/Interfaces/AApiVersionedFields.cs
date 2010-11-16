@@ -290,26 +290,6 @@ namespace s3pi.Interfaces
         // Random helper functions that should live somewhere...
 
         /// <summary>
-        /// Write a 7BITSTR value to a stream
-        /// </summary>
-        /// <param name="s">Stream to write to</param>
-        /// <param name="value">String to write, prefixed by length, seven bits at a time</param>
-        /// <param name="enc">encoding to use on the <see cref="System.IO.BinaryWriter(System.IO.Stream, System.Text.Encoding)"/></param>
-        public static void Write7BitStr(System.IO.Stream s, string value, System.Text.Encoding enc)
-        {
-            byte[] bytes = enc.GetBytes(value);
-            System.IO.BinaryWriter w = new System.IO.BinaryWriter(s, enc);
-            for (int i = bytes.Length; true; ) { w.Write((byte)((i & 0x7F) | (i > 0x7F ? 0x80 : 0))); i = i >> 7; if (i == 0) break; }
-            w.Write(bytes);
-        }
-        /// <summary>
-        /// Write a 7BITSTR value to a stream with Default encoding
-        /// </summary>
-        /// <param name="s">Stream to write to</param>
-        /// <param name="value">String to write, prefixed by length, seven bits at a time</param>
-        public static void Write7BitStr(System.IO.Stream s, string value) { Write7BitStr(s, value, System.Text.Encoding.Default); }
-
-        /// <summary>
         /// Convert a string (up to 8 characters) to a UInt64
         /// </summary>
         /// <param name="s">String to convert</param>
