@@ -660,17 +660,17 @@ namespace s3pi.GenericRCOLResource
         public class EntryList : AResource.DependentList<Entry>
         {
             DataType type = 0;
-            uint count = 0;
+            int count = 0;
 
             #region Constructors
             public EntryList(EventHandler handler, DataType type) : base(handler) { this.type = type; }
-            public EntryList(EventHandler handler, DataType type, uint count, Stream s) : base(null) { this.type = type; this.count = count; elementHandler = handler; Parse(s); this.handler = handler; }
-            public EntryList(EventHandler handler, DataType type, IList<Entry> le) : base(handler, le) { this.type = type; }
+            public EntryList(EventHandler handler, DataType type, int count, Stream s) : base(null) { this.type = type; this.count = count; elementHandler = handler; Parse(s); this.handler = handler; }
+            public EntryList(EventHandler handler, DataType type, IEnumerable<Entry> le) : base(handler, le) { this.type = type; }
             #endregion
 
             #region Data I/O
-            protected override uint ReadCount(Stream s) { return count; }
-            protected override void WriteCount(Stream s, uint count) { }
+            protected override int ReadCount(Stream s) { return count; }
+            protected override void WriteCount(Stream s, int count) { }
 
             protected override Entry CreateElement(Stream s) { return Entry.CreateEntry(0, elementHandler, type, s); }
 
@@ -711,7 +711,7 @@ namespace s3pi.GenericRCOLResource
 
             FieldType field = 0;
             DataType sdType = 0;
-            uint count = 0;
+            int count = 0;
             uint offset = 0;
             long offsetPos = -1;
             EntryList sdData = null;
@@ -721,7 +721,7 @@ namespace s3pi.GenericRCOLResource
             public ShaderData(int APIversion, EventHandler handler, ShaderData basis)
                 : this(APIversion, handler, basis.field, basis.sdType, basis.sdData) { }
             public ShaderData(int APIversion, EventHandler handler) : base(APIversion, handler) { }
-            public ShaderData(int APIversion, EventHandler handler, FieldType field, DataType sdType, uint count, Stream s)
+            public ShaderData(int APIversion, EventHandler handler, FieldType field, DataType sdType, int count, Stream s)
                 : base(APIversion, handler)
             {
                 this.field = field;
@@ -743,7 +743,7 @@ namespace s3pi.GenericRCOLResource
                 BinaryReader r = new BinaryReader(s);
                 field = (FieldType)r.ReadUInt32();
                 sdType = (DataType)r.ReadUInt32();
-                count = r.ReadUInt32();
+                count = r.ReadInt32();
                 offset = r.ReadUInt32();
             }
 
@@ -816,14 +816,14 @@ namespace s3pi.GenericRCOLResource
             #region Constructors
             public ShaderDataList(EventHandler handler) : base(handler) { }
             public ShaderDataList(EventHandler handler, Stream s, int dataLen, long start) : base(null) { this.dataLen = dataLen; elementHandler = handler; Parse(s, start); this.handler = handler; }
-            public ShaderDataList(EventHandler handler, IList<ShaderData> lsd) : base(handler, lsd) { }
+            public ShaderDataList(EventHandler handler, IEnumerable<ShaderData> lsd) : base(handler, lsd) { }
             #endregion
 
             #region Data I/O
             protected override void Parse(Stream s) { throw new NotSupportedException(); }
             internal void Parse(Stream s, long start)
             {
-                for (uint i = ReadCount(s); i > 0; i--) this.Add(s);
+                for (int i = ReadCount(s); i > 0; i--) this.Add(s);
                 long pos = s.Position;
                 foreach (var i in this) i.ReadEntryList(start, s);
                 if (checking) if (dataLen >= 0 && dataLen != s.Position - pos)
@@ -833,7 +833,7 @@ namespace s3pi.GenericRCOLResource
             public override void UnParse(Stream s) { throw new NotSupportedException(); }
             internal void UnParse(Stream s, long start)
             {
-                WriteCount(s, (uint)Count);
+                WriteCount(s, Count);
                 foreach (var element in this) element.UnParse(s);
                 dataPos = s.Position;
                 foreach (var element in this) element.WriteEntryList(start, s);

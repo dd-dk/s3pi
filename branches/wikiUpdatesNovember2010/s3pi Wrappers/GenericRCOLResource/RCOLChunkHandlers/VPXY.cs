@@ -45,7 +45,7 @@ namespace s3pi.GenericRCOLResource
             : this(APIversion, handler,
             basis.version, basis.entryList, basis.tc02, basis.boundingBox, basis.unused, basis.modular, basis.ftptIndex, basis.tgiBlockList) { }
         public VPXY(int APIversion, EventHandler handler,
-            uint version, EntryList entryList, byte tc02, float[] boundingBox, byte[] unused, byte modular, int ftptIndex, IList<AResource.TGIBlock> tgiBlockList)
+            uint version, EntryList entryList, byte tc02, float[] boundingBox, byte[] unused, byte modular, int ftptIndex, IEnumerable<AResource.TGIBlock> tgiBlockList)
             : base(APIversion, null, null)
         {
             this.handler = handler;
@@ -140,19 +140,18 @@ namespace s3pi.GenericRCOLResource
         #endregion
 
         #region Sub-types
-        public class IntList : AResource.SimpleList<Int32>
+        public class IntList : SimpleList<Int32>
         {
-            static string fmt = "0x{1:X8}; ";
             #region Constructors
-            public IntList(EventHandler handler) : base(handler, ReadInt32, WriteInt32, fmt, byte.MaxValue, ReadListCount, WriteListCount) { }
-            public IntList(EventHandler handler, Stream s) : base(handler, s, ReadInt32, WriteInt32, fmt, byte.MaxValue, ReadListCount, WriteListCount) { }
-            public IntList(EventHandler handler, IList<HandlerElement<Int32>> ltgi) : base(handler, ltgi, ReadInt32, WriteInt32, fmt, byte.MaxValue, ReadListCount, WriteListCount) { }
-            public IntList(EventHandler handler, IList<Int32> ltgi) : base(handler, ltgi, ReadInt32, WriteInt32, fmt, byte.MaxValue, ReadListCount, WriteListCount) { }
+            public IntList(EventHandler handler) : base(handler, ReadInt32, WriteInt32, byte.MaxValue, ReadListCount, WriteListCount) { }
+            public IntList(EventHandler handler, Stream s) : base(handler, s, ReadInt32, WriteInt32, byte.MaxValue, ReadListCount, WriteListCount) { }
+            public IntList(EventHandler handler, IEnumerable<HandlerElement<Int32>> ltgi) : base(handler, ltgi, ReadInt32, WriteInt32, byte.MaxValue, ReadListCount, WriteListCount) { }
+            public IntList(EventHandler handler, IEnumerable<Int32> ltgi) : base(handler, ltgi, ReadInt32, WriteInt32, byte.MaxValue, ReadListCount, WriteListCount) { }
             #endregion
 
             #region Data I/O
-            static uint ReadListCount(Stream s) { return (new BinaryReader(s)).ReadByte(); }
-            static void WriteListCount(Stream s, uint count) { (new BinaryWriter(s)).Write((byte)count); }
+            static int ReadListCount(Stream s) { return (new BinaryReader(s)).ReadByte(); }
+            static void WriteListCount(Stream s, int count) { (new BinaryWriter(s)).Write((byte)count); }
             static int ReadInt32(Stream s) { return new BinaryReader(s).ReadInt32(); }
             static void WriteInt32(Stream s, int value) { new BinaryWriter(s).Write(value); }
             #endregion
@@ -203,9 +202,9 @@ namespace s3pi.GenericRCOLResource
 
             public Entry00(int APIversion, EventHandler handler, Entry00 basis)
                 : this(APIversion, handler, 0, basis.entryID, basis.tgiIndexes) { }
-            public Entry00(int APIversion, EventHandler handler, byte entryType, byte entryID, IList<HandlerElement<int>> tgiIndexes)
+            public Entry00(int APIversion, EventHandler handler, byte entryType, byte entryID, IEnumerable<HandlerElement<int>> tgiIndexes)
                 : base(APIversion, handler) { this.entryID = entryID; this.tgiIndexes = new IntList(handler, tgiIndexes); }
-            public Entry00(int APIversion, EventHandler handler, byte entryType, byte entryID, IList<int> tgiIndexes)
+            public Entry00(int APIversion, EventHandler handler, byte entryType, byte entryID, IEnumerable<int> tgiIndexes)
                 : base(APIversion, handler) { this.entryID = entryID; this.tgiIndexes = new IntList(handler, tgiIndexes); }
 
             internal override void UnParse(Stream s)
@@ -233,7 +232,10 @@ namespace s3pi.GenericRCOLResource
             {
                 get
                 {
-                    return "EntryID: 0x" + entryID.ToString("X2") + "; TGIIndexes: " + tgiIndexes.Value;
+                    string s = "EntryID: 0x" + entryID.ToString("X2") + "; TGIIndexes: ";
+                    string fmt = "[{0:X" + tgiIndexes.Count.ToString("X").Length + "}]: 0x{1:X8}; ";
+                    for (int i = 0; i < tgiIndexes.Count; i++) s += String.Format(fmt, i, tgiIndexes[i]);
+                    return s.TrimEnd(';', ' ');
                 }
             }
             #endregion
@@ -266,12 +268,12 @@ namespace s3pi.GenericRCOLResource
             #region Constructors
             public EntryList(EventHandler handler) : base(handler, Byte.MaxValue) { }
             public EntryList(EventHandler handler, Stream s) : base(handler, s, Byte.MaxValue) { }
-            public EntryList(EventHandler handler, IList<Entry> le) : base(handler, le, Byte.MaxValue) { }
+            public EntryList(EventHandler handler, IEnumerable<Entry> le) : base(handler, le, Byte.MaxValue) { }
             #endregion
 
             #region Data I/O
-            protected override uint ReadCount(Stream s) { return (new BinaryReader(s)).ReadByte(); }
-            protected override void WriteCount(Stream s, uint count) { (new BinaryWriter(s)).Write((byte)count); }
+            protected override int ReadCount(Stream s) { return (new BinaryReader(s)).ReadByte(); }
+            protected override void WriteCount(Stream s, int count) { (new BinaryWriter(s)).Write((byte)count); }
 
             protected override Entry CreateElement(Stream s) { return Entry.CreateEntry(0, elementHandler, s); }
 
@@ -347,7 +349,11 @@ namespace s3pi.GenericRCOLResource
                 if (Modular)
                     s += "\n" + "FTPTIndex: 0x" + ftptIndex.ToString("X8");
 
-                s += "\n--TGI Blocks:\n" + tgiBlockList.Value + "--";
+                s += "\n--TGI Blocks:\n";
+                string fmt = "  [{0:X" + tgiBlockList.Count.ToString("X").Length + "}]: {1}\n";
+                for (int i = 0; i < tgiBlockList.Count; i++) s += string.Format(fmt, i, tgiBlockList[i].Value);
+                s += "--";
+
                 return s;
             }
         }

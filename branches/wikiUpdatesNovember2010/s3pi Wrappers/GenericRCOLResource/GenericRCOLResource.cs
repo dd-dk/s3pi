@@ -53,8 +53,8 @@ namespace s3pi.GenericRCOLResource
             version = r.ReadUInt32();
             dataType = r.ReadUInt32();
             unused = r.ReadUInt32();
-            uint countResources = r.ReadUInt32();
-            uint countChunks = r.ReadUInt32();
+            int countResources = r.ReadInt32();
+            int countChunks = r.ReadInt32();
             TGIBlock[] chunks = new TGIBlock[countChunks];
             for (int i = 0; i < countChunks; i++) chunks[i] = new TGIBlock(0, OnResourceChanged, "ITG", s);
             resources = new CountedTGIBlockList(OnResourceChanged, "ITG", countResources, s);
@@ -195,7 +195,7 @@ namespace s3pi.GenericRCOLResource
                 this.handler = handler;
             }
             public ChunkEntryList(EventHandler handler) : base(handler) { }
-            public ChunkEntryList(EventHandler handler, IList<ChunkEntry> ice) : base(handler, ice) { }
+            public ChunkEntryList(EventHandler handler, IEnumerable<ChunkEntry> ice) : base(handler, ice) { }
 
             protected override ChunkEntry CreateElement(Stream s) { throw new NotImplementedException(); }
             protected override void WriteElement(Stream s, ChunkEntry element) { throw new NotImplementedException(); }
