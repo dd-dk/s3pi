@@ -376,8 +376,8 @@ namespace s3pi.Interfaces
     /// An extension to <see cref="AHandlerElement"/>, for simple data types (such as <see cref="UInt32"/>).
     /// </summary>
     /// <typeparam name="T">A simple data type (such as <see cref="UInt32"/>).</typeparam>
-    /// <remarks>For an example of use, see <see cref="AResource.SimpleList{T}"/>.</remarks>
-    /// <seealso cref="AResource.SimpleList{T}"/>
+    /// <remarks>For an example of use, see <see cref="SimpleList{T}"/>.</remarks>
+    /// <seealso cref="SimpleList{T}"/>
     public class HandlerElement<T> : AHandlerElement, IEquatable<HandlerElement<T>>
         where T : struct, IEquatable<T>
     {
