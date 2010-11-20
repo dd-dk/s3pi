@@ -223,7 +223,7 @@ namespace s3pi.GenericRCOLResource
         {
             public AdjustmentList(EventHandler handler) : base(handler) { }
             public AdjustmentList(EventHandler handler, Stream s) : base(handler, s) { }
-            public AdjustmentList(EventHandler handler, IList<Adjustment> lsbp) : base(handler, lsbp) { }
+            public AdjustmentList(EventHandler handler, IEnumerable<Adjustment> lsbp) : base(handler, lsbp) { }
 
             protected override Adjustment CreateElement(Stream s) { return new Adjustment(0, elementHandler, s); }
             protected override void WriteElement(Stream s, Adjustment element) { element.UnParse(s); }

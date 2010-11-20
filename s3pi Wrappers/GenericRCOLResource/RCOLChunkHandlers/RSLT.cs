@@ -260,13 +260,13 @@ namespace s3pi.GenericRCOLResource
             #region Constructors
             public SevenFloatsList(EventHandler handler) : base(handler, max) { }
             public SevenFloatsList(EventHandler handler, Stream s) : base(null, max) { elementHandler = handler; Parse(s); this.handler = handler; }
-            public SevenFloatsList(EventHandler handler, IList<SevenFloats> lsf) : base(handler, lsf, max) { }
+            public SevenFloatsList(EventHandler handler, IEnumerable<SevenFloats> lsf) : base(handler, lsf, max) { }
             #endregion
 
             #region Data I/O
-            protected override uint ReadCount(Stream s)
+            protected override int ReadCount(Stream s)
             {
-                uint c = base.ReadCount(s);
+                int c = base.ReadCount(s);
                 if (checking) if (c > max)
                     throw new InvalidDataException(String.Format("Read 0x{0:X8}, expect less than 0x{1:X8}; position 0x{2:X16}", c, max, s.Position));
                 return c;
@@ -431,7 +431,7 @@ namespace s3pi.GenericRCOLResource
             #region Constructors
             public PartList(EventHandler handler) : base(handler) { }
             public PartList(EventHandler handler, Stream s, int count) : base(null) { elementHandler = handler; Parse(s, count); this.handler = handler; }
-            public PartList(EventHandler handler, IList<Part> lsb) : base(handler, lsb) { }
+            public PartList(EventHandler handler, IEnumerable<Part> lsb) : base(handler, lsb) { }
             #endregion
 
             #region Data I/O
@@ -539,7 +539,7 @@ namespace s3pi.GenericRCOLResource
             #region Constructors
             public SlottedPartList(EventHandler handler) : base(handler) { }
             public SlottedPartList(EventHandler handler, Stream s, int count) : base(null) { elementHandler = handler; Parse(s, count); this.handler = handler; }
-            public SlottedPartList(EventHandler handler, IList<SlottedPart> lsbp) : base(handler, lsbp) { }
+            public SlottedPartList(EventHandler handler, IEnumerable<SlottedPart> lsbp) : base(handler, lsbp) { }
             #endregion
 
             #region Data I/O

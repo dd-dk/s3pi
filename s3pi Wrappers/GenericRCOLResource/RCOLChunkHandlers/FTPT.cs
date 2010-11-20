@@ -157,12 +157,12 @@ namespace s3pi.GenericRCOLResource
             #region Constructors
             public PolygonPointList(EventHandler handler) : base(handler, Byte.MaxValue) { }
             public PolygonPointList(EventHandler handler, Stream s) : base(handler, s, Byte.MaxValue) { }
-            public PolygonPointList(EventHandler handler, IList<PolygonPoint> lpp) : base(handler, lpp, Byte.MaxValue) { }
+            public PolygonPointList(EventHandler handler, IEnumerable<PolygonPoint> lpp) : base(handler, lpp, Byte.MaxValue) { }
             #endregion
 
             #region Data I/O
-            protected override uint ReadCount(Stream s) { return (new BinaryReader(s)).ReadByte(); }
-            protected override void WriteCount(Stream s, uint count) { (new BinaryWriter(s)).Write((byte)count); }
+            protected override int ReadCount(Stream s) { return (new BinaryReader(s)).ReadByte(); }
+            protected override void WriteCount(Stream s, int count) { (new BinaryWriter(s)).Write((byte)count); }
 
             protected override PolygonPoint CreateElement(Stream s) { return new PolygonPoint(0, elementHandler, s); }
 
@@ -445,8 +445,8 @@ namespace s3pi.GenericRCOLResource
             #endregion
 
             #region Data I/O
-            protected override uint ReadCount(Stream s) { return (new BinaryReader(s)).ReadByte(); }
-            protected override void WriteCount(Stream s, uint count) { (new BinaryWriter(s)).Write((byte)count); }
+            protected override int ReadCount(Stream s) { return (new BinaryReader(s)).ReadByte(); }
+            protected override void WriteCount(Stream s, int count) { (new BinaryWriter(s)).Write((byte)count); }
 
             protected override Area CreateElement(Stream s) { return new Area(0, elementHandler, s, version); }
 

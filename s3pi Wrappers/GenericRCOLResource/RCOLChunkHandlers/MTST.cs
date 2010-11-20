@@ -150,7 +150,7 @@ namespace s3pi.GenericRCOLResource
             #region Constructors
             public EntryList(EventHandler handler) : base(handler) { }
             public EntryList(EventHandler handler, Stream s) : base(handler, s) { }
-            public EntryList(EventHandler handler, IList<Entry> le) : base(handler, le) { }
+            public EntryList(EventHandler handler, IEnumerable<Entry> le) : base(handler, le) { }
             #endregion
 
             #region Data I/O

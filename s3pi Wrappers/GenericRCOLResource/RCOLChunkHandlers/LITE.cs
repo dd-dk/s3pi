@@ -397,17 +397,17 @@ namespace s3pi.GenericRCOLResource
 
         public class LongSectionList : AResource.DependentList<LongSection>
         {
-            uint count;
+            int count;
 
             #region Constructors
             public LongSectionList(EventHandler handler) : base(handler, Byte.MaxValue) { }
-            public LongSectionList(EventHandler handler, uint count, Stream s) : base(null, Byte.MaxValue) { this.count = count; elementHandler = handler; Parse(s); this.handler = handler; }
-            public LongSectionList(EventHandler handler, IList<LongSection> llp) : base(handler, llp, Byte.MaxValue) { }
+            public LongSectionList(EventHandler handler, int count, Stream s) : base(null, Byte.MaxValue) { this.count = count; elementHandler = handler; Parse(s); this.handler = handler; }
+            public LongSectionList(EventHandler handler, IEnumerable<LongSection> llp) : base(handler, llp, Byte.MaxValue) { }
             #endregion
 
             #region Data I/O
-            protected override uint ReadCount(Stream s) { return count; }
-            protected override void WriteCount(Stream s, uint count) { }
+            protected override int ReadCount(Stream s) { return count; }
+            protected override void WriteCount(Stream s, int count) { }
 
             protected override LongSection CreateElement(Stream s) { return new LongSection(0, elementHandler, s); }
 
@@ -510,17 +510,17 @@ namespace s3pi.GenericRCOLResource
 
         public class ShortSectionList : AResource.DependentList<ShortSection>
         {
-            uint count;
+            int count;
 
             #region Constructors
             public ShortSectionList(EventHandler handler) : base(handler, Byte.MaxValue) { }
-            public ShortSectionList(EventHandler handler, uint count, Stream s) : base(null, Byte.MaxValue) { this.count = count; elementHandler = handler; Parse(s); this.handler = handler; }
-            public ShortSectionList(EventHandler handler, IList<ShortSection> lss) : base(handler, lss, Byte.MaxValue) { }
+            public ShortSectionList(EventHandler handler, int count, Stream s) : base(null, Byte.MaxValue) { this.count = count; elementHandler = handler; Parse(s); this.handler = handler; }
+            public ShortSectionList(EventHandler handler, IEnumerable<ShortSection> lss) : base(handler, lss, Byte.MaxValue) { }
             #endregion
 
             #region Data I/O
-            protected override uint ReadCount(Stream s) { return count; }
-            protected override void WriteCount(Stream s, uint count) { }
+            protected override int ReadCount(Stream s) { return count; }
+            protected override void WriteCount(Stream s, int count) { }
 
             protected override ShortSection CreateElement(Stream s) { return new ShortSection(0, elementHandler, s); }
 
