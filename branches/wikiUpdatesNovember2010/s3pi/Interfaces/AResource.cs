@@ -656,13 +656,6 @@ namespace s3pi.Interfaces
             /// <remarks>A new element is created rather than using the element passed
             /// as the order (TGI/ITG/etc) may be different.</remarks>
             public override void Insert(int index, TGIBlock item) { base.Insert(index, new TGIBlock(0, elementHandler, order, item)); }
-
-            #region Content Fields
-            /// <summary>
-            /// A displayable string representing the list.
-            /// </summary>
-            public String Value { get { string s = ""; for (int i = 0; i < Count; i++) s += string.Format("0x{0:X8}: {1}\n", i, this[i].Value); return s; } }
-            #endregion
         }
 
         /// <summary>
@@ -759,13 +752,6 @@ namespace s3pi.Interfaces
             /// Add a new default element to the list
             /// </summary>
             public override void Add() { this.Add(new TGIBlock(0, null)); }
-
-            #region Content Fields
-            /// <summary>
-            /// A displayable string representing the list.
-            /// </summary>
-            public String Value { get { string s = ""; for (int i = 0; i < Count; i++) s += string.Format("0x{0:X8}: {1}\n", i, this[i].Value); return s; } }
-            #endregion
         }
         #endregion
 
