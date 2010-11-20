@@ -50,9 +50,9 @@ namespace CASPartResource
         UnknownFlags unknown10;
         byte skinToneIndex;
         float unknown11;
-        RGBA colour1;
-        RGBA colour2;
-        RGBA colour3;
+        UInt32 colour1;
+        UInt32 colour2;
+        UInt32 colour3;
         CASEntryList caspEntries;
         byte zero;
         FaceEntryList faceEntries;
@@ -84,9 +84,9 @@ namespace CASPartResource
             unknown10 = (UnknownFlags)r.ReadUInt32();
             skinToneIndex = r.ReadByte();
             unknown11 = r.ReadSingle();
-            colour1 = new RGBA(requestedApiVersion, OnResourceChanged, s);
-            colour2 = new RGBA(requestedApiVersion, OnResourceChanged, s);
-            colour3 = new RGBA(requestedApiVersion, OnResourceChanged, s);
+            colour1 = r.ReadUInt32();
+            colour2 = r.ReadUInt32();
+            colour3 = r.ReadUInt32();
             caspEntries = new CASEntryList(OnResourceChanged, s);
 
             zero = r.ReadByte();
@@ -129,9 +129,9 @@ namespace CASPartResource
             w.Write(skinToneIndex);
             w.Write(unknown11);
 
-            if (colour1 == null) colour1 = new RGBA(requestedApiVersion, OnResourceChanged); colour1.UnParse(s);
-            if (colour2 == null) colour2 = new RGBA(requestedApiVersion, OnResourceChanged); colour2.UnParse(s);
-            if (colour3 == null) colour3 = new RGBA(requestedApiVersion, OnResourceChanged); colour3.UnParse(s);
+            w.Write(colour1);
+            w.Write(colour2);
+            w.Write(colour3);
 
             if (caspEntries == null) caspEntries = new CASEntryList(OnResourceChanged); caspEntries.UnParse(s);
 
@@ -241,7 +241,7 @@ namespace CASPartResource
             #region Constructors
             public XMLEntryList(EventHandler handler) : base(handler) { }
             public XMLEntryList(EventHandler handler, Stream s) : base(handler, s) { }
-            public XMLEntryList(EventHandler handler, IList<XMLEntry> le) : base(handler, le) { }
+            public XMLEntryList(EventHandler handler, IEnumerable<XMLEntry> le) : base(handler, le) { }
             #endregion
 
             #region Data I/O
@@ -250,78 +250,6 @@ namespace CASPartResource
             #endregion
 
             public override void Add() { this.Add(new XMLEntry(0, null)); }
-        }
-
-        public class RGBA : AHandlerElement, IEquatable<RGBA>
-        {
-            const int recommendedApiVersion = 1;
-
-            #region Attributes
-            byte red;
-            byte green;
-            byte blue;
-            byte alpha;
-            #endregion
-
-            #region Constructors
-            public RGBA(int APIversion, EventHandler handler) : base(APIversion, handler) { }
-            public RGBA(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
-            public RGBA(int APIversion, EventHandler handler, RGBA basis) : this(APIversion, handler, basis.red, basis.green, basis.blue, basis.alpha) { }
-            public RGBA(int APIversion, EventHandler handler, byte r, byte g, byte b, byte a) : base(APIversion, handler) { red = r; green = g; blue = b; alpha = a; }
-            #endregion
-
-            #region Data I/O
-            protected void Parse(Stream s)
-            {
-                BinaryReader r = new BinaryReader(s);
-                red = r.ReadByte();
-                green = r.ReadByte();
-                blue = r.ReadByte();
-                alpha = r.ReadByte();
-            }
-
-            internal void UnParse(Stream s)
-            {
-                BinaryWriter w = new BinaryWriter(s);
-                w.Write(red);
-                w.Write(green);
-                w.Write(blue);
-                w.Write(alpha);
-            }
-            #endregion
-
-            #region AHandlerElement Members
-            public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
-            public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
-            public override AHandlerElement Clone(EventHandler handler) { return new RGBA(requestedApiVersion, handler, this); }
-            #endregion
-
-            #region IEquatable<TCRGBA> Members
-
-            public bool Equals(RGBA other)
-            {
-                return
-                    this.red == other.red
-                    && this.green == other.green
-                    && this.blue == other.blue
-                    && this.alpha == other.alpha
-                    ;
-            }
-
-            #endregion
-
-            #region Content Fields
-            [ElementPriority(1)]
-            public byte Red { get { return red; } set { if (red != value) { red = value; OnElementChanged(); } } }
-            [ElementPriority(2)]
-            public byte Green { get { return green; } set { if (green != value) { green = value; OnElementChanged(); } } }
-            [ElementPriority(3)]
-            public byte Blue { get { return blue; } set { if (blue != value) { blue = value; OnElementChanged(); } } }
-            [ElementPriority(4)]
-            public byte Alpha { get { return alpha; } set { if (alpha != value) { alpha = value; OnElementChanged(); } } }
-
-            public string Value { get { return String.Format("Red: 0x{0:X2}; Green: 0x{0:X2}; Blue: 0x{0:X2}; Alpha: 0x{0:X2}", red, green, blue, alpha); } }
-            #endregion
         }
 
         public class IndexPair : AHandlerElement, IEquatable<IndexPair>
@@ -381,12 +309,12 @@ namespace CASPartResource
             #region Constructors
             public IndexPairList(EventHandler handler) : base(handler) { }
             public IndexPairList(EventHandler handler, Stream s) : base(handler, s) { }
-            public IndexPairList(EventHandler handler, IList<IndexPair> le) : base(handler, le) { }
+            public IndexPairList(EventHandler handler, IEnumerable<IndexPair> le) : base(handler, le) { }
             #endregion
 
             #region Data I/O
-            protected override uint ReadCount(Stream s) { return new BinaryReader(s).ReadByte(); }
-            protected override void WriteCount(Stream s, uint count) { new BinaryWriter(s).Write((byte)count); }
+            protected override int ReadCount(Stream s) { return new BinaryReader(s).ReadByte(); }
+            protected override void WriteCount(Stream s, int count) { new BinaryWriter(s).Write((byte)count); }
             protected override IndexPair CreateElement(Stream s) { return new IndexPair(0, elementHandler, s); }
             protected override void WriteElement(Stream s, IndexPair element) { element.UnParse(s); }
             #endregion
@@ -466,9 +394,11 @@ namespace CASPartResource
                         if (field.Equals("Value")) continue;
                         else if (field.Equals("TXTCIndexes"))
                         {
-                            string fmt = "\n" + field + "[0x{0:X" + txtcIndexes.Count.ToString("X").Length + "}]: {1}";
+                            s += "\n--\nTXTCIndexes";
+                            string fmt = "\n" + "  [{0:X" + txtcIndexes.Count.ToString("X").Length + "}]: {1}";
                             for (int i = 0; i < txtcIndexes.Count; i++)
                                 s += String.Format(fmt, i, txtcIndexes[i]["Value"]);
+                            s += "\n----";
                         }
                         else
                             s += string.Format("{0}: {1}; ", field, this[field]);
@@ -482,12 +412,12 @@ namespace CASPartResource
             #region Constructors
             public CASEntryList(EventHandler handler) : base(handler, Byte.MaxValue) { }
             public CASEntryList(EventHandler handler, Stream s) : base(handler, s, Byte.MaxValue) { }
-            public CASEntryList(EventHandler handler, IList<CASEntry> le) : base(handler, le, Byte.MaxValue) { }
+            public CASEntryList(EventHandler handler, IEnumerable<CASEntry> le) : base(handler, le, Byte.MaxValue) { }
             #endregion
 
             #region Data I/O
-            protected override uint ReadCount(Stream s) { return new BinaryReader(s).ReadByte(); }
-            protected override void WriteCount(Stream s, uint count) { new BinaryWriter(s).Write((byte)count); }
+            protected override int ReadCount(Stream s) { return new BinaryReader(s).ReadByte(); }
+            protected override void WriteCount(Stream s, int count) { new BinaryWriter(s).Write((byte)count); }
             protected override CASEntry CreateElement(Stream s) { return new CASEntry(0, elementHandler, s); }
             protected override void WriteElement(Stream s, CASEntry element) { element.UnParse(s); }
             #endregion
@@ -565,12 +495,12 @@ namespace CASPartResource
             #region Constructors
             public FaceEntryList(EventHandler handler) : base(handler, Byte.MaxValue) { }
             public FaceEntryList(EventHandler handler, Stream s) : base(handler, s, Byte.MaxValue) { }
-            public FaceEntryList(EventHandler handler, IList<FaceEntry> le) : base(handler, le, Byte.MaxValue) { }
+            public FaceEntryList(EventHandler handler, IEnumerable<FaceEntry> le) : base(handler, le, Byte.MaxValue) { }
             #endregion
 
             #region Data I/O
-            protected override uint ReadCount(Stream s) { return new BinaryReader(s).ReadByte(); }
-            protected override void WriteCount(Stream s, uint count) { new BinaryWriter(s).Write((Byte)count); }
+            protected override int ReadCount(Stream s) { return new BinaryReader(s).ReadByte(); }
+            protected override void WriteCount(Stream s, int count) { new BinaryWriter(s).Write((Byte)count); }
             protected override FaceEntry CreateElement(Stream s) { return new FaceEntry(0, elementHandler, s); }
             protected override void WriteElement(Stream s, FaceEntry element) { element.UnParse(s); }
             #endregion
@@ -609,11 +539,11 @@ namespace CASPartResource
         [ElementPriority(14)]
         public float Unknown11 { get { return unknown11; } set { if (unknown11 != value) { unknown11 = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(15)]
-        public RGBA Colour1 { get { return colour1; } set { if (!colour1.Equals(value)) { colour1 = new RGBA(requestedApiVersion, OnResourceChanged, value); OnResourceChanged(this, new EventArgs()); } } }
+        public UInt32 Colour1 { get { return colour1; } set { if (!colour1.Equals(value)) { colour1 = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(16)]
-        public RGBA Colour2 { get { return colour2; } set { if (!colour2.Equals(value)) { colour2 = new RGBA(requestedApiVersion, OnResourceChanged, value); OnResourceChanged(this, new EventArgs()); } } }
+        public UInt32 Colour2 { get { return colour2; } set { if (!colour2.Equals(value)) { colour2 = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(17)]
-        public RGBA Colour3 { get { return colour3; } set { if (!colour3.Equals(value)) { colour3 = new RGBA(requestedApiVersion, OnResourceChanged, value); OnResourceChanged(this, new EventArgs()); } } }
+        public UInt32 Colour3 { get { return colour3; } set { if (!colour3.Equals(value)) { colour3 = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(18)]
         public CASEntryList CASPEntries { get { return caspEntries; } set { if (caspEntries.Equals(value)) { caspEntries = new CASEntryList(OnResourceChanged, value); OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(19)]
@@ -633,35 +563,32 @@ namespace CASPartResource
                     {
                         s += String.Format("\n{0}: {1} ({2})", field, this[field], tgiBlocks[Convert.ToInt32(this[field].Value)]);
                     }
-                    else if (field.StartsWith("Colour"))
-                    {
-                        s += String.Format("\n{0}: {1}", field, (this[field].Value as RGBA).Value);
-                    }
                     else if (field.Equals("XmlEntries"))
                     {
                         s += "\n--\nXmlEntries:";
                         for (int i = 0; i < xmlEntries.Count; i++)
-                            s += String.Format("\n--{0}--{1}", i, xmlEntries[i].Value);
+                            s += String.Format("\n--{0}--\n{1}", i, xmlEntries[i].Value);
                         s += "\n----";
                     }
                     else if (field.Equals("CASPEntries"))
                     {
-                        s += "\n--\nCASEntries:";
+                        s += "\n--\nCASPEntries:";
                         for (int i = 0; i < caspEntries.Count; i++)
-                            s += String.Format("\n--{0}--{1}", i, caspEntries[i].Value);
+                            s += String.Format("\n--{0}--\n{1}", i, caspEntries[i].Value);
                         s += "\n----";
                     }
                     else if (field.Equals("FACEEntries"))
                     {
                         s += "\n--\nFACEEntries:";
+                        string fmt = "\n" + "  [{0:X" + faceEntries.Count.ToString("X").Length + "}]: {1}";
                         for (int i = 0; i < faceEntries.Count; i++)
-                            s += String.Format("\n--{0}--{1}", i, faceEntries[i].Value);
+                            s += String.Format(fmt, i, faceEntries[i].Value);
                         s += "\n----";
                     }
                     else if (field.Equals("TGIBlocks"))
                     {
                         s += "\n--\nTGIBlocks:";
-                        string fmt = "\n  0x{0:X" + tgiBlocks.Count.ToString("X").Length + "}: {1}";
+                        string fmt = "\n  [{0:X" + tgiBlocks.Count.ToString("X").Length + "}]: {1}";
                         for (int i = 0; i < tgiBlocks.Count; i++)
                             s += String.Format(fmt, i, tgiBlocks[i].Value);
                         s += "\n----";
