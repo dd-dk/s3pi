@@ -41,7 +41,7 @@ namespace CatalogResource
         #endregion
 
         #region Constructors
-        internal TerrainGeometryWaterBrushCatalogResource(int APIversion, Stream s) : base(APIversion, s) { }
+        public TerrainGeometryWaterBrushCatalogResource(int APIversion, Stream s) : base(APIversion, s) { }
         public TerrainGeometryWaterBrushCatalogResource(int APIversion, Stream unused, TerrainGeometryWaterBrushCatalogResource basis)
             : this(APIversion,
                 basis.version,
