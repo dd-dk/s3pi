@@ -184,7 +184,7 @@ namespace s3pi.Interfaces
         /// with a NotImplementedException.</exception>
         /// <exception cref="InvalidOperationException">Thrown when list size exceeded.</exception>
         /// <exception cref="NotSupportedException">The <see cref="SimpleList{T}"/> is read-only.</exception>
-        public override void Add() { this.Add(new HandlerElement<T>(0, elementHandler)); }
+        public override void Add() { this.Add(default(T)); }
         #endregion
 
         #region List<T>
@@ -907,6 +907,40 @@ namespace s3pi.Interfaces
         /// <exception cref="System.InvalidOperationException">Thrown when list size exceeded.</exception>
         /// <exception cref="System.NotSupportedException">The <see cref="SimpleList{T}"/> is read-only.</exception>
         public virtual void Insert(int index, T item) { base.Insert(index, new HandlerElement<T>(0, elementHandler, item)); }
+        #endregion
+    }
+
+    /// <summary>
+    /// Commonly used simple list.  The list count is an integer stored immediately before the list.  The elements are UInt32.
+    /// </summary>
+    public class UIntList : SimpleList<uint>
+    {
+        #region Constructors
+        /// <summary>
+        /// Create an empty UIntList.
+        /// </summary>
+        /// <param name="handler">Event handler.</param>
+        /// <param name="size">Optional list size.</param>
+        public UIntList(EventHandler handler, long size = -1) : base(handler, ReadUInt32, WriteUInt32, size) { }
+        /// <summary>
+        /// Create a UIntList populated from an existing set of values.
+        /// </summary>
+        /// <param name="handler">Event handler.</param>
+        /// <param name="basis">Basis on which to populate the list.</param>
+        /// <param name="size">Optional list size.</param>
+        public UIntList(EventHandler handler, IEnumerable<HandlerElement<uint>> basis, long size = -1) : base(handler, basis, ReadUInt32, WriteUInt32, size) { }
+        /// <summary>
+        /// Create a UIntList populated from a <see cref="Stream"/>.
+        /// </summary>
+        /// <param name="handler">Event handler.</param>
+        /// <param name="s"><see cref="Stream"/> from which to read elements.</param>
+        /// <param name="size">Optional list size.</param>
+        public UIntList(EventHandler handler, Stream s, long size = -1) : base(handler, s, ReadUInt32, WriteUInt32, size) { }
+        #endregion
+
+        #region Data I/O
+        static UInt32 ReadUInt32(Stream s) { return new BinaryReader(s).ReadUInt32(); }
+        static void WriteUInt32(Stream s, UInt32 value) { new BinaryWriter(s).Write(value); }
         #endregion
     }
 }
