@@ -40,15 +40,18 @@ namespace s3pi.GenericRCOLResource
         AResource.TGIBlockList tgiBlockList;
         #endregion
 
+        #region Constructors
+        public VPXY(int APIversion, EventHandler handler) : base(APIversion, handler, null) { }
         public VPXY(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler, s) { }
         public VPXY(int APIversion, EventHandler handler, VPXY basis)
             : this(APIversion, handler,
-            basis.version, basis.entryList, basis.tc02, basis.boundingBox, basis.unused, basis.modular, basis.ftptIndex, basis.tgiBlockList) { }
+            basis.version, basis.entryList, basis.tc02, basis.boundingBox, basis.unused, basis.modular, basis.ftptIndex,
+            basis.tgiBlockList) { }
         public VPXY(int APIversion, EventHandler handler,
-            uint version, EntryList entryList, byte tc02, float[] boundingBox, byte[] unused, byte modular, int ftptIndex, IEnumerable<AResource.TGIBlock> tgiBlockList)
-            : base(APIversion, null, null)
+            uint version, IEnumerable<Entry> entryList, byte tc02, float[] boundingBox, byte[] unused, byte modular, int ftptIndex,
+            IEnumerable<AResource.TGIBlock> tgiBlockList)
+            : base(APIversion, handler, null)
         {
-            this.handler = handler;
             this.version = version;
             if (checking) if (version != 4)
                     throw new ArgumentException(String.Format("Invalid Version: 0x{0:X8}; expected 0x00000004", version));
@@ -65,13 +68,7 @@ namespace s3pi.GenericRCOLResource
                 this.ftptIndex = ftptIndex;
             this.tgiBlockList = new AResource.TGIBlockList(OnRCOLChanged, tgiBlockList);
         }
-        public VPXY(int APIversion, EventHandler handler)
-            : base(APIversion, null, null)
-        {
-            this.handler = handler;
-            entryList = new EntryList(OnRCOLChanged);
-            tgiBlockList = new AResource.TGIBlockList(OnRCOLChanged);
-        }
+        #endregion
 
         #region ARCOLBlock
         public override string Tag { get { return "VPXY"; } }
@@ -80,6 +77,8 @@ namespace s3pi.GenericRCOLResource
 
         protected override void Parse(Stream s)
         {
+            if (s == null) s = UnParse();
+
             BinaryReader r = new BinaryReader(s);
             tag = r.ReadUInt32();
             if (checking) if (tag != (uint)FOURCC("VPXY"))

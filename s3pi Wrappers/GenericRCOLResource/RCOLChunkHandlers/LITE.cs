@@ -38,24 +38,19 @@ namespace s3pi.GenericRCOLResource
         ShortSectionList shortSections = null;
         #endregion
 
+        #region Constructors
+        public LITE(int APIversion, EventHandler handler) : base(APIversion, handler, null) { }
         public LITE(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler, s) { }
         public LITE(int APIversion, EventHandler handler, LITE basis)
-            : base(APIversion, null, null)
+            : base(APIversion, handler, null)
         {
-            this.handler = handler;
             this.version = basis.version;
             this.unknown1 = basis.unknown1;
             this.longSections = new LongSectionList(handler, basis.longSections);
             this.shortSections = new ShortSectionList(handler, basis.shortSections);
             this.unknown2 = basis.unknown2;
         }
-        public LITE(int APIversion, EventHandler handler)
-            : base(APIversion, null, null)
-        {
-            this.handler = handler;
-            this.longSections = new LongSectionList(handler);
-            this.shortSections = new ShortSectionList(handler);
-        }
+        #endregion
 
         #region ARCOLBlock
         public override string Tag { get { return TAG; } }
@@ -64,6 +59,8 @@ namespace s3pi.GenericRCOLResource
 
         protected override void Parse(Stream s)
         {
+            if (s == null) s = UnParse();
+
             BinaryReader r = new BinaryReader(s);
             tag = r.ReadUInt32();
             if (checking) if (tag != (uint)FOURCC(TAG))

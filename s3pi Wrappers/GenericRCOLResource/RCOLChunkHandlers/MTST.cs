@@ -37,27 +37,19 @@ namespace s3pi.GenericRCOLResource
         EntryList list = null;
         #endregion
 
+        #region Constructors
+        public MTST(int APIversion, EventHandler handler) : base(APIversion, handler, null) { }
         public MTST(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler, s) { }
         public MTST(int APIversion, EventHandler handler, MTST basis)
-            : this(APIversion, handler
-            , basis.index, basis.fnv32, basis.list
-            ) { }
-        public MTST(int APIversion, EventHandler handler
-            , uint fnv32, uint index, EntryList list
-            )
-            : base(APIversion, null, null)
+            : this(APIversion, handler, basis.index, basis.fnv32, basis.list) { }
+        public MTST(int APIversion, EventHandler handler, uint fnv32, uint index, IEnumerable<Entry> list)
+            : base(APIversion, handler, null)
         {
-            this.handler = handler;
             this.fnv32 = fnv32;
             this.index = index;
             this.list = new EntryList(OnRCOLChanged, list);
         }
-        public MTST(int APIversion, EventHandler handler)
-            : base(APIversion, null, null)
-        {
-            this.handler = handler;
-            this.list = new EntryList(OnRCOLChanged);
-        }
+        #endregion
 
         #region ARCOLBlock
         public override string Tag { get { return "MTST"; } }
@@ -66,6 +58,8 @@ namespace s3pi.GenericRCOLResource
 
         protected override void Parse(Stream s)
         {
+            if (s == null) s = UnParse();
+
             BinaryReader r = new BinaryReader(s);
             tag = r.ReadUInt32();
             if (checking) if (tag != (uint)FOURCC("MTST"))

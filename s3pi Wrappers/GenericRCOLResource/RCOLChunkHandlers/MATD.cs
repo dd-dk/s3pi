@@ -39,46 +39,61 @@ namespace s3pi.GenericRCOLResource
         MTNF mtnf = null;
         #endregion
 
+        #region Constructors
         public MATD(int APIversion, EventHandler handler) : base(APIversion, handler, null) { }
         public MATD(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler, s) { }
         public MATD(int APIversion, EventHandler handler, MATD basis)
-            : base(APIversion, null, null)
+            : base(APIversion, handler, null)
         {
-            this.handler = handler;
             this.version = basis.version;
             this.materialNameHash = basis.materialNameHash;
             this.shader = basis.shader;
-            if (basis.mtrl != null) mtrl = new MTRL(requestedApiVersion, OnRCOLChanged, basis.mtrl);
-            this.unknown1 = basis.unknown1;
-            this.unknown2 = basis.unknown2;
-            if (basis.mtnf != null) mtnf = new MTNF(requestedApiVersion, OnRCOLChanged, basis.mtnf);
+            if (version < 0x00000103)
+            {
+                mtrl = basis.mtrl != null
+                    ? new MTRL(requestedApiVersion, OnRCOLChanged, basis.mtrl)
+                    : new MTRL(requestedApiVersion, OnRCOLChanged);
+            }
+            else
+            {
+                this.unknown1 = basis.unknown1;
+                this.unknown2 = basis.unknown2;
+                mtnf = basis.mtnf != null
+                    ? new MTNF(requestedApiVersion, OnRCOLChanged, basis.mtnf)
+                    : new MTNF(requestedApiVersion, OnRCOLChanged);
+            }
         }
+
         public MATD(int APIversion, EventHandler handler,
             uint version, uint materialNameHash, ShaderType shader, MTRL mtrl)
-            : base(APIversion, null, null)
+            : base(APIversion, handler, null)
         {
-            this.handler = handler;
-            if (checking) if (version >= 0x00000103)
-                    throw new ArgumentException("version must be <= 0x0103 for MTRLs");
             this.version = version;
             this.materialNameHash = materialNameHash;
             this.shader = shader;
-            this.mtrl = mtrl == null ? null : new MTRL(requestedApiVersion, OnRCOLChanged, mtrl);
+            if (checking) if (version >= 0x00000103)
+                    throw new ArgumentException("version must be < 0x0103 for MTRLs");
+            this.mtrl = mtrl != null
+                ? new MTRL(requestedApiVersion, OnRCOLChanged, mtrl)
+                : new MTRL(requestedApiVersion, OnRCOLChanged);
         }
+
         public MATD(int APIversion, EventHandler handler,
             uint version, uint materialNameHash, ShaderType shader, uint unknown1, uint unknown2, MTNF mtnf)
-            : base(APIversion, null, null)
+            : base(APIversion, handler, null)
         {
-            this.handler = handler;
-            if (checking) if (version < 0x00000103)
-                    throw new ArgumentException("version must be <= 0x0103 for MTNFs");
             this.version = version;
             this.materialNameHash = materialNameHash;
             this.shader = shader;
+            if (checking) if (version < 0x00000103)
+                    throw new ArgumentException("version must be >= 0x0103 for MTNFs");
             this.unknown1 = unknown1;
             this.unknown2 = unknown2;
-            this.mtnf = mtnf == null ? null : new MTNF(requestedApiVersion, OnRCOLChanged, mtnf);
+            this.mtnf = mtnf != null
+                ? new MTNF(requestedApiVersion, OnRCOLChanged, mtnf)
+                : new MTNF(requestedApiVersion, OnRCOLChanged);
         }
+        #endregion
 
         #region ARCOLBlock
         public override string Tag { get { return "MATD"; } }
@@ -87,6 +102,8 @@ namespace s3pi.GenericRCOLResource
 
         protected override void Parse(Stream s)
         {
+            if (s == null) s = UnParse();
+
             BinaryReader r = new BinaryReader(s);
             tag = r.ReadUInt32();
             if (checking) if (tag != (uint)FOURCC("MATD"))

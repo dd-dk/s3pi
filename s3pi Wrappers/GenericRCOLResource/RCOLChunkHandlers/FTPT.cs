@@ -35,6 +35,8 @@ namespace s3pi.GenericRCOLResource
         AreaList slotAreas;
         #endregion
 
+        #region Constructors
+        public FTPT(int APIversion, EventHandler handler) : base(APIversion, handler, null) { }
         public FTPT(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler, s) { }
         public FTPT(int APIversion, EventHandler handler, FTPT basis)
             : base(APIversion, null, null)
@@ -44,13 +46,7 @@ namespace s3pi.GenericRCOLResource
             this.footprintAreas = new AreaList(OnRCOLChanged, basis.footprintAreas, version);
             this.slotAreas = new AreaList(OnRCOLChanged, basis.slotAreas, version);
         }
-        public FTPT(int APIversion, EventHandler handler)
-            : base(APIversion, null, null)
-        {
-            this.handler = handler;
-            this.footprintAreas = new AreaList(OnRCOLChanged, version);
-            this.slotAreas = new AreaList(OnRCOLChanged, version);
-        }
+        #endregion
 
         #region ARCOLBlock
         public override string Tag { get { return "FTPT"; } }
@@ -59,6 +55,8 @@ namespace s3pi.GenericRCOLResource
 
         protected override void Parse(Stream s)
         {
+            if (s == null) s = UnParse();
+
             BinaryReader r = new BinaryReader(s);
             tag = r.ReadUInt32();
             if (checking) if (tag != (uint)FOURCC("FTPT"))
@@ -259,7 +257,7 @@ namespace s3pi.GenericRCOLResource
                 basis.elevationOffset,
                 basis.lowerX, basis.lowerY, basis.upperX, basis.upperY) { }
             public Area(int APIversion, EventHandler handler, uint version,
-                uint name, byte priority, AreaType areaTypeFlags, IList<PolygonPoint> closedPolygon,
+                uint name, byte priority, AreaType areaTypeFlags, IEnumerable<PolygonPoint> closedPolygon,
                 AllowIntersection allowIntersectionFlags, SurfaceType surfaceTypeFlags, SurfaceAttribute surfaceAttributeFlags,
                 byte levelOffset,
                 float lowerX, float lowerY, float upperX, float upperY)
@@ -274,7 +272,7 @@ namespace s3pi.GenericRCOLResource
                         throw new InvalidOperationException(String.Format("Constructor requires ElevationOffset for version {0}", version));
             }
             public Area(int APIversion, EventHandler handler, uint version,
-                uint name, byte priority, AreaType areaTypeFlags, IList<PolygonPoint> closedPolygon,
+                uint name, byte priority, AreaType areaTypeFlags, IEnumerable<PolygonPoint> closedPolygon,
                 AllowIntersection allowIntersectionFlags, SurfaceType surfaceTypeFlags, SurfaceAttribute surfaceAttributeFlags,
                 byte levelOffset,
                 float elevationOffset,
@@ -441,7 +439,7 @@ namespace s3pi.GenericRCOLResource
             #region Constructors
             public AreaList(EventHandler handler, uint version) : base(handler, 255) { this.version = version; }
             public AreaList(EventHandler handler, Stream s, uint version) : base(null, 255) { this.version = version; elementHandler = handler; Parse(s); this.handler = handler; }
-            public AreaList(EventHandler handler, IList<Area> lfpa, uint version) : base(null, 255) { this.version = version; elementHandler = handler; this.AddRange(lfpa); this.handler = handler; }
+            public AreaList(EventHandler handler, IEnumerable<Area> lfpa, uint version) : base(null, 255) { this.version = version; elementHandler = handler; this.AddRange(lfpa); this.handler = handler; }
             #endregion
 
             #region Data I/O
