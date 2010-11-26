@@ -399,6 +399,14 @@ namespace s3pi.Interfaces
         /// <param name="basis">Initial value for instance.</param>
         public HandlerElement(int APIversion, EventHandler handler, T basis) : base(APIversion, handler) { val = basis; }
 
+        /// <summary>
+        /// Initialize a new instance with an initial value from <paramref name="basis"/>.
+        /// </summary>
+        /// <param name="APIversion">The requested API version.</param>
+        /// <param name="handler">The <see cref="EventHandler"/> delegate to invoke if the <see cref="AHandlerElement"/> changes.</param>
+        /// <param name="basis">Element containing the initial value for instance.</param>
+        public HandlerElement(int APIversion, EventHandler handler, HandlerElement<T> basis) : base(APIversion, handler) { val = basis.val; }
+
         #region AHandlerElement
         /// <summary>
         /// Get a copy of the HandlerElement but with a new change <see cref="EventHandler"/>.
