@@ -55,8 +55,6 @@ namespace s3pi.GenericRCOLResource
 
         protected override void Parse(Stream s)
         {
-            if (s == null) s = UnParse();
-
             BinaryReader r = new BinaryReader(s);
             /*
              * This RCOL chunk has no Tag
@@ -214,8 +212,8 @@ namespace s3pi.GenericRCOLResource
                 get
                 {
                     string s = "";
-                    foreach (string var in ContentFields) if (var != "Value") s += var + ": " + this[var] + "\n";
-                    return s;
+                    foreach (string var in ContentFields) if (var != "Value") s += "\n" + var + ": " + this[var];
+                    return s.TrimStart('\n');
                 }
             }
             #endregion
@@ -247,9 +245,10 @@ namespace s3pi.GenericRCOLResource
                 string s = "";
                 //s += "Tag: 0x" + tag.ToString("X8");
                 s += "Version: 0x" + version.ToString("X8");
-                s += "\n---Adjustments:---";
-                for (int i = 0; i < adjustments.Count; i++) s += "\n--[" + i + "]--\n" + adjustments[i].Value;
-                s += "\n---";
+                s += String.Format("\nAdjustments ({0:X}):", adjustments.Count);
+                string fmt = "\n--[{0:X" + adjustments.Count.ToString("X").Length + "}]--\n{1}";
+                for (int i = 0; i < adjustments.Count; i++) s += String.Format(fmt, i, adjustments[i].Value);
+                s += "\n----";
                 return s;
             }
         }

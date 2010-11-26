@@ -58,8 +58,6 @@ namespace s3pi.GenericRCOLResource
 
         protected override void Parse(Stream s)
         {
-            if (s == null) s = UnParse();
-
             BinaryReader r = new BinaryReader(s);
             tag = r.ReadUInt32();
             if (checking) if (tag != (uint)FOURCC("MTST"))

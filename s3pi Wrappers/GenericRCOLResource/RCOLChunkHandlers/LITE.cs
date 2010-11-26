@@ -59,8 +59,6 @@ namespace s3pi.GenericRCOLResource
 
         protected override void Parse(Stream s)
         {
-            if (s == null) s = UnParse();
-
             BinaryReader r = new BinaryReader(s);
             tag = r.ReadUInt32();
             if (checking) if (tag != (uint)FOURCC(TAG))
@@ -386,7 +384,7 @@ namespace s3pi.GenericRCOLResource
                     foreach (string field in ContentFields)
                         if (!field.Equals("Value"))
                             s += "\n" + field + ": " + this[field];
-                    return s;
+                    return s.TrimStart('\n');
                 }
             }
             #endregion
@@ -499,7 +497,7 @@ namespace s3pi.GenericRCOLResource
                     foreach (string field in ContentFields)
                         if (!field.Equals("Value"))
                             s += "\n" + field + ": " + this[field];
-                    return s;
+                    return s.TrimStart('\n');
                 }
             }
             #endregion
@@ -550,11 +548,15 @@ namespace s3pi.GenericRCOLResource
                 s += "\nUnknown1: 0x" + unknown1.ToString("X8");
                 s += "\nUnknown2: 0x" + unknown1.ToString("X4");
 
-                s += "\nLong Sections (" + longSections.Count + ")" + (longSections.Count > 0 ? ":" : "");
-                for (int i = 0; i < longSections.Count; i++) s += "\n---LongSections[" + i + "]---" + longSections[i].Value + "\n";
+                string fmt;
+                s += String.Format("\nLong Sections ({0:X}):", longSections.Count);
+                fmt = "\n--[{0:X" + longSections.Count.ToString("X").Length + "}]--\n{1}\n--";
+                for (int i = 0; i < longSections.Count; i++) s += String.Format(fmt, i, longSections[i].Value);
+                s += "\n----";
 
-                s += "\nShort Sections (" + shortSections.Count + ")" + (shortSections.Count > 0 ? ":" : "");
-                for (int i = 0; i < shortSections.Count; i++) s += "\n---ShortSections[" + i + "]---" + shortSections[i].Value + "\n";
+                s += String.Format("\nShort Sections ({0:X}):", shortSections.Count);
+                fmt = "\n--[{0:X" + shortSections.Count.ToString("X").Length + "}]--\n{1}\n--";
+                for (int i = 0; i < shortSections.Count; i++) s += String.Format(fmt, i, shortSections[i].Value);
 
                 return s;
             }

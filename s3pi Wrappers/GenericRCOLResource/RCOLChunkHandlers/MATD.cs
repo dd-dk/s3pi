@@ -102,8 +102,6 @@ namespace s3pi.GenericRCOLResource
 
         protected override void Parse(Stream s)
         {
-            if (s == null) s = UnParse();
-
             BinaryReader r = new BinaryReader(s);
             tag = r.ReadUInt32();
             if (checking) if (tag != (uint)FOURCC("MATD"))
@@ -463,8 +461,11 @@ namespace s3pi.GenericRCOLResource
                     s += "MTRLUnknown1: 0x" + mtrlUnknown1.ToString("X8");
                     s += "\nMTRLUnknown2: 0x" + mtrlUnknown2.ToString("X4");
                     s += "\nMTRLUnknown3: 0x" + mtrlUnknown3.ToString("X4");
+
+                    s += String.Format("\nSData ({0:X}):", sdList.Count);
+                    string fmt = "\n  [{0:X" + sdList.Count.ToString("X").Length + "}]: {{{1}}}";
                     for (int i = 0; i < sdList.Count; i++)
-                        s += "\n--Data[" + i + "]: {" + sdList[i].Value + "}";
+                        s += String.Format(fmt, i, sdList[i].Value);
                     return s;
                 }
             }
@@ -540,8 +541,11 @@ namespace s3pi.GenericRCOLResource
                 {
                     string s = "";
                     s += "MTNFUnknown1: 0x" + mtnfUnknown1.ToString("X8");
+
+                    s += String.Format("\nSData ({0:X}):", sdList.Count);
+                    string fmt = "\n  [{0:X" + sdList.Count.ToString("X").Length + "}]: {{{1}}}";
                     for (int i = 0; i < sdList.Count; i++)
-                        s += "\n--Data[" + i + "]: {" + sdList[i].Value + "}";
+                        s += String.Format(fmt, i, sdList[i].Value);
                     return s;
                 }
             }
@@ -819,9 +823,9 @@ namespace s3pi.GenericRCOLResource
                 get
                 {
                     string s = "";
-                    s += "Field: " + new TypedValue(typeof(FieldType), field, "X");
-                    s += "; Entries: "; foreach (var e in sdData) s += e["Data"] + ", "; s = s.TrimEnd(',', ' ');
-                    return s;
+                    s += this["Field"] + " {";
+                    foreach (var e in sdData) s += " " + e["Data"] + ",";
+                    return s.TrimEnd(',') + " }";
                 }
             }
             #endregion
