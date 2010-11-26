@@ -205,6 +205,69 @@ namespace s3pi.GenericRCOLResource
             public override void Add() { throw new NotImplementedException(); }
         }
 
+        public enum ReferenceType : byte
+        {
+            Public = 0x0, //This resource
+            Private = 0x1,
+            External = 0x2, //unused
+            Delayed = 0x3, //Other resource
+        }
+
+        public class ChunkReference : AHandlerElement, IEquatable<ChunkReference>
+        {
+            const Int32 recommendedApiVersion = 1;
+
+            #region Attributes
+            uint chunkReference;
+            #endregion
+
+            #region Constructors
+            public ChunkReference(int APIversion, EventHandler handler, Stream s)
+                : base(APIversion, handler) { Parse(s); }
+            public ChunkReference(int APIversion, EventHandler handler, ChunkReference basis)
+                : this(APIversion, handler, basis.chunkReference) { }
+            public ChunkReference(int APIversion, EventHandler handler, uint chunkReference)
+                : base(APIversion, handler) { this.chunkReference = chunkReference; }
+            #endregion
+
+            #region Data I/O
+            void Parse(Stream s) { this.chunkReference = new BinaryReader(s).ReadUInt32(); }
+
+            internal void UnParse(Stream s) { new BinaryWriter(s).Write(chunkReference); }
+            #endregion
+
+            #region AHandlerElement Members
+            public override AHandlerElement Clone(EventHandler handler) { return new ChunkReference(requestedApiVersion, handler, this); }
+
+            public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
+
+            public override List<string> ContentFields
+            {
+                get
+                {
+                    List<string> res = GetContentFields(requestedApiVersion, this.GetType());
+                    //if (chunkReference == 0) res.Remove("RefType");
+                    return res;
+                }
+            }
+            #endregion
+
+            #region IEquatable<ChunkReference> Members
+
+            public bool Equals(ChunkReference other) { return chunkReference == other.chunkReference; }
+
+            #endregion
+
+            #region Content Fields
+            [ElementPriority(1)]
+            public int TGIBlockIndex { get { return (int)(chunkReference & 0x0FFFFFFF) - 1; } set { if (TGIBlockIndex != value) { if (value == -1) chunkReference = 0; else chunkReference = (chunkReference & 0xF0000000) | (uint)((value + 1) & 0x0FFFFFFF); OnElementChanged(); } } }
+            [ElementPriority(2)]
+            public ReferenceType RefType { get { return (ReferenceType)(chunkReference == 0 ? -1 : (byte)(chunkReference >> 28)); } set { if (RefType != value) { chunkReference = (((uint)value) << 28) | (chunkReference & 0x0FFFFFFF); OnElementChanged(); } } }
+
+            public string Value { get { return chunkReference > 0 ? this["TGIBlockIndex"] + " (" + this["RefType"] + ")" : "(unset)"; } }
+            #endregion
+        }
+
         #endregion
 
         #region Content Fields
