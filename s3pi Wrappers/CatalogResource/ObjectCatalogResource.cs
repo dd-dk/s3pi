@@ -97,10 +97,10 @@ namespace CatalogResource
 
         // Version <0x16
         public ObjectCatalogResource(int APIversion,
-            uint version, IList<Material> materialList,
+            uint version, IEnumerable<Material> materialList,
             Common common, uint objkIndex,
             ObjectType objectTypeFlags, WallPlacement wallPlacementFlags, Movement movementFlags, uint cutoutTilesPerLevel,
-            uint levels, IList<MTDoor> mtDoorList, byte isScriptEnabled, uint diagonalIndex, uint hash,
+            uint levels, IEnumerable<MTDoor> mtDoorList, byte isScriptEnabled, uint diagonalIndex, uint hash,
             uint roomFlags, uint functionCategoryFlags, ulong subFunctionFlags, ulong subRoomFlags, uint buildCategoryFlags, uint sinkDDSIndex,
             uint slotPlacementFlags, string materialGrouping1, string materialGrouping2, Moodlet moodletGiven, int moodletScore, uint unknown21,
             TopicRating[] topicRatings, uint fallbackIndex, TGIBlockList ltgib)
@@ -122,11 +122,11 @@ namespace CatalogResource
         }
         // Version <0x17
         public ObjectCatalogResource(int APIversion,
-            uint version, IList<Material> materialList,
+            uint version, IEnumerable<Material> materialList,
             string unknown1,
             Common common, uint objkIndex,
             ObjectType objectTypeFlags, WallPlacement wallPlacementFlags, Movement movementFlags, uint cutoutTilesPerLevel,
-            uint levels, IList<MTDoor> mtDoorList, byte isScriptEnabled, uint diagonalIndex, uint hash,
+            uint levels, IEnumerable<MTDoor> mtDoorList, byte isScriptEnabled, uint diagonalIndex, uint hash,
             uint roomFlags, uint functionCategoryFlags, ulong subFunctionFlags, ulong subRoomFlags, uint buildCategoryFlags, uint sinkDDSIndex,
             uint slotPlacementFlags, string materialGrouping1, string materialGrouping2, Moodlet moodletGiven, int moodletScore, uint unknown21,
             TopicRating[] topicRatings, uint fallbackIndex, TGIBlockList ltgib)
@@ -148,11 +148,11 @@ namespace CatalogResource
         }
         // Version <0x18
         public ObjectCatalogResource(int APIversion,
-            uint version, IList<Material> materialList,
+            uint version, IEnumerable<Material> materialList,
             string unknown1,
             Common common, uint objkIndex,
             ObjectType objectTypeFlags, WallPlacement wallPlacementFlags, Movement movementFlags, uint cutoutTilesPerLevel,
-            uint levels, IList<MTDoor> mtDoorList, byte isScriptEnabled, uint diagonalIndex, uint hash,
+            uint levels, IEnumerable<MTDoor> mtDoorList, byte isScriptEnabled, uint diagonalIndex, uint hash,
             uint roomFlags, uint functionCategoryFlags, ulong subFunctionFlags, ulong subRoomFlags, uint buildCategoryFlags, uint sinkDDSIndex,
             uint unknown16, uint unknown17, float unknown18,
             uint slotPlacementFlags, string materialGrouping1, string materialGrouping2, Moodlet moodletGiven, int moodletScore, uint unknown21,
@@ -175,11 +175,11 @@ namespace CatalogResource
         }
         // Version <0x19
         public ObjectCatalogResource(int APIversion,
-            uint version, IList<Material> materialList,
+            uint version, IEnumerable<Material> materialList,
             string unknown1,
             Common common, uint objkIndex,
             ObjectType objectTypeFlags, WallPlacement wallPlacementFlags, Movement movementFlags, uint cutoutTilesPerLevel,
-            uint levels, IList<MTDoor> mtDoorList, byte isScriptEnabled, uint diagonalIndex, uint hash,
+            uint levels, IEnumerable<MTDoor> mtDoorList, byte isScriptEnabled, uint diagonalIndex, uint hash,
             uint roomFlags, uint functionCategoryFlags, ulong subFunctionFlags, ulong subRoomFlags, uint buildCategoryFlags, uint sinkDDSIndex,
             uint unknown16, uint unknown17, float unknown18,
             UIntList tgiIndexes,
@@ -202,11 +202,11 @@ namespace CatalogResource
                     throw new InvalidOperationException(String.Format("Constructor requires IndexV19 for version {0}", version));
         }
         public ObjectCatalogResource(int APIversion,
-            uint version, IList<Material> materialList,
+            uint version, IEnumerable<Material> materialList,
             string unknown1,
             Common common, uint objkIndex,
             ObjectType objectTypeFlags, WallPlacement wallPlacementFlags, Movement movementFlags, uint cutoutTilesPerLevel,
-            uint levels, IList<MTDoor> mtDoorList, byte isScriptEnabled, uint diagonalIndex, uint hash,
+            uint levels, IEnumerable<MTDoor> mtDoorList, byte isScriptEnabled, uint diagonalIndex, uint hash,
             uint roomFlags, uint functionCategoryFlags, ulong subFunctionFlags, ulong subRoomFlags, uint buildCategoryFlags, uint sinkDDSIndex,
             uint unknown16, uint unknown17, float unknown18,
             UIntList tgiIndexes,
@@ -1070,22 +1070,6 @@ namespace CatalogResource
             #region Content Fields
             public String Value { get { string s = ""; for (int i = 0; i < Count; i++) s += string.Format("\n--{0}--\n", i) + this[i].Value; return s; } }
             #endregion
-        }
-
-        public class UIntList : SimpleList<uint>
-        {
-            #region Constructors
-            public UIntList(EventHandler handler, long size = -1) : base(handler, ReadUInt32, WriteUInt32, size) { }
-            public UIntList(EventHandler handler, IList<HandlerElement<uint>> uintList, long size = -1) : base(handler, uintList, ReadUInt32, WriteUInt32, size) { }
-            public UIntList(EventHandler handler, Stream s, long size = -1) : base(handler, s, ReadUInt32, WriteUInt32, size) { }
-            #endregion
-
-            #region Data I/O
-            static UInt32 ReadUInt32(Stream s) { return new BinaryReader(s).ReadUInt32(); }
-            static void WriteUInt32(Stream s, UInt32 value) { new BinaryWriter(s).Write(value); }
-            #endregion
-
-            public override void Add() { this.Add(new HandlerElement<uint>(0, null)); }
         }
         #endregion
 

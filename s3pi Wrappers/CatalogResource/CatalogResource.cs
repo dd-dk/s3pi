@@ -1455,9 +1455,9 @@ namespace CatalogResource
                         s += t;
                     }
                     else if (typeof(ObjectCatalogResource.MTDoorList).IsAssignableFrom(tv.Type)) s += h + (tv.Value as ObjectCatalogResource.MTDoorList).Value + t;
-                    else if (typeof(ObjectCatalogResource.UIntList).IsAssignableFrom(tv.Type))
+                    else if (typeof(UIntList).IsAssignableFrom(tv.Type))
                     {
-                        ObjectCatalogResource.UIntList uintList = tv.Value as ObjectCatalogResource.UIntList;
+                        UIntList uintList = tv.Value as UIntList;
                         s += h;
                         string fmt = "  [{0:X" + uintList.Count.ToString("X").Length + "}]: {1:X8}\n";
                         for (int i = 0; i < uintList.Count; i++) s += string.Format(fmt, i, uintList[i]);
