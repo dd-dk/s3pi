@@ -384,7 +384,7 @@ namespace CASPartResource
             public OuterEntry(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
             public OuterEntry(int APIversion, EventHandler handler, OuterEntry basis)
                 : this(APIversion, handler, basis.outerEntryNum, basis.unknown1, basis.innerEntries) { }
-            public OuterEntry(int APIversion, EventHandler handler, byte outerEntryNum, uint unknown1, IList<InnerEntry> le)
+            public OuterEntry(int APIversion, EventHandler handler, byte outerEntryNum, uint unknown1, IEnumerable<InnerEntry> le)
                 : base(APIversion, handler)
             {
                 this.outerEntryNum = outerEntryNum;

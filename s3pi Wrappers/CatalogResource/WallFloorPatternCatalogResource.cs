@@ -56,7 +56,7 @@ namespace CatalogResource
             basis.list) { }
         public WallFloorPatternCatalogResource(int APIversion,
             uint version,
-            IList<WallFloorPatternMaterial> materialList,
+            IEnumerable<WallFloorPatternMaterial> materialList,
             Common common,
             Pattern patternType,
             uint materialVPXYIndex,
@@ -139,7 +139,7 @@ namespace CatalogResource
             public WallFloorPatternMaterial(int APIversion, EventHandler handler, WallFloorPatternMaterial basis)
                 : base(APIversion, handler, basis) { this.unknown4 = basis.unknown4; this.unknown5 = basis.unknown5; this.unknown6 = basis.unknown6; }
             public WallFloorPatternMaterial(int APIversion, EventHandler handler, byte materialType, uint unknown1, ushort unknown2,
-                MaterialBlock mb, IList<TGIBlock> ltgib, uint unknown3, uint unknown4, uint unknown5, uint unknown6)
+                MaterialBlock mb, IEnumerable<TGIBlock> ltgib, uint unknown3, uint unknown4, uint unknown5, uint unknown6)
                 : base(APIversion, handler, materialType, unknown1, unknown2, mb, ltgib, unknown3) { this.unknown4 = unknown4; this.unknown5 = unknown5; this.unknown6 = unknown6; }
             #endregion
 
