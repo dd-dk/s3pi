@@ -336,7 +336,7 @@ namespace CASPartResource
             public CASEntry(int APIversion, EventHandler handler) : base(APIversion, handler) { }
             public CASEntry(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
             public CASEntry(int APIversion, EventHandler handler, CASEntry basis) : this(APIversion, handler, basis.casPartIndex, basis.clothing, basis.txtcIndexes) { }
-            public CASEntry(int APIversion, EventHandler handler, byte casPartIndex, ClothingType clothing, IList<IndexPair> ibe)
+            public CASEntry(int APIversion, EventHandler handler, byte casPartIndex, ClothingType clothing, IEnumerable<IndexPair> ibe)
                 : base(APIversion, handler) { this.casPartIndex = casPartIndex; this.clothing = clothing; this.txtcIndexes = new IndexPairList(handler, ibe); }
             #endregion
 
