@@ -43,11 +43,11 @@ namespace s3pi.GenericRCOLResource
         #endregion
 
         #region Constructors
+        public RSLT(int APIversion, EventHandler handler) : base(APIversion, handler, null) { }
         public RSLT(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler, s) { }
         public RSLT(int APIversion, EventHandler handler, RSLT basis)
-            : base(APIversion, null, null)
+            : base(APIversion, handler, null)
         {
-            this.handler = handler;
             this.version = basis.version;
             this.routes = new PartList(handler, basis.routes);
             this.routeFloats = new SevenFloatsList(handler, basis.routeFloats);
@@ -58,15 +58,6 @@ namespace s3pi.GenericRCOLResource
             this.inverseKineticsTargets = new PartList(handler, basis.inverseKineticsTargets);
             this.inverseKineticsTargetFloats = new SevenFloatsList(handler, basis.inverseKineticsTargetFloats);
         }
-        public RSLT(int APIversion, EventHandler handler)
-            : base(APIversion, null, null)
-        {
-            this.handler = handler;
-            routes = new PartList(handler);
-            containers = new SlottedPartList(handler);
-            effects = new PartList(handler);
-            inverseKineticsTargets = new PartList(handler);
-        }
         #endregion
 
         #region ARCOLBlock
@@ -76,6 +67,8 @@ namespace s3pi.GenericRCOLResource
 
         protected override void Parse(Stream s)
         {
+            if (s == null) s = UnParse();
+
             BinaryReader r = new BinaryReader(s);
             tag = r.ReadUInt32();
             if (checking) if (tag != (uint)FOURCC(TAG))

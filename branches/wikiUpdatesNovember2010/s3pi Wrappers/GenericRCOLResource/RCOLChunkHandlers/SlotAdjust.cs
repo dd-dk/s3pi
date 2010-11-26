@@ -40,7 +40,7 @@ namespace s3pi.GenericRCOLResource
         public SlotAdjust(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler, s) { }
         public SlotAdjust(int APIversion, EventHandler handler, SlotAdjust basis)
             : this(APIversion, handler, basis.version, basis.adjustments) { }
-        public SlotAdjust(int APIversion, EventHandler handler, uint version, AdjustmentList adjustments)
+        public SlotAdjust(int APIversion, EventHandler handler, uint version, IEnumerable<Adjustment> adjustments)
             : base(APIversion, handler, null)
         {
             this.version = version;
@@ -55,6 +55,8 @@ namespace s3pi.GenericRCOLResource
 
         protected override void Parse(Stream s)
         {
+            if (s == null) s = UnParse();
+
             BinaryReader r = new BinaryReader(s);
             /*
              * This RCOL chunk has no Tag
