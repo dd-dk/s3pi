@@ -30,29 +30,29 @@ namespace CASPartResource
     public class SimOutfitResource : AResource
     {
         const int recommendedApiVersion = 1;
-        public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
-        public override List<string> ContentFields { get { return GetContentFields(requestedApiVersion, this.GetType()); } }
 
         static bool checking = s3pi.Settings.Settings.Checking;
 
         #region Attributes
-        uint version = 16;
+        uint version = 0x0012;
         XMLEntryList xmlEntries;
         int unknown1;
         int unknown2;
-        float unknown3;
-        float unknown4;
-        float unknown5;
+        float heavyWeightSlider;
+        float strengthSlider;
+        float slimWeightSlider;
         uint unknown6;
         UnknownFlags unknown7;
         UnknownFlags unknown8;
         UnknownFlags unknown9;
         UnknownFlags unknown10;
         byte skinToneIndex;
-        float unknown11;
-        UInt32 colour1;
-        UInt32 colour2;
-        UInt32 colour3;
+        float eyelashSlider;
+        float muscleSlider;
+        float breastSlider;
+        UInt32 hairBaseColour;
+        UInt32 hairHaloHighColour;
+        UInt32 hairHaloLowColour;
         CASEntryList caspEntries;
         byte zero;
         FaceEntryList faceEntries;
@@ -74,19 +74,27 @@ namespace CASPartResource
             xmlEntries = new XMLEntryList(OnResourceChanged, s);
             unknown1 = r.ReadInt32();
             unknown2 = r.ReadInt32();
-            unknown3 = r.ReadSingle();
-            unknown4 = r.ReadSingle();
-            unknown5 = r.ReadSingle();
+            heavyWeightSlider = r.ReadSingle();
+            strengthSlider = r.ReadSingle();
+            slimWeightSlider = r.ReadSingle();
             unknown6 = r.ReadUInt32();
             unknown7 = (UnknownFlags)r.ReadUInt32();
             unknown8 = (UnknownFlags)r.ReadUInt32();
             unknown9 = (UnknownFlags)r.ReadUInt32();
             unknown10 = (UnknownFlags)r.ReadUInt32();
             skinToneIndex = r.ReadByte();
-            unknown11 = r.ReadSingle();
-            colour1 = r.ReadUInt32();
-            colour2 = r.ReadUInt32();
-            colour3 = r.ReadUInt32();
+            eyelashSlider = r.ReadSingle();
+            if (version >= 0x0011)
+            {
+                muscleSlider = r.ReadSingle();
+                if (version >= 0x0012)
+                {
+                    breastSlider = r.ReadSingle();
+                }
+            }
+            hairBaseColour = r.ReadUInt32();
+            hairHaloHighColour = r.ReadUInt32();
+            hairHaloLowColour = r.ReadUInt32();
             caspEntries = new CASEntryList(OnResourceChanged, s);
 
             zero = r.ReadByte();
@@ -118,20 +126,28 @@ namespace CASPartResource
 
             w.Write(unknown1);
             w.Write(unknown2);
-            w.Write(unknown3);
-            w.Write(unknown4);
-            w.Write(unknown5);
+            w.Write(heavyWeightSlider);
+            w.Write(strengthSlider);
+            w.Write(slimWeightSlider);
             w.Write(unknown6);
             w.Write((uint)unknown7);
             w.Write((uint)unknown8);
             w.Write((uint)unknown9);
             w.Write((uint)unknown10);
             w.Write(skinToneIndex);
-            w.Write(unknown11);
+            w.Write(eyelashSlider);
+            if (version >= 0x0011)
+            {
+                w.Write(muscleSlider);
+                if (version >= 0x0012)
+                {
+                    w.Write(breastSlider);
+                }
+            }
 
-            w.Write(colour1);
-            w.Write(colour2);
-            w.Write(colour3);
+            w.Write(hairBaseColour);
+            w.Write(hairHaloHighColour);
+            w.Write(hairHaloLowColour);
 
             if (caspEntries == null) caspEntries = new CASEntryList(OnResourceChanged); caspEntries.UnParse(s);
 
@@ -509,6 +525,26 @@ namespace CASPartResource
         }
         #endregion
 
+        #region AResource
+        public override int RecommendedApiVersion { get { return recommendedApiVersion; } }
+        public override List<string> ContentFields
+        {
+            get
+            {
+                List<string> res = GetContentFields(requestedApiVersion, this.GetType());
+                if (version < 0x00000012)
+                {
+                    res.Remove("BreastSlider");
+                    if (version < 0x00000011)
+                    {
+                        res.Remove("MuscleSlider");
+                    }
+                }
+                return res;
+            }
+        }
+        #endregion
+
         #region Content Fields
         [ElementPriority(1)]
         public uint Version { get { return version; } set { if (version != value) { version = value; OnResourceChanged(this, new EventArgs()); } } }
@@ -519,11 +555,11 @@ namespace CASPartResource
         [ElementPriority(4)]
         public int Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(5)]
-        public float Unknown3 { get { return unknown3; } set { if (unknown3 != value) { unknown3 = value; OnResourceChanged(this, new EventArgs()); } } }
+        public float HeavyWeightSlider { get { return heavyWeightSlider; } set { if (heavyWeightSlider != value) { heavyWeightSlider = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(6)]
-        public float Unknown4 { get { return unknown4; } set { if (unknown4 != value) { unknown4 = value; OnResourceChanged(this, new EventArgs()); } } }
+        public float StrengthSlider { get { return strengthSlider; } set { if (strengthSlider != value) { strengthSlider = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(7)]
-        public float Unknown5 { get { return unknown5; } set { if (unknown5 != value) { unknown5 = value; OnResourceChanged(this, new EventArgs()); } } }
+        public float SlimWeightSlider { get { return slimWeightSlider; } set { if (slimWeightSlider != value) { slimWeightSlider = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(8)]
         public uint Unknown6 { get { return unknown6; } set { if (unknown6 != value) { unknown6 = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(9)]
@@ -537,18 +573,22 @@ namespace CASPartResource
         [ElementPriority(13), TGIBlockListContentField("TGIBlocks")]
         public byte SkinToneIndex { get { return skinToneIndex; } set { if (skinToneIndex != value) { skinToneIndex = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(14)]
-        public float Unknown11 { get { return unknown11; } set { if (unknown11 != value) { unknown11 = value; OnResourceChanged(this, new EventArgs()); } } }
+        public float EyelashSlider { get { return eyelashSlider; } set { if (eyelashSlider != value) { eyelashSlider = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(15)]
-        public UInt32 Colour1 { get { return colour1; } set { if (!colour1.Equals(value)) { colour1 = value; OnResourceChanged(this, new EventArgs()); } } }
+        public float MuscleSlider { get { if (version < 0x00000011) throw new InvalidOperationException(); return muscleSlider; } set { if (version < 0x00000011) throw new InvalidOperationException(); if (muscleSlider != value) { muscleSlider = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(16)]
-        public UInt32 Colour2 { get { return colour2; } set { if (!colour2.Equals(value)) { colour2 = value; OnResourceChanged(this, new EventArgs()); } } }
+        public float BreastSlider { get { if (version < 0x00000012) throw new InvalidOperationException(); return breastSlider; } set { if (version < 0x00000012) throw new InvalidOperationException(); if (breastSlider != value) { breastSlider = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(17)]
-        public UInt32 Colour3 { get { return colour3; } set { if (!colour3.Equals(value)) { colour3 = value; OnResourceChanged(this, new EventArgs()); } } }
+        public UInt32 HairBaseColour { get { return hairBaseColour; } set { if (!hairBaseColour.Equals(value)) { hairBaseColour = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(18)]
-        public CASEntryList CASPEntries { get { return caspEntries; } set { if (caspEntries.Equals(value)) { caspEntries = new CASEntryList(OnResourceChanged, value); OnResourceChanged(this, new EventArgs()); } } }
+        public UInt32 HairHaloHighColour { get { return hairHaloHighColour; } set { if (!hairHaloHighColour.Equals(value)) { hairHaloHighColour = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(19)]
-        public FaceEntryList FACEEntries { get { return faceEntries; } set { if (faceEntries.Equals(value)) { faceEntries = new FaceEntryList(OnResourceChanged, value); OnResourceChanged(this, new EventArgs()); } } }
+        public UInt32 HairHaloLowColour { get { return hairHaloLowColour; } set { if (!hairHaloLowColour.Equals(value)) { hairHaloLowColour = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(20)]
+        public CASEntryList CASPEntries { get { return caspEntries; } set { if (caspEntries.Equals(value)) { caspEntries = new CASEntryList(OnResourceChanged, value); OnResourceChanged(this, new EventArgs()); } } }
+        [ElementPriority(21)]
+        public FaceEntryList FACEEntries { get { return faceEntries; } set { if (faceEntries.Equals(value)) { faceEntries = new FaceEntryList(OnResourceChanged, value); OnResourceChanged(this, new EventArgs()); } } }
+        [ElementPriority(22)]
         public CountedTGIBlockList TGIBlocks { get { return tgiBlocks; } set { if (!tgiBlocks.Equals(value)) { tgiBlocks = new CountedTGIBlockList(OnResourceChanged, "IGT", value); OnResourceChanged(this, new EventArgs()); } } }
 
         public string Value
