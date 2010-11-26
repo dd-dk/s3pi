@@ -55,8 +55,6 @@ namespace s3pi.GenericRCOLResource
 
         protected override void Parse(Stream s)
         {
-            if (s == null) s = UnParse();
-
             BinaryReader r = new BinaryReader(s);
             tag = r.ReadUInt32();
             if (checking) if (tag != (uint)FOURCC("FTPT"))
@@ -464,17 +462,21 @@ namespace s3pi.GenericRCOLResource
         {
             get
             {
+                string fmt;
                 string s = "";
                 s += "Tag: 0x" + tag.ToString("X8");
                 s += "\nVersion: 0x" + version.ToString("X8");
 
-                s += "\n--\nFootprintAreas:";
+                s += String.Format("\nFootprintAreas ({0:X}):", footprintAreas.Count);
+                fmt = "\n--[{0:X" + footprintAreas.Count.ToString("X").Length + "}]--\n{1}\n--";
                 for (int i = 0; i < footprintAreas.Count; i++)
-                    s += "\n-[" + i + "]-\n" + footprintAreas[i].Value;
+                    s += String.Format(fmt, i, footprintAreas[i].Value);
+                s += "\n----";
 
-                s += "\n--\nSlotAreas:";
+                s += String.Format("\nSlotAreas ({0:X}):", slotAreas.Count);
+                fmt = "\n--[{0:X" + slotAreas.Count.ToString("X").Length + "}]--\n{1}\n--";
                 for (int i = 0; i < slotAreas.Count; i++)
-                    s += "\n-[" + i + "]-\n" + slotAreas[i].Value;
+                    s += String.Format(fmt, i, slotAreas[i].Value);
                 return s;
             }
         }
