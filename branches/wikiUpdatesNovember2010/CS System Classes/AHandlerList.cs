@@ -53,7 +53,7 @@ namespace System.Collections.Generic
         /// filled with the content of <paramref name="ilt"/>.
         /// </summary>
         /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list.</param>
-        /// <param name="ilt">The <see cref="IList{T}"/> to use as the initial content of the list.</param>
+        /// <param name="ilt">The <see cref="IEnumerable{T}"/> to use as the initial content of the list.</param>
         /// <param name="size">Optional; -1 for unlimited size, otherwise the maximum number of elements in the list.</param>
         /// <remarks>Does not throw an exception if <paramref name="ilt"/>.Count is greater than <paramref name="size"/>.
         /// An exception will be thrown on any attempt to add further items unless the Count is reduced first.</remarks>
