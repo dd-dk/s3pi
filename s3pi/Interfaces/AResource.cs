@@ -131,7 +131,7 @@ namespace s3pi.Interfaces
             /// filled with the content of <paramref name="ilt"/>.
             /// </summary>
             /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
-            /// <param name="ilt">The <see cref="IList{T}"/> to use as the initial content of the list.</param>
+            /// <param name="ilt">The <see cref="IEnumerable{T}"/> to use as the initial content of the list.</param>
             /// <param name="size">Optional; -1 for unlimited size, otherwise the maximum number of elements in the list.</param>
             /// <remarks>Does not throw an exception if <paramref name="ilt"/>.Count is greater than <paramref name="size"/>.
             /// An exception will be thrown on any attempt to add further items unless the Count is reduced first.</remarks>
@@ -516,7 +516,7 @@ namespace s3pi.Interfaces
             /// with <see cref="TGIBlock.Order"/> of "TGI".
             /// </summary>
             /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
-            /// <param name="ilt">The <see cref="IList{TGIBlock}"/> to use as the initial content of the list.</param>
+            /// <param name="ilt">The <see cref="IEnumerable{TGIBlock}"/> to use as the initial content of the list.</param>
             /// <param name="size">Optional; -1 for unlimited size, otherwise the maximum number of elements in the list.</param>
             public CountedTGIBlockList(EventHandler handler, IEnumerable<TGIBlock> ilt, long size = -1) : this(handler, "TGI", ilt, size) { }
             /// <summary>
@@ -546,7 +546,7 @@ namespace s3pi.Interfaces
             /// </summary>
             /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
             /// <param name="order">The <see cref="TGIBlock.Order"/> of the <see cref="TGIBlock"/> values.</param>
-            /// <param name="ilt">The <see cref="IList{TGIBlock}"/> to use as the initial content of the list.</param>
+            /// <param name="ilt">The <see cref="IEnumerable{TGIBlock}"/> to use as the initial content of the list.</param>
             /// <param name="size">Optional; -1 for unlimited size, otherwise the maximum number of elements in the list.</param>
             public CountedTGIBlockList(EventHandler handler, TGIBlock.Order order, IEnumerable<TGIBlock> ilt, long size = -1) : this(handler, "" + order, ilt, size) { }
             /// <summary>
@@ -577,7 +577,7 @@ namespace s3pi.Interfaces
             /// </summary>
             /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
             /// <param name="order">A string representing the <see cref="TGIBlock.Order"/> of the <see cref="TGIBlock"/> values.</param>
-            /// <param name="ilt">The <see cref="IList{TGIBlock}"/> to use as the initial content of the list.</param>
+            /// <param name="ilt">The <see cref="IEnumerable{TGIBlock}"/> to use as the initial content of the list.</param>
             /// <param name="size">Optional; -1 for unlimited size, otherwise the maximum number of elements in the list.</param>
             public CountedTGIBlockList(EventHandler handler, string order, IEnumerable<TGIBlock> ilt, long size = -1) : base(handler, ilt, size) { this.order = order; }
             /// <summary>
@@ -678,7 +678,7 @@ namespace s3pi.Interfaces
             /// filled with the content of <paramref name="ilt"/>.
             /// </summary>
             /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
-            /// <param name="ilt">The <see cref="IList{TGIBlock}"/> to use as the initial content of the list.</param>
+            /// <param name="ilt">The <see cref="IEnumerable{TGIBlock}"/> to use as the initial content of the list.</param>
             /// <param name="addEight">When true, invoke fudge factor in parse/unparse</param>
             public TGIBlockList(EventHandler handler, IEnumerable<TGIBlock> ilt, bool addEight = false) : base(handler, ilt) { this.addEight = addEight; }
             /// <summary>
