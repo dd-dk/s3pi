@@ -170,7 +170,7 @@ namespace s3pi.Interfaces
 
             System.Reflection.ConstructorInfo ci = elementType.GetConstructor(types);
             if (ci == null) return false;
-            base.Add((T)(elementType.GetConstructor(types).Invoke(args)));
+            base.Add((T)ci.Invoke(args));
             return true;
         }
 
