@@ -62,7 +62,7 @@ namespace s3pi.Interfaces
     /// </code>
     /// </example>
     /// <seealso cref="HandlerElement{T}"/>
-    public class SimpleList<T> : AResource.DependentList<HandlerElement<T>>
+    public class SimpleList<T> : DependentList<HandlerElement<T>>
         where T : struct, IComparable, IConvertible, IEquatable<T>, IComparable<T>
     {
         #region Attributes
