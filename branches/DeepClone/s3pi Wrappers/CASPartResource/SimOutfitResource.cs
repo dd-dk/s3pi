@@ -253,7 +253,7 @@ namespace CASPartResource
             }
             #endregion
         }
-        public class XMLEntryList : AResource.DependentList<XMLEntry>
+        public class XMLEntryList : DependentList<XMLEntry>
         {
             #region Constructors
             public XMLEntryList(EventHandler handler) : base(handler) { }
@@ -321,7 +321,7 @@ namespace CASPartResource
             public string Value { get { return string.Format("{0}: {1}; {2}: {3}", "TXTC1Index", this["TXTC1Index"], "TXTC2Index", this["TXTC2Index"]); } }
             #endregion
         }
-        public class IndexPairList : AResource.DependentList<IndexPair>
+        public class IndexPairList : DependentList<IndexPair>
         {
             #region Constructors
             public IndexPairList(EventHandler handler) : base(handler) { }
@@ -424,7 +424,7 @@ namespace CASPartResource
             }
             #endregion
         }
-        public class CASEntryList : AResource.DependentList<CASEntry>
+        public class CASEntryList : DependentList<CASEntry>
         {
             #region Constructors
             public CASEntryList(EventHandler handler) : base(handler, Byte.MaxValue) { }
@@ -507,7 +507,7 @@ namespace CASPartResource
             public string Value { get { return string.Format("FaceIndex: {0}; Unknown1: {1}", this["FaceIndex"], unknown1); } }
             #endregion
         }
-        public class FaceEntryList : AResource.DependentList<FaceEntry>
+        public class FaceEntryList : DependentList<FaceEntry>
         {
             #region Constructors
             public FaceEntryList(EventHandler handler) : base(handler, Byte.MaxValue) { }

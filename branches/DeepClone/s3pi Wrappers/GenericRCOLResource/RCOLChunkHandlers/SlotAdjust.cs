@@ -219,7 +219,7 @@ namespace s3pi.GenericRCOLResource
             #endregion
 
         }
-        public class AdjustmentList : AResource.DependentList<Adjustment>
+        public class AdjustmentList : DependentList<Adjustment>
         {
             public AdjustmentList(EventHandler handler) : base(handler) { }
             public AdjustmentList(EventHandler handler, Stream s) : base(handler, s) { }

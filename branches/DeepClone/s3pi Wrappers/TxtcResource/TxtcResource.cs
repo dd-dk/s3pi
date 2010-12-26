@@ -234,7 +234,7 @@ namespace TxtcResource
             #endregion
         }
 
-        public class SuperBlockList : AResource.DependentList<SuperBlock>
+        public class SuperBlockList : DependentList<SuperBlock>
         {
             public SuperBlockList(EventHandler handler) : base(handler, Byte.MaxValue) { }
             public SuperBlockList(EventHandler handler, Stream s) : base(handler, s, Byte.MaxValue) { }
@@ -790,7 +790,7 @@ namespace TxtcResource
             public override string Value { get { return base.Value + "; Data: \"" + data + "\""; } }
         }
 
-        public class EntryList : AResource.DependentList<Entry>
+        public class EntryList : DependentList<Entry>
         {
             public EntryList(int APIversion, EventHandler handler, Stream s) : base(null, -1) { elementHandler = handler; Parse(APIversion, s); this.handler = handler; }
             public EntryList(EventHandler handler) : base(handler) { }
@@ -879,7 +879,7 @@ namespace TxtcResource
             #endregion
         }
 
-        public class EntryBlockList : AResource.DependentList<EntryBlock>
+        public class EntryBlockList : DependentList<EntryBlock>
         {
             int blockCount;
             public EntryBlockList(EventHandler handler) : base(handler) { }

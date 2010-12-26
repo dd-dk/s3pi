@@ -242,7 +242,7 @@ namespace CASPartResource
             }
             #endregion
         }
-        public class XMLEntryList : AResource.DependentList<XMLEntry>
+        public class XMLEntryList : DependentList<XMLEntry>
         {
             #region Constructors
             public XMLEntryList(EventHandler handler) : base(handler) { }
@@ -351,7 +351,7 @@ namespace CASPartResource
             }
             #endregion
         }
-        public class InnerEntryList : AResource.DependentList<InnerEntry>
+        public class InnerEntryList : DependentList<InnerEntry>
         {
             #region Constructors
             public InnerEntryList(EventHandler handler) : base(handler, Byte.MaxValue) { }
@@ -452,7 +452,7 @@ namespace CASPartResource
             }
             #endregion
         }
-        public class OuterEntryList : AResource.DependentList<OuterEntry>
+        public class OuterEntryList : DependentList<OuterEntry>
         {
             #region Constructors
             public OuterEntryList(EventHandler handler) : base(handler, Byte.MaxValue) { }

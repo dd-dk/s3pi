@@ -244,7 +244,7 @@ namespace s3pi.GenericRCOLResource
             }
             #endregion
         }
-        public class SevenFloatsList : AResource.DependentList<SevenFloats>
+        public class SevenFloatsList : DependentList<SevenFloats>
         {
             const int max = 1; // This implements the boolean nature of the list count
 
@@ -417,7 +417,7 @@ namespace s3pi.GenericRCOLResource
             }
             #endregion
         }
-        public class PartList : AResource.DependentList<Part>
+        public class PartList : DependentList<Part>
         {
             #region Constructors
             public PartList(EventHandler handler) : base(handler) { }
@@ -525,7 +525,7 @@ namespace s3pi.GenericRCOLResource
                 }
             }
         }
-        public class SlottedPartList : AResource.DependentList<SlottedPart>
+        public class SlottedPartList : DependentList<SlottedPart>
         {
             #region Constructors
             public SlottedPartList(EventHandler handler) : base(handler) { }

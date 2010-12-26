@@ -678,7 +678,7 @@ namespace s3pi.GenericRCOLResource
             public override string Value { get { return "Data: " + data.ToString(); } }
             #endregion
         }
-        public class EntryList : AResource.DependentList<Entry>
+        public class EntryList : DependentList<Entry>
         {
             DataType type = 0;
             int count = 0;
@@ -830,7 +830,7 @@ namespace s3pi.GenericRCOLResource
             }
             #endregion
         }
-        public class ShaderDataList : AResource.DependentList<ShaderData>
+        public class ShaderDataList : DependentList<ShaderData>
         {
             int dataLen = -1;
             internal long dataPos = -1;

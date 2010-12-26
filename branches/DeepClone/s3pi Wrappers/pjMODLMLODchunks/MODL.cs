@@ -258,7 +258,7 @@ namespace s3pi.GenericRCOLResource
             #endregion
         }
 
-        public class MLODReferenceList : AResource.DependentList<MLODReference>
+        public class MLODReferenceList : DependentList<MLODReference>
         {
             int outerCount;
 
@@ -279,7 +279,7 @@ namespace s3pi.GenericRCOLResource
             public override void Add() { this.Add(new MLODReference(0, null)); }
         }
 
-        public class BoundingBoxList : AResource.DependentList<BoundingBox>
+        public class BoundingBoxList : DependentList<BoundingBox>
         {
             #region Constructors
             public BoundingBoxList(EventHandler handler) : base(handler) { }

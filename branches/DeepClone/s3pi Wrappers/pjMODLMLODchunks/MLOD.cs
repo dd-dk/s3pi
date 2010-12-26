@@ -411,7 +411,7 @@ namespace s3pi.GenericRCOLResource
             #endregion
         }
 
-        public class LODGroupList : AResource.DependentList<LODGroup>
+        public class LODGroupList : DependentList<LODGroup>
         {
             uint mlodVersion;
             #region Constructors
@@ -540,7 +540,7 @@ namespace s3pi.GenericRCOLResource
             #endregion
         }
 
-        public class GeoStateList : AResource.DependentList<GeoState>
+        public class GeoStateList : DependentList<GeoState>
         {
             #region Constructors
             public GeoStateList(EventHandler handler) : base(handler) { }

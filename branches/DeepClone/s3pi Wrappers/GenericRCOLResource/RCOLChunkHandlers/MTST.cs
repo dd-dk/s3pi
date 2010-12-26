@@ -137,7 +137,7 @@ namespace s3pi.GenericRCOLResource
             public string Value { get { return String.Format("Index: 0x{0:X8}; FNV32: 0x{1:X8}", index, fnv32); } }
             #endregion
         }
-        public class EntryList : AResource.DependentList<Entry>
+        public class EntryList : DependentList<Entry>
         {
             #region Constructors
             public EntryList(EventHandler handler) : base(handler) { }

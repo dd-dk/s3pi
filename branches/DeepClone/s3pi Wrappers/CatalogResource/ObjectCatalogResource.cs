@@ -1050,7 +1050,7 @@ namespace CatalogResource
             #endregion
         }
 
-        public class MTDoorList : AResource.DependentList<MTDoor>
+        public class MTDoorList : DependentList<MTDoor>
         {
             #region Constructors
             public MTDoorList(EventHandler handler) : base(handler, Byte.MaxValue) { }

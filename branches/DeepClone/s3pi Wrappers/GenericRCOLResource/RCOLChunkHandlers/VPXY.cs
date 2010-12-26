@@ -37,7 +37,7 @@ namespace s3pi.GenericRCOLResource
         byte[] unused = new byte[4];
         byte modular;
         int ftptIndex;
-        AResource.TGIBlockList tgiBlockList;
+        TGIBlockList tgiBlockList;
         #endregion
 
         #region Constructors
@@ -66,7 +66,7 @@ namespace s3pi.GenericRCOLResource
             this.modular = modular;
             if (modular != 0)
                 this.ftptIndex = ftptIndex;
-            this.tgiBlockList = new AResource.TGIBlockList(OnRCOLChanged, tgiBlockList);
+            this.tgiBlockList = new TGIBlockList(OnRCOLChanged, tgiBlockList);
         }
         #endregion
 
@@ -102,7 +102,7 @@ namespace s3pi.GenericRCOLResource
             else
                 ftptIndex = 0;
 
-            tgiBlockList = new AResource.TGIBlockList(OnRCOLChanged, s, tgiPosn, tgiSize);
+            tgiBlockList = new TGIBlockList(OnRCOLChanged, s, tgiPosn, tgiSize);
         }
 
         public override Stream UnParse()
@@ -130,7 +130,7 @@ namespace s3pi.GenericRCOLResource
             if (modular != 0)
                 w.Write(ftptIndex);
 
-            if (tgiBlockList == null) tgiBlockList = new AResource.TGIBlockList(OnRCOLChanged);
+            if (tgiBlockList == null) tgiBlockList = new TGIBlockList(OnRCOLChanged);
             tgiBlockList.UnParse(ms, pos);
 
             return ms;
@@ -263,7 +263,7 @@ namespace s3pi.GenericRCOLResource
             #endregion
         }
 
-        public class EntryList : AResource.DependentList<Entry>
+        public class EntryList : DependentList<Entry>
         {
             #region Constructors
             public EntryList(EventHandler handler) : base(handler, Byte.MaxValue) { }
@@ -323,10 +323,10 @@ namespace s3pi.GenericRCOLResource
             get { return ftptIndex; }
             set { if (modular == 0) throw new InvalidOperationException(); if (ftptIndex != value) { ftptIndex = value; OnRCOLChanged(this, EventArgs.Empty); } }
         }
-        public AResource.TGIBlockList TGIBlocks
+        public TGIBlockList TGIBlocks
         {
             get { return tgiBlockList; }
-            set { if (tgiBlockList != value) { tgiBlockList = new AResource.TGIBlockList(OnRCOLChanged, value); OnRCOLChanged(this, EventArgs.Empty); } }
+            set { if (tgiBlockList != value) { tgiBlockList = new TGIBlockList(OnRCOLChanged, value); OnRCOLChanged(this, EventArgs.Empty); } }
         }
 
         public string Value
