@@ -390,7 +390,7 @@ namespace s3pi.GenericRCOLResource
             #endregion
         }
 
-        public class LongSectionList : AResource.DependentList<LongSection>
+        public class LongSectionList : DependentList<LongSection>
         {
             int count;
 
@@ -503,7 +503,7 @@ namespace s3pi.GenericRCOLResource
             #endregion
         }
 
-        public class ShortSectionList : AResource.DependentList<ShortSection>
+        public class ShortSectionList : DependentList<ShortSection>
         {
             int count;
 

@@ -782,7 +782,7 @@ namespace CatalogResource
             public bool Unknown1 { get { return unknown1 != 0; } set { if (Unknown1 != value) { unknown1 = (byte)(value ? 0x01 : 0x00); OnElementChanged(); } } }
         }
 
-        public class ComplateList : AResource.DependentList<ComplateElement>
+        public class ComplateList : DependentList<ComplateElement>
         {
             #region Constructors
             public ComplateList(EventHandler handler) : base(handler) { }
@@ -984,7 +984,7 @@ namespace CatalogResource
             #endregion
         }
 
-        public class MaterialBlockList : AResource.DependentList<MaterialBlock>
+        public class MaterialBlockList : DependentList<MaterialBlock>
         {
             #region Constructors
             public MaterialBlockList(EventHandler handler) : base(handler) { }
@@ -1188,7 +1188,7 @@ namespace CatalogResource
             #endregion
         }
 
-        public class MaterialList : AResource.DependentList<Material>
+        public class MaterialList : DependentList<Material>
         {
             #region Constructors
             internal MaterialList(EventHandler handler) : base(handler) { }

@@ -196,7 +196,7 @@ namespace CatalogResource
             #endregion
         }
 
-        public class WallFloorPatternMaterialList : AResource.DependentList<WallFloorPatternMaterial>
+        public class WallFloorPatternMaterialList : DependentList<WallFloorPatternMaterial>
         {
             #region Constructors
             internal WallFloorPatternMaterialList(EventHandler handler) : base(handler) { }

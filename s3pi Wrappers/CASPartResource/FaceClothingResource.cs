@@ -318,7 +318,7 @@ namespace CASPartResource
             }
             #endregion
         }
-        public class CASEntryList : AResource.DependentList<CASEntry>
+        public class CASEntryList : DependentList<CASEntry>
         {
             #region Constructors
             public CASEntryList(EventHandler handler) : base(handler) { }

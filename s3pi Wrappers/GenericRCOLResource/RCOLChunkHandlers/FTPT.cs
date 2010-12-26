@@ -148,7 +148,7 @@ namespace s3pi.GenericRCOLResource
             public string Value { get { return String.Format("[X: {0}] [Y: {1}]", x, y); } }
             #endregion
         }
-        public class PolygonPointList : AResource.DependentList<PolygonPoint>
+        public class PolygonPointList : DependentList<PolygonPoint>
         {
             #region Constructors
             public PolygonPointList(EventHandler handler) : base(handler, Byte.MaxValue) { }
@@ -431,7 +431,7 @@ namespace s3pi.GenericRCOLResource
             }
             #endregion
         }
-        public class AreaList : AResource.DependentList<Area>
+        public class AreaList : DependentList<Area>
         {
             uint version;
             #region Constructors
