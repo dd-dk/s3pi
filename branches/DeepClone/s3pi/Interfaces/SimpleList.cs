@@ -25,7 +25,7 @@ using System.Reflection;
 namespace s3pi.Interfaces
 {
     /// <summary>
-    /// A flexible generic list that implements <see cref="AResource.DependentList{T}"/> for
+    /// A flexible generic list that implements <see cref="DependentList{T}"/> for
     /// a simple data type (such as <see cref="UInt32"/>).
     /// </summary>
     /// <typeparam name="T">A simple data type (such as <see cref="UInt32"/>).</typeparam>
