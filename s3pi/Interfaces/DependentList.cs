@@ -1,5 +1,5 @@
 ﻿/***************************************************************************
- *  Copyright (C) 2009 by Peter L Jones                                    *
+ *  Copyright (C) 2010 by Peter L Jones                                    *
  *  pljones@users.sf.net                                                   *
  *                                                                         *
  *  This file is part of the Sims 3 Package Interface (s3pi)               *
@@ -52,21 +52,11 @@ namespace s3pi.Interfaces
         /// filled with the content of <paramref name="ilt"/>.
         /// </summary>
         /// <param name="handler">The <see cref="EventHandler"/> to call on changes to the list or its elements.</param>
-        /// <param name="ilt">The <see cref="IEnumerable{T}"/> to use as the initial content of the list.</param>
+        /// <param name="ilt">The initial content of the list.</param>
         /// <param name="size">Optional; -1 for unlimited size, otherwise the maximum number of elements in the list.</param>
-        /// <remarks>Does not throw an exception if <paramref name="ilt"/>.Count is greater than <paramref name="size"/>.
-        /// An exception will be thrown on any attempt to add further items unless the Count is reduced first.<br/>
-        /// <b>Note:</b> To preserve this behaviour, the base class is initialised first with <paramref name="ilt"/> directly
-        /// and then each element is replaced with a <see cref="AHandlerElement"/>.Clone() of itself.
-        /// </remarks>
-        protected DependentList(EventHandler handler, IEnumerable<T> ilt, long size = -1)
-            : base(null, ilt, size)
-        {
-            elementHandler = handler;
-            int i = 0;
-            foreach (var t in ilt) this[i++] = (T)t.Clone(elementHandler);
-            this.handler = handler;
-        }
+        /// <exception cref="System.InvalidOperationException">Thrown when list size exceeded.</exception>
+        /// <remarks>Calls <c>this.Add(...)</c> to ensure a fresh instance is created, rather than passing <paramref name="ilt"/> to the base constructor.</remarks>
+        protected DependentList(EventHandler handler, IEnumerable<T> ilt, long size = -1) : base(null, size) { elementHandler = handler; foreach (var t in ilt) this.Add(t); this.handler = handler; }
 
         // Add stream-based constructors and support
         /// <summary>
@@ -149,14 +139,6 @@ namespace s3pi.Interfaces
         public virtual bool Add(params object[] fields)
         {
             if (fields == null) return false;
-            Type elementType = typeof(T);
-            if (fields.Length == 1 && elementType.IsAssignableFrom(fields[0].GetType()) && !typeof(AHandlerElement).IsAssignableFrom(elementType))
-            {
-                base.Add((T)fields[0]);
-                return true;
-            }
-
-            if (elementType.IsAbstract) elementType = GetElementType(fields);
 
             Type[] types = new Type[2 + fields.Length];
             types[0] = typeof(int);
@@ -168,6 +150,8 @@ namespace s3pi.Interfaces
             args[1] = elementHandler;
             Array.Copy(fields, 0, args, 2, fields.Length);
 
+            Type elementType = typeof(T);
+            if (elementType.IsAbstract) elementType = GetElementType(fields);
             System.Reflection.ConstructorInfo ci = elementType.GetConstructor(types);
             if (ci == null) return false;
             base.Add((T)ci.Invoke(args));
