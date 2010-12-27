@@ -377,7 +377,7 @@ namespace s3pi.GenericRCOLResource
             HaloBlur = 0xc3ad4f50,
             HaloHighColor = 0xd4043258,
         }
-        public enum DataType
+        public enum DataType : uint
         {
             dtUnknown = 0,
             dtFloat = 1,
@@ -686,7 +686,7 @@ namespace s3pi.GenericRCOLResource
             #region Constructors
             public EntryList(EventHandler handler, DataType type) : base(handler) { this.type = type; }
             public EntryList(EventHandler handler, DataType type, int count, Stream s) : base(null) { this.type = type; this.count = count; elementHandler = handler; Parse(s); this.handler = handler; }
-            public EntryList(EventHandler handler, DataType type, IEnumerable<Entry> le) : base(handler, le) { this.type = type; }
+            public EntryList(EventHandler handler, DataType type, IEnumerable<Entry> le) : base(null) { this.type = type; elementHandler = handler; foreach (var e in le) this.Add(e); this.handler = handler; }
             #endregion
 
             #region Data I/O
@@ -707,7 +707,7 @@ namespace s3pi.GenericRCOLResource
                     case DataType.dtUInt32_1:
                     case DataType.dtUInt32_2: this.Add(new ElementUInt32(0, null)); break;
                     default:
-                        throw new InvalidOperationException(String.Format("Unknown DataType 0x{0:X8}", type));
+                        throw new InvalidOperationException(String.Format("Unknown DataType 0x{0:X8}", (uint)type));
                 }
             }
             protected override Type GetElementType(params object[] fields)
@@ -718,7 +718,7 @@ namespace s3pi.GenericRCOLResource
                     case DataType.dtUInt32_1:
                     case DataType.dtUInt32_2: return typeof(ElementUInt32);
                     default:
-                        throw new InvalidOperationException(String.Format("Unknown DataType 0x{0:X8}", type));
+                        throw new InvalidOperationException(String.Format("Unknown DataType 0x{0:X8}", (uint)type));
                 }
             }
             #endregion
