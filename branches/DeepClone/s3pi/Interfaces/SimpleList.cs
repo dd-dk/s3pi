@@ -928,6 +928,13 @@ namespace s3pi.Interfaces
         /// <param name="handler">Event handler.</param>
         /// <param name="basis">Basis on which to populate the list.</param>
         /// <param name="size">Optional list size.</param>
+        public UIntList(EventHandler handler, IEnumerable<uint> basis, long size = -1) : base(handler, basis, ReadUInt32, WriteUInt32, size) { }
+        /// <summary>
+        /// Create a UIntList populated from an existing set of values.
+        /// </summary>
+        /// <param name="handler">Event handler.</param>
+        /// <param name="basis">Basis on which to populate the list.</param>
+        /// <param name="size">Optional list size.</param>
         public UIntList(EventHandler handler, IEnumerable<HandlerElement<uint>> basis, long size = -1) : base(handler, basis, ReadUInt32, WriteUInt32, size) { }
         /// <summary>
         /// Create a UIntList populated from a <see cref="Stream"/>.
