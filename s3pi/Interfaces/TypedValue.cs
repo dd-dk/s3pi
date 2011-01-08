@@ -97,15 +97,14 @@ namespace s3pi.Interfaces
                 }
             }
 
-            if (typeof(String).IsAssignableFrom(this.Type))
+            if (typeof(String).IsAssignableFrom(this.Type) || typeof(System.Char[]).IsAssignableFrom(this.Type))
             {
-                string s = (String)this.Value;
-                if (s.IndexOf((char)0) != -1) return s.Length % 2 == 0 ? ToANSIString(s) : ToDisplayString(s.ToCharArray());
+                string s = typeof(String).IsAssignableFrom(this.Type) ? (String)this.Value : new string((char[])this.Value);
+                // -- It is not necessarily correct that a zero byte indicates a unicode string; these should have been
+                // correctly read in already so no translation should be needed... so the ToANSIString is currently commented out
+                if (s.IndexOf((char)0) != -1) return /*s.Length % 2 == 0 ? ToANSIString(s) :/**/ ToDisplayString(s.ToCharArray());
                 return s.Normalize();
             }
-
-            if (typeof(System.Char[]).IsAssignableFrom(this.Type))
-                return ToDisplayString((char[])this.Value);
 
             if (this.Type.HasElementType) // it's an array
             {
@@ -159,23 +158,25 @@ namespace s3pi.Interfaces
 
         static readonly string[] LowNames = {
                                                 "NUL", "SOH", "STX", "ETX", "EOT", "ENQ", "ACK", "BEL",
-                                                "BS", "HT", "LF", "VT", "FF", "CR", "SO", "SI",
+                                                "BS", "HT", /*"LF",**/ "VT", "FF", "CR", "SO", "SI",
                                                 "DLE", "DC1", "DC2", "DC3", "DC4", "NAK", "SYN", "ETB",
                                                 "CAN", "EM", "SUB", "ESC", "FS", "GS", "RS", "US",
                                             };
         static string ToDisplayString(char[] text)
         {
-            string ret = "";
+            StringBuilder t = new StringBuilder();
             foreach (char c in text)
             {
-                if (c < 32)
-                    ret += string.Format("<{0}>", LowNames[c]);
-                else if (c >= 127)
-                    ret += string.Format("<U+{0:X4}>", (int)c);
+                if (c < 32 && c != '\n')
+                    t.Append(string.Format("<{0}>", LowNames[c]));
+                else if (c == 127)
+                    t.Append("<DEL>");
+                else if (c > 127)
+                    t.Append(string.Format("<U+{0:X4}>", (int)c));
                 else
-                    ret += c;
+                    t.Append(c);
             }
-            return ret;
+            return t.ToString().Normalize();
         }
         #endregion
 
