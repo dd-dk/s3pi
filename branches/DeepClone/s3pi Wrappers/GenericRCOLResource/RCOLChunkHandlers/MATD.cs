@@ -96,8 +96,10 @@ namespace s3pi.GenericRCOLResource
         #endregion
 
         #region ARCOLBlock
+        [ElementPriority(2)]
         public override string Tag { get { return "MATD"; } }
 
+        [ElementPriority(3)]
         public override uint ResourceType { get { return 0x01D0E75D; } }
 
         protected override void Parse(Stream s)
@@ -457,6 +459,8 @@ namespace s3pi.GenericRCOLResource
             {
                 get
                 {
+                    return ValueBuilder;
+                    /*
                     string s = "";
                     s += "MTRLUnknown1: 0x" + mtrlUnknown1.ToString("X8");
                     s += "\nMTRLUnknown2: 0x" + mtrlUnknown2.ToString("X4");
@@ -467,6 +471,7 @@ namespace s3pi.GenericRCOLResource
                     for (int i = 0; i < sdList.Count; i++)
                         s += String.Format(fmt, i, sdList[i].Value);
                     return s;
+                    /**/
                 }
             }
             #endregion
@@ -539,6 +544,8 @@ namespace s3pi.GenericRCOLResource
             {
                 get
                 {
+                    return ValueBuilder;
+                    /*
                     string s = "";
                     s += "MTNFUnknown1: 0x" + mtnfUnknown1.ToString("X8");
 
@@ -547,6 +554,7 @@ namespace s3pi.GenericRCOLResource
                     for (int i = 0; i < sdList.Count; i++)
                         s += String.Format(fmt, i, sdList[i].Value);
                     return s;
+                    /**/
                 }
             }
             #endregion
@@ -822,10 +830,10 @@ namespace s3pi.GenericRCOLResource
             {
                 get
                 {
-                    string s = "";
-                    s += this["Field"] + " {";
-                    foreach (var e in sdData) s += " " + e["Data"] + ",";
-                    return s.TrimEnd(',') + " }";
+                    System.Text.StringBuilder sb = new System.Text.StringBuilder();
+                    sb.Append(this["Field"] + " {");
+                    foreach (var e in sdData) sb.Append(" " + e["Data"] + ",");
+                    return sb.ToString().TrimEnd(',') + " }";
                 }
             }
             #endregion
@@ -869,25 +877,27 @@ namespace s3pi.GenericRCOLResource
         #endregion
 
         #region Content Fields
-        [ElementPriority(1)]
+        [ElementPriority(11)]
         public uint Version { get { return version; } set { if (version != value) { version = value; OnRCOLChanged(this, EventArgs.Empty); } } }
-        [ElementPriority(2)]
+        [ElementPriority(12)]
         public uint MaterialNameHash { get { return materialNameHash; } set { if (materialNameHash != value) { materialNameHash = value; OnRCOLChanged(this, EventArgs.Empty); } } }
-        [ElementPriority(3)]
+        [ElementPriority(13)]
         public ShaderType Shader { get { return shader; } set { if (shader != value) { shader = value; OnRCOLChanged(this, EventArgs.Empty); } } }
-        [ElementPriority(4)]
+        [ElementPriority(14)]
         public MTRL Mtrl { get { return mtrl; } set { if (mtrl != value) { mtrl = new MTRL(requestedApiVersion, handler, mtrl); OnRCOLChanged(this, EventArgs.Empty); } } }
-        [ElementPriority(4)]
+        [ElementPriority(15)]
         public uint Unknown1 { get { return unknown1; } set { if (unknown1 != value) { unknown1 = value; OnRCOLChanged(this, EventArgs.Empty); } } }
-        [ElementPriority(5)]
+        [ElementPriority(16)]
         public uint Unknown2 { get { return unknown2; } set { if (unknown2 != value) { unknown2 = value; OnRCOLChanged(this, EventArgs.Empty); } } }
-        [ElementPriority(6)]
+        [ElementPriority(17)]
         public MTNF Mtnf { get { return mtnf; } set { if (mtnf != value) { mtnf = new MTNF(requestedApiVersion, handler, mtnf); OnRCOLChanged(this, EventArgs.Empty); } } }
 
         public string Value
         {
             get
             {
+                return ValueBuilder;
+                /*
                 string s = "";
                 s += "Tag: 0x" + tag.ToString("X8");
                 s += "\nVersion: 0x" + version.ToString("X8");
@@ -905,6 +915,7 @@ namespace s3pi.GenericRCOLResource
                 }
 
                 return s;
+                /**/
             }
         }
         #endregion

@@ -245,10 +245,7 @@ namespace CASPartResource
             {
                 get
                 {
-                    string s = "";
-                    s += "Unknown1: " + this["Unknown1"];
-                    s += "\nXml: " + (xml.Length > 160 ? xml.Substring(0, 157) + "..." : xml);
-                    return s;
+                    return "Unknown1: " + this["Unknown1"] + "\nXml: " + (xml.Length > 160 ? xml.Substring(0, 157) + "..." : xml);
                 }
             }
             #endregion
@@ -406,20 +403,21 @@ namespace CASPartResource
             {
                 get
                 {
-                    string s = "";
+                    System.Text.StringBuilder sb = new System.Text.StringBuilder();
                     foreach (string field in ContentFields)
                         if (field.Equals("Value")) continue;
                         else if (field.Equals("TXTCIndexes"))
                         {
-                            s += "\n--\nTXTCIndexes";
+                            sb.Append("\n--- TXTCIndexes (" + txtcIndexes.Count.ToString("X") + ") ---");
                             string fmt = "\n" + "  [{0:X" + txtcIndexes.Count.ToString("X").Length + "}]: {1}";
                             for (int i = 0; i < txtcIndexes.Count; i++)
-                                s += String.Format(fmt, i, txtcIndexes[i]["Value"]);
-                            s += "\n----";
+                                sb.Append(String.Format(fmt, i, txtcIndexes[i]["Value"]));
+                            sb.Append("\n---");
                         }
                         else
-                            s += string.Format("{0}: {1}; ", field, this[field]);
-                    return s.Trim();
+                            sb.Append(string.Format("{0}: {1}; ", field, this[field]));
+                    return sb.ToString().Trim();
+                    /**/
                 }
             }
             #endregion
@@ -596,6 +594,8 @@ namespace CASPartResource
         {
             get
             {
+                return ValueBuilder;
+                /*
                 string s = "";
 
                 foreach (string field in ContentFields)
@@ -640,6 +640,7 @@ namespace CASPartResource
                     }
 
                 return s;
+                /**/
             }
         }
         #endregion

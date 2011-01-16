@@ -161,11 +161,14 @@ namespace CASPartResource
             {
                 get
                 {
+                    return ValueBuilder.Replace("\n", "; ");
+                    /*
                     string s = "";
                     foreach (string field in ContentFields)
                         if (!field.Equals("Value"))
                             s += string.Format("{0}: {1}; ", field, this[field]);
                     return s.TrimEnd(';', ' ');
+                    /**/
                 }
             }
             #endregion
@@ -353,6 +356,8 @@ namespace CASPartResource
         {
             get
             {
+                return ValueBuilder;
+                /*
                 string s = "";
                 string fmt = "";
 
@@ -374,6 +379,7 @@ namespace CASPartResource
                 s += "\n----";
 
                 return s;
+                /**/
             }
         }
         #endregion
