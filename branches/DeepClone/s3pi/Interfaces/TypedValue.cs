@@ -131,29 +131,29 @@ namespace s3pi.Interfaces
 
         static string FromSimpleArray(Type type, Array ary)
         {
-            string s = "";
+            System.Text.StringBuilder sb = new StringBuilder();
             for (int i = 0; i < ary.Length; i++)
             {
                 object v = ary.GetValue(i);
                 TypedValue tv = new TypedValue(v.GetType(), v, "X");
-                s += String.Format(" [{0:X}:'{1}']", i, "" + tv);
+                sb.Append(String.Format(" [{0:X}:'{1}']", i, "" + tv));
             }
-            return s.TrimStart();
+            return sb.ToString().TrimStart();
         }
 
         static string FromAApiVersionedFieldsArray(Type type, Array ary)
         {
-            string s = "";
+            System.Text.StringBuilder sb = new StringBuilder();
             string fmt = "[{0:X}" + (type.IsAbstract ? " {1}" : "") + "]: {2}\n";
             for (int i = 0; i < ary.Length; i++)
             {
                 AApiVersionedFields value = (AApiVersionedFields)ary.GetValue(i);
                 if (value.ContentFields.Contains("Value"))
-                    s += string.Format(fmt, i, value.GetType(), value["Value"]);
+                    sb.Append(string.Format(fmt, i, value.GetType(), value["Value"]));
                 else
-                    s += string.Format(fmt, i, value.GetType(), value);
+                    sb.Append(string.Format(fmt, i, value.GetType(), value));
             }
-            return s.Trim('\n');
+            return sb.ToString().Trim('\n');
         }
 
         static readonly string[] LowNames = {
