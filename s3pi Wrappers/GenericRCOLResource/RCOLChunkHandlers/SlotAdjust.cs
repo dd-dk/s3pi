@@ -49,8 +49,10 @@ namespace s3pi.GenericRCOLResource
         #endregion
 
         #region ARCOLBlock
+        [ElementPriority(2)]
         public override string Tag { get { return TAG; } }
 
+        [ElementPriority(3)]
         public override uint ResourceType { get { return 0x0355E0A6; } }
 
         protected override void Parse(Stream s)
@@ -211,9 +213,12 @@ namespace s3pi.GenericRCOLResource
             {
                 get
                 {
+                    return ValueBuilder;
+                    /*
                     string s = "";
                     foreach (string var in ContentFields) if (var != "Value") s += "\n" + var + ": " + this[var];
                     return s.TrimStart('\n');
+                    /**/
                 }
             }
             #endregion
@@ -233,15 +238,17 @@ namespace s3pi.GenericRCOLResource
         #endregion
 
         #region Content Fields
-        [ElementPriority(1)]
+        [ElementPriority(11)]
         public uint Version { get { return version; } set { if (version != value) { version = value; OnRCOLChanged(this, EventArgs.Empty); } } }
-        [ElementPriority(2)]
+        [ElementPriority(12)]
         public AdjustmentList Adjustments { get { return adjustments; } set { if (adjustments != value) { adjustments = new AdjustmentList(handler, value); OnRCOLChanged(this, EventArgs.Empty); } } }
         
         public string Value
         {
             get
             {
+                return ValueBuilder;
+                /*
                 string s = "";
                 //s += "Tag: 0x" + tag.ToString("X8");
                 s += "Version: 0x" + version.ToString("X8");
@@ -250,6 +257,7 @@ namespace s3pi.GenericRCOLResource
                 for (int i = 0; i < adjustments.Count; i++) s += String.Format(fmt, i, adjustments[i].Value);
                 s += "\n----";
                 return s;
+                /**/
             }
         }
         #endregion

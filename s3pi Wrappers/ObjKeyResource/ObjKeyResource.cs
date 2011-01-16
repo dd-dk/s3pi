@@ -470,6 +470,8 @@ namespace ObjKeyResource
         {
             get
             {
+                return ValueBuilder;
+                /*
                 string s = "";
                 s += String.Format("Format: 0x{0:X8}", format);
 
@@ -492,6 +494,7 @@ namespace ObjKeyResource
                 for (int i = 0; i < tgiBlocks.Count; i++)
                     s += "\n  [0x" + i.ToString("X8") + "]: " + tgiBlocks[i];
                 return s;
+                /**/
             }
         }
         #endregion

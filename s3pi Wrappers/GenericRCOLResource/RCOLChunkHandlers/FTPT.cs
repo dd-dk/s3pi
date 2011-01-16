@@ -49,8 +49,10 @@ namespace s3pi.GenericRCOLResource
         #endregion
 
         #region ARCOLBlock
+        [ElementPriority(2)]
         public override string Tag { get { return "FTPT"; } }
 
+        [ElementPriority(3)]
         public override uint ResourceType { get { return 0xD382BF57; } }
 
         protected override void Parse(Stream s)
@@ -412,6 +414,8 @@ namespace s3pi.GenericRCOLResource
             {
                 get
                 {
+                    return ValueBuilder;
+                    /*
                     string s = "";
                     s += "Name: 0x" + name.ToString("X8");
                     s += "\nPriority: 0x" + priority.ToString("X2");
@@ -427,6 +431,7 @@ namespace s3pi.GenericRCOLResource
                     s += "\nUpperX: " + upperX;
                     s += "\nUpperY: " + upperY;
                     return s;
+                    /**/
                 }
             }
             #endregion
@@ -454,14 +459,19 @@ namespace s3pi.GenericRCOLResource
         #endregion
 
         #region Content Fields
+        [ElementPriority(11)]
         public uint Version { get { return version; } set { if (version != value) { version = value; OnRCOLChanged(this, EventArgs.Empty); } } }
+        [ElementPriority(12)]
         public AreaList FootprintAreas { get { return footprintAreas; } set { if (footprintAreas != value) { footprintAreas = new AreaList(OnRCOLChanged, value, version); OnRCOLChanged(this, EventArgs.Empty); } } }
+        [ElementPriority(13)]
         public AreaList SlotAreas { get { return slotAreas; } set { if (slotAreas != value) { slotAreas = new AreaList(OnRCOLChanged, value, version); OnRCOLChanged(this, EventArgs.Empty); } } }
 
         public string Value
         {
             get
             {
+                return ValueBuilder;
+                /*
                 string fmt;
                 string s = "";
                 s += "Tag: 0x" + tag.ToString("X8");
@@ -478,6 +488,7 @@ namespace s3pi.GenericRCOLResource
                 for (int i = 0; i < slotAreas.Count; i++)
                     s += String.Format(fmt, i, slotAreas[i].Value);
                 return s;
+                **/
             }
         }
         #endregion
