@@ -422,20 +422,20 @@ namespace System.Drawing
             if ((ddsHeader.m_pixelFormat.m_flags & DdsPixelFormat.PixelFormatFlags.DDS_FOURCC) != 0)
             {
                 #region We can use squish
-                int squishFlags = 0;
+                DdsSquish.SquishFlags squishFlags = 0;
 
                 switch (ddsHeader.m_pixelFormat.m_fourCC)
                 {
                     case fourccDXT1:
-                        squishFlags = (int)DdsSquish.SquishFlags.kDxt1;
+                        squishFlags = DdsSquish.SquishFlags.kDxt1;
                         break;
 
                     case fourccDXT3:
-                        squishFlags = (int)DdsSquish.SquishFlags.kDxt3;
+                        squishFlags = DdsSquish.SquishFlags.kDxt3;
                         break;
 
                     case fourccDXT5:
-                        squishFlags = (int)DdsSquish.SquishFlags.kDxt5;
+                        squishFlags = DdsSquish.SquishFlags.kDxt5;
                         break;
 
                     default:
@@ -444,7 +444,7 @@ namespace System.Drawing
 
                 // Compute size of compressed block area
                 int blockCount = ((ddsHeader.m_width + 3) / 4) * ((ddsHeader.m_height + 3) / 4);
-                int blockSize = ((squishFlags & (int)DdsSquish.SquishFlags.kDxt1) != 0) ? 8 : 16;
+                int blockSize = ((squishFlags & DdsSquish.SquishFlags.kDxt1) != 0) ? 8 : 16;
 
                 // Allocate room for compressed blocks, and read data into it.
                 byte[] compressedBlocks = new byte[blockCount * blockSize];
@@ -539,19 +539,19 @@ namespace System.Drawing
             if ((ddsHeader.m_pixelFormat.m_flags & DdsPixelFormat.PixelFormatFlags.DDS_FOURCC) != 0)
             {
                 #region We can use squish
-                int flags = 0;
+                DdsSquish.SquishFlags flags = 0;
                 switch (ddsHeader.m_pixelFormat.m_fourCC)
                 {
                     case fourccDXT1:
-                        flags = (int)DdsSquish.SquishFlags.kDxt1;
+                        flags = DdsSquish.SquishFlags.kDxt1;
                         break;
 
                     case fourccDXT3:
-                        flags = (int)DdsSquish.SquishFlags.kDxt3;
+                        flags = DdsSquish.SquishFlags.kDxt3;
                         break;
 
                     case fourccDXT5:
-                        flags = (int)DdsSquish.SquishFlags.kDxt5;
+                        flags = DdsSquish.SquishFlags.kDxt5;
                         break;
 
                     default:
