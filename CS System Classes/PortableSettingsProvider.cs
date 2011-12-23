@@ -187,7 +187,7 @@ namespace System.Configuration
         {
             // Set the values in XML
             foreach (SettingsPropertyValue spVal in settingsColl)
-                SetSetting(spVal);
+                if (spVal != null && spVal.SerializedValue != null) SetSetting(spVal);
 
             if (!Directory.Exists(GetSettingsPath()))
                 Directory.CreateDirectory(GetSettingsPath());
