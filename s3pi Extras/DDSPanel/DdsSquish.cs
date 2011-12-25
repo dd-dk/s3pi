@@ -285,6 +285,7 @@ namespace System.Drawing
         /// <c>{ 0.2126f, 0.7152f, 0.0722f }</c>. If non-NULL, the metric should point to a 
         /// contiguous array of 3 floats.
         /// </para>
+        /// </remarks>
         public static byte[] CompressImage(byte[] pixelInput, int width, int height, SquishFlags flags, float[] metric = null)
         {
             if (metric != null && metric.Length != 3)
