@@ -58,6 +58,7 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BlendGeometry.cs" />
     <Compile Include="BlendUnitResource.cs" />
     <Compile Include="CASPartResource.cs">
       <SubType>Code</SubType>
