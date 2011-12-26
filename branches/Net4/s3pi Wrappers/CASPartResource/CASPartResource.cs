@@ -82,7 +82,7 @@ namespace CASPartResource
             unknown2 = r.ReadByte();
             clothing = (ClothingType)r.ReadUInt32();
             dataType = (DataTypeFlags)r.ReadUInt32();
-            ageGender = (AgeGenderFlags)r.ReadUInt32();
+            ageGender = new AgeGenderFlags(0, OnResourceChanged, s);
             clothingCategory = (ClothingCategoryFlags)r.ReadUInt32();
             casPart1Index = r.ReadByte();
             casPart2Index = r.ReadByte();
@@ -126,7 +126,8 @@ namespace CASPartResource
             w.Write(unknown2);
             w.Write((uint)clothing);
             w.Write((uint)dataType);
-            w.Write((uint)ageGender);
+            if (ageGender == null) ageGender = new AgeGenderFlags(0, OnResourceChanged);
+            ageGender.UnParse(s);
             w.Write((uint)clothingCategory);
             w.Write(casPart1Index);
             w.Write(casPart2Index);
@@ -206,8 +207,8 @@ namespace CASPartResource
             public bool Equals(Preset other)
             {
                 return
-                    this.xml == other.xml
-                    && this.unknown1 == other.unknown1
+                    this.xml.Equals(other.xml)
+                    && this.unknown1.Equals(other.unknown1)
                     ;
             }
             public override bool Equals(object obj)
@@ -520,7 +521,7 @@ namespace CASPartResource
         [ElementPriority(7)]
         public DataTypeFlags DataType { get { return dataType; } set { if (dataType != value) { dataType = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(8)]
-        public AgeGenderFlags AgeGender { get { return ageGender; } set { if (ageGender != value) { ageGender = value; OnResourceChanged(this, new EventArgs()); } } }
+        public AgeGenderFlags AgeGender { get { return ageGender; } set { if (!ageGender.Equals(value)) { ageGender = new AgeGenderFlags(0, OnResourceChanged, value); OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(9)]
         public ClothingCategoryFlags ClothingCategory { get { return clothingCategory; } set { if (clothingCategory != value) { clothingCategory = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(10), TGIBlockListContentField("TGIBlocks")]

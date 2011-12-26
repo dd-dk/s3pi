@@ -130,14 +130,19 @@ namespace CASPartResource
             public Entry(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
             public Entry(int APIversion, EventHandler handler, Entry basis) : this(APIversion, handler, basis.ageGender, basis.amount, basis.index) { }
             public Entry(int APIversion, EventHandler handler, AgeGenderFlags ageGender, float amount, int index)
-                : base(APIversion, handler) { this.ageGender = ageGender; this.amount = amount; this.index = index; }
+                : base(APIversion, handler)
+            {
+                this.ageGender = new AgeGenderFlags(0, (o, e) => OnElementChanged(), ageGender);
+                this.amount = amount;
+                this.index = index;
+            }
             #endregion
 
             #region Data I/O
             void Parse(Stream s)
             {
                 BinaryReader r = new BinaryReader(s);
-                ageGender = (AgeGenderFlags)r.ReadUInt32();
+                ageGender = new AgeGenderFlags(0, (o, e) => OnElementChanged(), s);
                 amount = r.ReadSingle();
                 index = r.ReadInt32();
             }
@@ -145,7 +150,8 @@ namespace CASPartResource
             internal void UnParse(Stream s)
             {
                 BinaryWriter w = new BinaryWriter(s);
-                w.Write((uint)ageGender);
+                if (ageGender == null) ageGender = new AgeGenderFlags(0, (o, e) => OnElementChanged());
+                ageGender.UnParse(s);
                 w.Write(amount);
                 w.Write(index);
             }
@@ -162,7 +168,7 @@ namespace CASPartResource
             public bool Equals(Entry other)
             {
                 return
-                    this.ageGender == other.ageGender
+                    this.ageGender.Equals(other.ageGender)
                     && this.amount == other.amount
                     && this.index == other.index
                     ;
@@ -186,26 +192,13 @@ namespace CASPartResource
 
             #region Content Fields
             [ElementPriority(1)]
-            public AgeGenderFlags AgeGender { get { return ageGender; } set { if (ageGender != value) { ageGender = value; OnElementChanged(); } } }
+            public AgeGenderFlags AgeGender { get { return ageGender; } set { if (!ageGender.Equals(value)) { ageGender = new AgeGenderFlags(0, (o, e) => OnElementChanged(), value); OnElementChanged(); } } }
             [ElementPriority(2)]
             public float Amount { get { return amount; } set { if (amount != value) { amount = value; OnElementChanged(); } } }
             [ElementPriority(3)]
             public int Index { get { return index; } set { if (index != value) { index = value; OnElementChanged(); } } }
 
-            public string Value
-            {
-                get
-                {
-                    return ValueBuilder.Replace("\n", "; ");
-                    /*
-                    string s = "";
-                    foreach (string field in ContentFields)
-                        if (!field.Equals("Value"))
-                            s += string.Format("{0}: {1}; ", field, this[field]);
-                    return s.TrimEnd(';', ' ');
-                    /**/
-                }
-            }
+            public string Value { get { return ValueBuilder/*.Replace("\n", "; ")/**/; } }
             #endregion
         }
 
@@ -360,6 +353,8 @@ namespace CASPartResource
             {
                 get
                 {
+                    return ValueBuilder;
+                    /*
                     string s = "";
                     foreach (string field in ContentFields)
                         if (field == "Value") continue;
@@ -368,6 +363,7 @@ namespace CASPartResource
                         else
                             s += string.Format("\n{0}: {1}", field, this[field]);
                     return s;
+                    /**/
                 }
             }
             #endregion
