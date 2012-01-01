@@ -32,22 +32,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="s3pi.GenericRCOLResource">
-      <HintPath>..\..\s3pi\build\bin\Release\s3pi.GenericRCOLResource.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="s3pi.Interfaces">
-      <HintPath>..\..\s3pi\build\bin\Release\s3pi.Interfaces.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="s3pi.RCOLChunks">
-      <HintPath>..\..\s3pi\build\bin\Release\s3pi.RCOLChunks.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="s3pi.Settings">
-      <HintPath>..\..\s3pi\build\bin\Release\s3pi.Settings.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -76,10 +60,31 @@
     <Compile Include="VBUF.cs" />
     <Compile Include="VRTF.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\..\s3pi\Interfaces\Interfaces.csproj">
+      <Project>{51023BD2-9139-438D-B794-95E5EC023537}</Project>
+      <Name>Interfaces</Name>
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\..\s3pi\Settings\Settings.csproj">
+      <Project>{374F37CF-1F27-4613-96FD-9B956A3D82B1}</Project>
+      <Name>Settings</Name>
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\GenericRCOLResource\GenericRCOLResource.csproj">
+      <Project>{47693A2A-1F86-47CA-A170-CC0C195A53B7}</Project>
+      <Name>GenericRCOLResource</Name>
+      <Private>False</Private>
+    </ProjectReference>
+    <ProjectReference Include="..\s3piRCOLChunks\s3piRCOLChunks.csproj">
+      <Project>{F2E30D04-82C7-487F-B9E8-E8BABB1C94E1}</Project>
+      <Name>s3piRCOLChunks</Name>
+      <Private>False</Private>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>"$(SolutionDir)..\..\s3pi\CreateAssemblyVersion\bin\Release\CreateAssemblyVersion.exe" "$(ProjectDir)\"</PreBuildEvent>
+    <PreBuildEvent>$(SolutionDir)CreateAssemblyVersion\$(OutDir)CreateAssemblyVersion "$(ProjectDir)\"</PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
