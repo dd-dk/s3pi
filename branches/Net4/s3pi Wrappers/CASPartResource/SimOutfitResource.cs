@@ -368,7 +368,7 @@ namespace CASPartResource
             #endregion
 
             #region Constructors
-            public CASEntry(int APIversion, EventHandler handler) : base(APIversion, handler) { }
+            public CASEntry(int APIversion, EventHandler handler) : base(APIversion, handler) { txtcIndexes = new IndexPairList(handler); }
             public CASEntry(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
             public CASEntry(int APIversion, EventHandler handler, CASEntry basis) : this(APIversion, handler, basis.casPartIndex, basis.clothing, basis.txtcIndexes) { }
             public CASEntry(int APIversion, EventHandler handler, byte casPartIndex, ClothingType clothing, IEnumerable<IndexPair> ibe)

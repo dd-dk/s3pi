@@ -126,7 +126,7 @@ namespace CASPartResource
             #endregion
 
             #region Constructors
-            public Entry(int APIversion, EventHandler handler) : base(APIversion, handler) { }
+            public Entry(int APIversion, EventHandler handler) : base(APIversion, handler) { ageGender = new AgeGenderFlags(requestedApiVersion, handler); }
             public Entry(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
             public Entry(int APIversion, EventHandler handler, Entry basis) : this(APIversion, handler, basis.ageGender, basis.amount, basis.index) { }
             public Entry(int APIversion, EventHandler handler, AgeGenderFlags ageGender, float amount, int index)
@@ -216,7 +216,7 @@ namespace CASPartResource
             #endregion
 
             #region Constructors
-            public CASEntry(int APIversion, EventHandler handler) : base(APIversion, handler) { }
+            public CASEntry(int APIversion, EventHandler handler) : base(APIversion, handler) { geom = new Entry(requestedApiVersion, handler); bone = new Entry(requestedApiVersion, handler); }
             public CASEntry(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
             public CASEntry(int APIversion, EventHandler handler, CASEntry basis)
                 : this(APIversion, handler, basis.facialRegion, basis.andBone, basis.useGeom, basis.geom, basis.useBone, basis.bone) { }
