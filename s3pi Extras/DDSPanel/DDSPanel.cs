@@ -51,6 +51,7 @@ namespace System.Windows.Forms
         public DDSPanel()
         {
             InitializeComponent();
+            tlpSize.Visible = false;
         }
 
         #region Properties
@@ -231,6 +232,21 @@ namespace System.Windows.Forms
         #endregion
 
         #region Methods
+        /// <summary>
+        /// Return the image size and an indication of presence of an alpha channel
+        /// for a DDS image in a stream.
+        /// </summary>
+        /// <param name="stream"><see cref="Stream"/> containing a DDS-encoded image.</param>
+        /// <param name="imageSize">(out) Size of DDS image.</param>
+        /// <param name="hasAlphaChannel">(out) True if DDS image has an alpha channel.</param>
+        public void DDSInfo(Stream stream, out Size imageSize, out bool hasAlphaChannel)
+        {
+            DdsFile dds = new DdsFile();
+            dds.GetInfo(stream);
+            imageSize = new Size(dds.Size.Width, dds.Size.Height);
+            hasAlphaChannel = dds.HasAlphaChannel;
+        }
+
         /// <summary>
         /// Load a DDS image from a <see cref="System.IO.Stream"/>;
         /// if <paramref name="supportHSV"/> is passed and true (default is false), the image will
@@ -817,6 +833,13 @@ namespace System.Windows.Forms
 
         Image doResize()
         {
+            if (loaded)
+            {
+                tlpSize.Visible = true;
+                lbSize.Text = image.Size.Width + ", " + image.Size.Height;
+            }
+            else tlpSize.Visible = false;
+
             Size targetSize = loaded ? image.Size : new Size(128, 128);
 
             if (Fit) targetSize = ScaleToFit(targetSize, panel1.ClientSize);

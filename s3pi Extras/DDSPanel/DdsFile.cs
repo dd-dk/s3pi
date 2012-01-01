@@ -402,6 +402,33 @@ namespace System.Drawing
         }
 
         #region File I/O
+
+        /// <summary>
+        /// Loads the header from a DDS image.
+        /// </summary>
+        /// <param name="input">A <see cref="Stream"/> containing a DDS-encoded image.</param>
+        /// <exception cref="FormatException"><paramref name="input"/> does not contain a DDS-encoded image.</exception>
+        /// <remarks>
+        /// Once loaded, the following methods will return valid information about the image:
+        /// <list type="bullet">
+        /// <item><description>HasAlphaChannel</description></item>
+        /// <item><description>Size</description></item>
+        /// </list>
+        /// </remarks>
+        public void GetInfo(System.IO.Stream input)
+        {
+            long posn = input.Position;
+            uint ddsTag = new BinaryReader(input).ReadUInt32();
+            if (ddsTag != fourccDDS_)
+                throw new FormatException("Stream does not appear to contain a DDS image");
+
+            ddsHeader = new DdsHeader();
+            ddsHeader.Read(input);
+
+            input.Position = posn;
+        }
+
+
         /// <summary>
         /// Loads the data from an image encoded using one of the supported DDS mechanisms.
         /// If <paramref name="supportHSV"/> is true, also creates an HSVa-encoded version of the image.
