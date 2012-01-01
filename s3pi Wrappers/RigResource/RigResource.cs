@@ -172,7 +172,12 @@ namespace RigResource
             #endregion
 
             #region Constructors
-            public Bone(int APIversion, EventHandler handler) : base(APIversion, handler) { }
+            public Bone(int APIversion, EventHandler handler) : base(APIversion, handler)
+            {
+                position = new Vertex(requestedApiVersion, handler);
+                orientation = new Quaternion(requestedApiVersion, handler);
+                scaling = new Vertex(requestedApiVersion, handler);
+            }
             public Bone(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
             public Bone(int APIversion, EventHandler handler, Bone basis)
                 : this(APIversion, handler, basis.position, basis.orientation, basis.scaling,
@@ -285,6 +290,7 @@ namespace RigResource
             public override void Add() { this.Add(new Bone(0, null, new Vertex(0, null), new Quaternion(0, null), new Vertex(0, null), "", 0, 0, 0, 0)); }
         }
 
+        #region IKElement
         public enum IKType : uint
         {
             IKTypeRoot = 0x00000001,
@@ -710,6 +716,8 @@ namespace RigResource
 
             public override void Add() { throw new NotImplementedException(); }
         }
+        #endregion
+
         #endregion
 
         public override List<string> ContentFields

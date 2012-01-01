@@ -226,7 +226,15 @@ namespace CASPartResource
             #endregion
             
             #region Constructors
-            public Section1Entry(int APIversion, EventHandler handler) : base(APIversion, handler) { }
+            public Section1Entry(int APIversion, EventHandler handler)
+                : base(APIversion, handler)
+            {
+                ageGender = new AgeGenderFlags(requestedApiVersion, handler);
+                lod1 = new LODSection(requestedApiVersion, handler);
+                lod2 = new LODSection(requestedApiVersion, handler);
+                lod3 = new LODSection(requestedApiVersion, handler);
+                lod4 = new LODSection(requestedApiVersion, handler);
+            }
             public Section1Entry(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
             public Section1Entry(int APIversion, EventHandler handler, Section1Entry basis) : this(APIversion, handler, basis.lod1, basis.lod2, basis.lod3, basis.lod4) { }
             public Section1Entry(int APIversion, EventHandler handler, LODSection lod1, LODSection lod2, LODSection lod3, LODSection lod4)

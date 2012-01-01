@@ -104,7 +104,6 @@ namespace CASPartResource
         HandednessFlags handedness;
         #endregion
 
-
         #region Constructors
         public AgeGenderFlags(int APIversion, EventHandler handler) : base(APIversion, handler) { }
         public AgeGenderFlags(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }

@@ -295,7 +295,7 @@ namespace CASPartResource
             #endregion
 
             #region Constructors
-            public LODInfoEntry(int APIversion, EventHandler handler) : base(APIversion, handler) { }
+            public LODInfoEntry(int APIversion, EventHandler handler) : base(APIversion, handler) { lodAssets = new LODAssetList(handler); }
             public LODInfoEntry(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
             public LODInfoEntry(int APIversion, EventHandler handler, LODInfoEntry basis)
                 : this(APIversion, handler, basis.level, basis.destTexture, basis.lodAssets) { }
