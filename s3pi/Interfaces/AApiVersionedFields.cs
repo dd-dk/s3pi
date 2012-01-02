@@ -159,22 +159,31 @@ namespace s3pi.Interfaces
         }
 
         /// <summary>
-        /// Return the ElementPriority value for a Content Field
+        /// Get the TGIBlock list for a Content Field.
         /// </summary>
-        /// <param name="t">Type on which Content Field exists</param>
-        /// <param name="index">Content Field name</param>
-        /// <returns>Int32.MaxValue if no ElementPriorityAttribute or Content Field not found;
-        /// otherwise the value of the ElementPriorityAttribute Priority field.</returns>
-        public static Int32 GetPriority(Type t, string index)
+        /// <param name="o">The object to query.</param>
+        /// <param name="f">The property name under inspection.</param>
+        /// <returns>The TGIBlock list for a Content Field, if present; otherwise <c>null</c>.</returns>
+        public static DependentList<TGIBlock> GetTGIBlocks(AApiVersionedFields o, string f)
         {
-            System.Reflection.PropertyInfo pi = t.GetProperty(index);
-
-            if (pi != null)
-                foreach (var attr in pi.GetCustomAttributes(typeof(ElementPriorityAttribute), true))
-                    return (attr as ElementPriorityAttribute).Priority;
-
-            return Int32.MaxValue;
+            string tgiBlockListCF = TGIBlockListContentFieldAttribute.GetTGIBlockListContentField(o.GetType(), f);
+            if (tgiBlockListCF != null)
+                try
+                {
+                    return o[tgiBlockListCF].Value as DependentList<TGIBlock>;
+                }
+                catch
+                {
+                }
+            return null;
         }
+
+        /// <summary>
+        /// Get the TGIBlock list for a Content Field.
+        /// </summary>
+        /// <param name="f">The property name under inspection.</param>
+        /// <returns>The TGIBlock list for a Content Field, if present; otherwise <c>null</c>.</returns>
+        public DependentList<TGIBlock> GetTGIBlocks(string f) { return GetTGIBlocks(this, f); }
 
         class PriorityComparer : IComparer<string>
         {
@@ -182,7 +191,7 @@ namespace s3pi.Interfaces
             public PriorityComparer(Type t) { this.t = t; }
             public int Compare(string x, string y)
             {
-                int res = GetPriority(t, x).CompareTo(GetPriority(t, y));
+                int res = ElementPriorityAttribute.GetPriority(t, x).CompareTo(ElementPriorityAttribute.GetPriority(t, y));
                 if (res == 0) res = x.CompareTo(y);
                 return res;
             }
@@ -293,7 +302,19 @@ namespace s3pi.Interfaces
                     }
                     else
                     {
-                        sb.Append("\n" + f + ": " + tv);
+                        string suffix = "";
+                        DependentList<TGIBlock> tgis = GetTGIBlocks(f);
+                        if (tgis != null)
+                            try
+                            {
+                                TGIBlock tgi = tgis[Convert.ToInt32(tv.Value)];
+                                suffix = " (" + tgi + ")";
+                            }
+                            catch (Exception e)
+                            {
+                                sb.Append(e.Message + "\n" + e.StackTrace + "\n----");
+                            }
+                        sb.Append("\n" + f + ": " + tv + suffix);
                     }
                 }
 
