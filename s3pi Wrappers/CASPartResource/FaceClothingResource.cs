@@ -132,7 +132,7 @@ namespace CASPartResource
             public Entry(int APIversion, EventHandler handler, AgeGenderFlags ageGender, float amount, int index)
                 : base(APIversion, handler)
             {
-                this.ageGender = new AgeGenderFlags(0, (o, e) => OnElementChanged(), ageGender);
+                this.ageGender = new AgeGenderFlags(0, handler, ageGender);
                 this.amount = amount;
                 this.index = index;
             }
@@ -142,7 +142,7 @@ namespace CASPartResource
             void Parse(Stream s)
             {
                 BinaryReader r = new BinaryReader(s);
-                ageGender = new AgeGenderFlags(0, (o, e) => OnElementChanged(), s);
+                ageGender = new AgeGenderFlags(0, handler, s);
                 amount = r.ReadSingle();
                 index = r.ReadInt32();
             }
@@ -150,7 +150,7 @@ namespace CASPartResource
             internal void UnParse(Stream s)
             {
                 BinaryWriter w = new BinaryWriter(s);
-                if (ageGender == null) ageGender = new AgeGenderFlags(0, (o, e) => OnElementChanged());
+                if (ageGender == null) ageGender = new AgeGenderFlags(0, handler);
                 ageGender.UnParse(s);
                 w.Write(amount);
                 w.Write(index);
@@ -192,7 +192,7 @@ namespace CASPartResource
 
             #region Content Fields
             [ElementPriority(1)]
-            public AgeGenderFlags AgeGender { get { return ageGender; } set { if (!ageGender.Equals(value)) { ageGender = new AgeGenderFlags(0, (o, e) => OnElementChanged(), value); OnElementChanged(); } } }
+            public AgeGenderFlags AgeGender { get { return ageGender; } set { if (!ageGender.Equals(value)) { ageGender = new AgeGenderFlags(0, handler, value); OnElementChanged(); } } }
             [ElementPriority(2)]
             public float Amount { get { return amount; } set { if (amount != value) { amount = value; OnElementChanged(); } } }
             [ElementPriority(3)]
