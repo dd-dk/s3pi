@@ -20,6 +20,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 
 namespace s3pi.Interfaces
@@ -62,6 +63,7 @@ namespace s3pi.Interfaces
     /// </code>
     /// </example>
     /// <seealso cref="HandlerElement{T}"/>
+    /// <seealso cref="IndexList{T}"/>
     public class SimpleList<T> : DependentList<HandlerElement<T>>, IEnumerable<T>
         where T : struct, IComparable, IConvertible, IEquatable<T>, IComparable<T>
     {
@@ -1005,6 +1007,7 @@ namespace s3pi.Interfaces
     /// <summary>
     /// Commonly used simple list.  The list count is an integer stored immediately before the list.  The elements are Int32.
     /// </summary>
+    /// <seealso cref="Int32IndexList"/>
     public class IntList : SimpleList<int>
     {
         #region Constructors

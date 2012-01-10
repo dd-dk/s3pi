@@ -249,6 +249,19 @@ namespace s3pi.Interfaces
                                 sb.Append("\n" + f + ": " + elem);
                         }
                     }
+                    else if (tv.Type.BaseType != null && tv.Type.BaseType.Name.Contains("IndexList`"))
+                    {
+                        System.Collections.IList l = (System.Collections.IList)tv.Value;
+                        string fmt = "\n   [{0:X" + l.Count.ToString("X").Length + "}]: {1}";
+                        int i = 0;
+
+                        sb.Append(String.Format(headerFmt, tv.Type.Name, f, l.Count));
+                        foreach (AHandlerElement v in l)
+                        {
+                            sb.Append(String.Format(fmt, i++, (string)v["Value"].Value));
+                        }
+                        sb.Append("\n---");
+                    }
                     else if (tv.Type.BaseType != null && tv.Type.BaseType.Name.Contains("SimpleList`"))
                     {
                         System.Collections.IList l = (System.Collections.IList)tv.Value;
@@ -617,5 +630,124 @@ namespace s3pi.Interfaces
         //// <returns>Cast value.</returns>
         //--do not want to accidentally disrupt the content of lists through this cast!
         //public static implicit operator HandlerElement<T>(T value) { return new HandlerElement<T>(0, null, value); }
+    }
+
+    /// <summary>
+    /// An extension to <see cref="AHandlerElement"/>, for lists of TGIBlockList indices.
+    /// </summary>
+    /// <typeparam name="T">A simple data type (such as <see cref="Int32"/>).</typeparam>
+    /// <remarks>For an example of use, see <see cref="IndexList{T}"/>.</remarks>
+    /// <seealso cref="IndexList{T}"/>
+    public class TGIBlockListIndex<T> : AHandlerElement, IEquatable<TGIBlockListIndex<T>>
+        where T : struct, IComparable, IConvertible, IEquatable<T>, IComparable<T>
+    {
+        const int recommendedApiVersion = 1;
+        /// <summary>
+        /// Reference to list into which this is an index.
+        /// </summary>
+        public DependentList<TGIBlock> ParentTGIBlocks { get; set; }
+
+        T data;
+
+        /// <summary>
+        /// Initialize a new instance with a default value.
+        /// </summary>
+        /// <param name="APIversion">The requested API version.</param>
+        /// <param name="handler">The <see cref="EventHandler"/> delegate to invoke if the <see cref="AHandlerElement"/> changes.</param>
+        public TGIBlockListIndex(int APIversion, EventHandler handler) : this(APIversion, handler, default(T)) { }
+
+        /// <summary>
+        /// Initialize a new instance with an initial value of <paramref name="basis"/>.
+        /// </summary>
+        /// <param name="APIversion">The requested API version.</param>
+        /// <param name="handler">The <see cref="EventHandler"/> delegate to invoke if the <see cref="AHandlerElement"/> changes.</param>
+        /// <param name="basis">Initial value for instance.</param>
+        public TGIBlockListIndex(int APIversion, EventHandler handler, T basis) : base(APIversion, handler) { data = basis; }
+
+        /// <summary>
+        /// Initialize a new instance with an initial value from <paramref name="basis"/>.
+        /// </summary>
+        /// <param name="APIversion">The requested API version.</param>
+        /// <param name="handler">The <see cref="EventHandler"/> delegate to invoke if the <see cref="AHandlerElement"/> changes.</param>
+        /// <param name="basis">Element containing the initial value for instance.</param>
+        public TGIBlockListIndex(int APIversion, EventHandler handler, TGIBlockListIndex<T> basis) : base(APIversion, handler) { data = basis.data; }
+
+        #region AHandlerElement
+        /// <summary>
+        /// Get a copy of the HandlerElement but with a new change <see cref="EventHandler"/>.
+        /// </summary>
+        /// <param name="handler">The replacement HandlerElement delegate.</param>
+        /// <returns>Return a copy of the HandlerElement but with a new change <see cref="EventHandler"/>.</returns>
+        public override AHandlerElement Clone(EventHandler handler)
+        {
+            return new TGIBlockListIndex<T>(requestedApiVersion, handler, data) { ParentTGIBlocks = ParentTGIBlocks };
+        }
+
+        /// <summary>
+        /// The best supported version of the API available
+        /// </summary>
+        public override int RecommendedApiVersion
+        {
+            get { return recommendedApiVersion; }
+        }
+
+        /// <summary>
+        /// The list of available field names on this API object.
+        /// </summary>
+        public override List<string> ContentFields { get { List<string> res = GetContentFields(requestedApiVersion, this.GetType()); res.Remove("ParentTGIBlocks"); return res; } }
+        #endregion
+
+        #region IEquatable<TGIBlockListIndex<T>>
+        /// <summary>
+        /// Indicates whether the current object is equal to another object of the same type.
+        /// </summary>
+        /// <param name="other">An object to compare with this object.</param>
+        /// <returns>true if the current object is equal to the other parameter; otherwise, false.</returns>
+        public bool Equals(TGIBlockListIndex<T> other) { return data.Equals(other.data); }
+
+        /// <summary>
+        /// Determines whether the specified <see cref="System.Object"/> is equal to the current <see cref="HandlerElement{T}"/>.
+        /// </summary>
+        /// <param name="obj">The <see cref="System.Object"/> to compare with the current <see cref="HandlerElement{T}"/>.</param>
+        /// <returns>true if the specified <see cref="System.Object"/> is equal to the current <see cref="HandlerElement{T}"/>; otherwise, false.</returns>
+        /// <exception cref="System.NullReferenceException">The obj parameter is null.</exception>
+        public override bool Equals(object obj)
+        {
+            if (obj is T) return data.Equals((T)obj);
+            else if (obj is TGIBlockListIndex<T>) return this.Equals(obj as TGIBlockListIndex<T>);
+            return false;
+        }
+
+        /// <summary>
+        /// Returns the hash code for this instance.
+        /// </summary>
+        /// <returns>A 32-bit signed integer that is the hash code for this instance.</returns>
+        public override int GetHashCode() { return data.GetHashCode(); }
+
+        #endregion
+
+        /// <summary>
+        /// The value of the object.
+        /// </summary>
+        [TGIBlockListContentField("ParentTGIBlocks")]
+        public T Data { get { return data; } set { if (!data.Equals(value)) { data = value; OnElementChanged(); } } }
+
+        /// <summary>
+        /// Implicit cast from <see cref="HandlerElement{T}"/> to <typeparamref name="T"/>.
+        /// </summary>
+        /// <param name="value">Value to cast.</param>
+        /// <returns>Cast value.</returns>
+        public static implicit operator T(TGIBlockListIndex<T> value) { return value.data; }
+        //// <summary>
+        //// Implicit cast from <typeparamref name="T"/> to <see cref="HandlerElement{T}"/>.
+        //// </summary>
+        //// <param name="value">Value to cast.</param>
+        //// <returns>Cast value.</returns>
+        //--do not want to accidentally disrupt the content of lists through this cast!
+        //public static implicit operator HandlerElement<T>(T value) { return new HandlerElement<T>(0, null, value); }
+        /// <summary>
+        /// Displayable value
+        /// </summary>
+        public string Value { get { return ValueBuilder.Replace("Data: ", ""); } }
     }
 }
