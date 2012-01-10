@@ -155,7 +155,7 @@ namespace CatalogResource
         public uint Unknown5 { get { return unknown5; } set { if (unknown5 != value) { unknown5 = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(26)]
         public uint Unknown6 { get { return unknown6; } set { if (unknown6 != value) { unknown6 = value; OnResourceChanged(this, new EventArgs()); } } }
-        [ElementPriority(28), TGIBlockListContentField("TGIBlocks")]
+        [ElementPriority(28)]
         public ShapeType Shape { get { return shape; } set { if (shape != value) { shape = value; OnResourceChanged(this, new EventArgs()); } } }
         //--insert TGIBlockList: no ElementPriority
         #endregion

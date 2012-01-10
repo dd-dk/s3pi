@@ -440,14 +440,14 @@ namespace CatalogResource
                 get
                 {
                     return string.Join("; ", ValueBuilder.Split('\n')).Replace("VariableName: ", "");
-                    string s = "<value key=\"" + variableName + "\" value=\"";
+                    /*string s = "<value key=\"" + variableName + "\" value=\"";
                     foreach (string f in this.ContentFields)
                     {
                         if (f.Equals("Value")) continue;
                         if (f.Equals("VariableName")) continue;
                         s += String.Format("{0},", this[f]);
                     }
-                    return s.TrimEnd(',') + "\" />";
+                    return s.TrimEnd(',') + "\" />";/**/
                 }
             }
             #endregion
@@ -988,7 +988,7 @@ namespace CatalogResource
                 get
                 {
                     return ValueBuilder;
-                    System.Text.StringBuilder sb = new StringBuilder();
+                    /*System.Text.StringBuilder sb = new StringBuilder();
                     string xmlType = mbList.Count > 0 ? "complate" : "pattern";
                     sb.AppendFormat("<{0} Name=\"{1}\" ComplateXMLIndex=\"0x{2}\"", xmlType, name, complateXMLIndex.ToString("X2"));
                     if (mbList.Count == 0) sb.Append(" variable=\"" + pattern + "\"");
@@ -1001,7 +1001,7 @@ namespace CatalogResource
                         sb.AppendLine("  " + mbList[i].Value.Replace("\n", "\n  "));
 
                     sb.AppendFormat("</{0}>", xmlType);
-                    return sb.ToString();
+                    return sb.ToString();/**/
                 }
             }
             #endregion
@@ -1049,18 +1049,13 @@ namespace CatalogResource
             {
                 mb = new MaterialBlock(requestedApiVersion, handler);
                 list = new TGIBlockList(handler);
+                mb.ParentTGIBlocks = list;
             }
             internal Material(int APIversion, EventHandler handler, Stream s) : base(APIversion, handler) { Parse(s); }
             public Material(int APIversion, EventHandler handler, Material basis)
-                : base(APIversion, handler)
-            {
-                this.materialType = basis.materialType;
-                this.unknown1 = basis.unknown1;
-                this.unknown2 = basis.unknown2;
-                this.mb = (MaterialBlock)basis.mb.Clone(handler);
-                this.list = new TGIBlockList(handler, basis.list);
-                this.unknown3 = basis.unknown3;
-            }
+                : this(APIversion, handler,
+                basis.materialType, basis.unknown1, basis.unknown2,
+                basis.mb, basis.list, basis.unknown3) { }
             public Material(int APIversion, EventHandler handler, byte materialType, uint unknown1, ushort unknown2,
                 MaterialBlock mb, IEnumerable<TGIBlock> ltgib, uint unknown3)
                 : base(APIversion, handler)
@@ -1072,7 +1067,7 @@ namespace CatalogResource
                 this.list = new TGIBlockList(handler, ltgib);
                 this.unknown3 = unknown3;
 
-                mb.ParentTGIBlocks = list;
+                this.mb.ParentTGIBlocks = this.list;
             }
             #endregion
 
@@ -1191,7 +1186,7 @@ namespace CatalogResource
             public TGIBlockList TGIBlocks
             {
                 get { return list; }
-                set { if (list != (value as TGIBlockList)) { list = new TGIBlockList(handler, value); OnElementChanged(); mb.ParentTGIBlocks = list; } }
+                set { if (list != (value as TGIBlockList)) { list = new TGIBlockList(handler, value); mb.ParentTGIBlocks = list; OnElementChanged(); } }
             }
             [ElementPriority(6)]
             public uint Unknown3 { get { return unknown3; } set { if (unknown3 != value) { unknown3 = value; OnElementChanged(); } } }
