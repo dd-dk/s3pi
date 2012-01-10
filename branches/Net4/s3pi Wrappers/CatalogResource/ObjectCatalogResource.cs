@@ -173,7 +173,7 @@ namespace CatalogResource
             topicRatings, fallbackIndex, ltgib)
         {
             if (checking) if (version >= 0x00000018)
-                    throw new InvalidOperationException(String.Format("Constructor requires TGIIndexes for version {0}", version));
+                    throw new InvalidOperationException(String.Format("Constructor requires BuildableShellDisplayStateHashes for version {0}", version));
         }
         // Version <0x19
         public ObjectCatalogResource(int APIversion,
@@ -1144,7 +1144,23 @@ namespace CatalogResource
         [ElementPriority(27)]
         public uint Levels { get { return levels; } set { if (levels != value) { levels = value; OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(28)]
-        public MTDoorList MTDoors { get { return mtDoorList; } set { if (mtDoorList != value) { mtDoorList = value == null ? null : new MTDoorList(OnResourceChanged, value); } OnResourceChanged(this, new EventArgs()); } }
+        public MTDoorList MTDoors
+        {
+            get { return mtDoorList; }
+            set
+            {
+                if (!mtDoorList.Equals(value))
+                {
+                    if (value == null)
+                        mtDoorList = value;
+                    else
+                    {
+                        mtDoorList = new MTDoorList(OnResourceChanged, value) { ParentTGIBlocks = list };
+                        OnResourceChanged(this, new EventArgs());
+                    }
+                }
+            }
+        }
         [ElementPriority(29)]
         public bool IsScriptEnabled { get { return isScriptEnabled != 0; } set { if (IsScriptEnabled != value) { isScriptEnabled = (byte)(value ? 1 : 0); OnResourceChanged(this, new EventArgs()); } } }
         [ElementPriority(30), TGIBlockListContentField("TGIBlocks")]
