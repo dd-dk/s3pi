@@ -151,6 +151,7 @@
 0xD84E7FC7  ICON   .png
 0xD9BD0909  WDNM   .wdescname
 0xDD3223A7  BUFF   .xml
+0xDEA2951C  PETB   .breed
 0xEA5118B0  _SWB   .effects
 0xF0FF5598  TRIG   .triggers
 0xF1EDBD86  CRMT   .roofmatrl
