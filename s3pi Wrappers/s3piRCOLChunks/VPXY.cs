@@ -359,7 +359,7 @@ namespace s3pi.GenericRCOLResource
         public TGIBlockList TGIBlocks
         {
             get { return tgiBlockList; }
-            set { if (tgiBlockList != value) { tgiBlockList = new TGIBlockList(OnRCOLChanged, value); OnRCOLChanged(this, EventArgs.Empty); } }
+            set { if (!tgiBlockList.Equals(value)) { tgiBlockList = new TGIBlockList(OnRCOLChanged, value); if (entryList != null) entryList.ParentTGIBlocks = tgiBlockList; OnRCOLChanged(this, EventArgs.Empty); } }
         }
 
         public string Value
