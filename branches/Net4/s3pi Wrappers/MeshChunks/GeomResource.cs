@@ -29,11 +29,19 @@ namespace meshExpImp.ModelBlocks
         public GeometryResource(int APIversion, Stream s)
             : base(APIversion, s)
         {
+            if (ChunkEntries.Count != 1)
+                throw new InvalidDataException(String.Format("Expected one chunk, found {0}.", ChunkEntries.Count));
+
             var chunk = ChunkEntries[0];
-            var stream = chunk.RCOLBlock.Stream;
-            stream.Position = 0L;
-            var geom = new GEOM(0, OnResourceChanged, stream);
-            ChunkEntries[0] = new ChunkEntry(0, OnResourceChanged, chunk.TGIBlock, geom);
+            ChunkEntries.Remove(chunk);
+            using (MemoryStream ms = new MemoryStream())
+            {
+                new BinaryWriter(ms).Write(chunk.RCOLBlock.AsBytes);
+                ms.Flush();
+                ms.Position = 0;
+                GEOM geom = new GEOM(requestedApiVersion, OnResourceChanged, ms);
+                ChunkEntries.Add(chunk.TGIBlock, geom);
+            }
         }
     }
 
