@@ -630,6 +630,11 @@ namespace s3pi.Interfaces
         //// <returns>Cast value.</returns>
         //--do not want to accidentally disrupt the content of lists through this cast!
         //public static implicit operator HandlerElement<T>(T value) { return new HandlerElement<T>(0, null, value); }
+
+        /// <summary>
+        /// Get displayable value.
+        /// </summary>
+        public string Value { get { return new TypedValue(typeof(T), val, "X").ToString(); } }
     }
 
     /// <summary>
