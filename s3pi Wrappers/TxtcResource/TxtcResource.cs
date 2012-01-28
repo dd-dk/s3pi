@@ -535,18 +535,10 @@ namespace TxtcResource
             {
                 get
                 {
-                    string entryValue = EntryValue;
-                    string fmt = "{0} ({1})" + (entryValue == null ? "" : ": {2}");
-                    return String.Format(fmt,
-                        enumType == null ? "Unset" : (Enum.IsDefined(enumType, property) ? Enum.GetName(enumType, property)
-                            : String.Format("Unknown (0x{0:X8})", (uint)property)),
-                        this.GetType().Name.Substring(5), entryValue);
-                    /*
-                    return this.GetType().Name +
-                      ": Property: 0x" + ((uint)property).ToString("X8") + (enumType != null ? (Enum.IsDefined(enumType, property) ? " (" + Enum.GetName(enumType, property) + ")" : "(undefined)") : "") +
-                      "; Unknown: 0x" + unknown.ToString("X2");
-                    /**/
-                    //s += "; DataType: 0x" + dataType.ToString("X2");
+                    return ((enumType == null)
+                        ? new TypedValue(typeof(uint), property, "X")
+                        : new TypedValue(enumType, Enum.ToObject(enumType, property), "X"))
+                        + "; " + EntryValue;
                 }
             }
             #endregion
@@ -723,6 +715,37 @@ namespace TxtcResource
                 SourceBlend = 0xE055EE36,
             }
 
+            // see http://msdn.microsoft.com/en-us/library/microsoft.xna.framework.graphics.blend.aspx
+            public enum Blend : int
+            {
+                Zero,
+                One,
+                SourceColor,
+                InverseSourceColor,
+                SourceAlpha,
+                InverseSourceAlpha,
+                DestinationAlpha,
+                InverseDestinationAlpha,
+                DestinationColor,
+                InverseDestinationColor,
+                SourceAlphaSaturation,
+                BlendFactor,
+                InverseBlendFactor,
+            }
+
+            [Flags]
+            public enum ColorWriteChannels : int
+            {
+                Red = 0x01,
+                Green = 0x02,
+                Blue = 0x04,
+                Alpha = 0x08,
+                // -
+                //None = 0x00,
+                //Color = 0x07,
+                //All = 0x0F,
+            }
+
             Int32 data;
             public EntryInt32(int APIversion, EventHandler handler, EntryInt32 basis)
                 : this(APIversion, handler, (Int32Properties)basis.property, basis.unknown, basis.dataType, basis.data) { }
@@ -747,7 +770,22 @@ namespace TxtcResource
             }
             [ElementPriority(4)]
             public Int32 Data { get { return data; } set { if (data != value) { data = value; OnElementChanged(); } } }
-            protected override string EntryValue { get { return "0x" + data.ToString("X8"); } }
+            protected override string EntryValue
+            {
+                get
+                {
+                    switch ((Int32Properties)property)
+                    {
+                        case Int32Properties.DestinationBlend:
+                        case Int32Properties.SourceBlend:
+                            return new TypedValue(typeof(Blend), Enum.ToObject(typeof(Blend), data), "X") + "";
+                        case Int32Properties.ColorWrite:
+                            return new TypedValue(typeof(ColorWriteChannels), Enum.ToObject(typeof(ColorWriteChannels), data), "X") + "";
+                        default:
+                            return "0x" + data.ToString("X8");
+                    }
+                }
+            }
             //public override string Value { get { return base.Value + "; Data: 0x" + data.ToString("X8"); } }
         }
         [ConstructorParameters(new object[] { UInt32Properties.Width, (byte)0, (byte)0x07, (UInt32)0, })]
