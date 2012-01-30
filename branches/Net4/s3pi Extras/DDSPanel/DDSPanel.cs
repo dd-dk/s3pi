@@ -167,7 +167,27 @@ namespace System.Windows.Forms
         /// The size of the current image (or <see cref="Size.Empty"/> if not loaded).
         /// </summary>
         [ReadOnly(true), Description("The size of the current image (or Size.Empty if not loaded).")]
-        public Size ImageSize { get { return loaded ? ddsFile.Size : Size.Empty; } }
+        public Size ImageSize
+        {
+            get
+            {
+                return loaded ? ddsFile.Size : Size.Empty;
+            }
+            set
+            {
+                if (!loaded) return;
+
+                try
+                {
+                    this.Enabled = false;
+                    Application.UseWaitCursor = true;
+                    ddsFile = ddsFile.Resize(value);
+                }
+                finally { this.Enabled = true; Application.UseWaitCursor = false; }
+
+                ckb_CheckedChanged(null, null);
+            }
+        }
 
         /// <summary>
         /// When true, indicates the DDS image is encoded with an alpha channel.
@@ -353,6 +373,7 @@ namespace System.Windows.Forms
             ddsMask = null;
             pictureBox1.Image = image = null;
             pictureBox1.Size = (this.MaxSize == Size.Empty) ? new Size(0x80, 0x80) : Min(new Size(0x80, 0x80), this.MaxSize);
+            ckb_CheckedChanged(null, null);
         }
 
         /// <summary>
